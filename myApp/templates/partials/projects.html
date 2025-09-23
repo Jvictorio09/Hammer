@@ -1,21 +1,113 @@
-
 <!-- Projects -->
-<section id="projects" class="section bg-gray-50">
-  <div class="section-head">
-    <p class="eyebrow">Signature Projects</p>
-    <h2 class="section-title">Design & Build Masterpieces</h2>
-  </div>
+<section id="projects" class="py-20 bg-gray-50">
+  <div class="max-w-7xl mx-auto px-6">
+    <!-- Heading -->
+    <div class="text-center mb-10">
+      <p class="text-[10px] tracking-[.3em] uppercase text-[#18AFAB]">Signature Projects</p>
+      <h2 class="text-3xl md:text-4xl font-extrabold">Design & Build Masterpieces</h2>
+      <p class="text-gray-600 max-w-2xl mx-auto mt-3">Selected villas, interiors and landscapes delivered across Dubai—built with precision and handled end-to-end by Hammer.</p>
+    </div>
 
-  <div class="grid md:grid-cols-3 gap-8">
-    {% for i in "123456"|make_list %}
-    <article class="project group overflow-hidden">
-      <div class="project-media transform group-hover:scale-105 transition duration-500"
-           style="background-image:url('https://picsum.photos/1200/800?random={{ i }}')"></div>
-      <div class="project-body">
-        <h3 class="font-semibold text-lg">Luxury Villa Project {{ i }}</h3>
-        <p class="text-sm text-gray-600">Dubai, UAE</p>
+    <!-- Quick filters (non-functional placeholders) -->
+    <div class="flex flex-wrap items-center justify-center gap-3 mb-10">
+      <a class="px-4 py-2 rounded-full border border-[#18AFAB] text-[#18AFAB] text-sm font-semibold hover:bg-[#18AFAB] hover:text-white transition">All</a>
+      <a class="px-4 py-2 rounded-full border border-[#18AFAB] text-[#18AFAB] text-sm font-semibold hover:bg-[#18AFAB] hover:text-white transition">Villas</a>
+      <a class="px-4 py-2 rounded-full border border-[#18AFAB] text-[#18AFAB] text-sm font-semibold hover:bg-[#18AFAB] hover:text-white transition">Interiors</a>
+      <a class="px-4 py-2 rounded-full border border-[#18AFAB] text-[#18AFAB] text-sm font-semibold hover:bg-[#18AFAB] hover:text-white transition">Landscape</a>
+      <a class="px-4 py-2 rounded-full border border-[#18AFAB] text-[#18AFAB] text-sm font-semibold hover:bg-[#18AFAB] hover:text-white transition">Facility</a>
+    </div>
+
+    <!-- Featured case study -->
+    <article class="grid lg:grid-cols-5 gap-6 items-stretch mb-10">
+      <div class="lg:col-span-3 relative rounded-2xl overflow-hidden shadow-lg">
+        <div class="absolute inset-0 bg-cover bg-center" style="background-image:url('https://picsum.photos/1600/1100?random=701')"></div>
+        <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent"></div>
+      </div>
+      <div class="lg:col-span-2 bg-white rounded-2xl border border-black/5 shadow-sm p-7 flex flex-col">
+        <div class="flex items-center gap-2 text-xs uppercase tracking-[.2em] text-[#18AFAB]">
+          <span class="h-1.5 w-1.5 rounded-full bg-[#18AFAB]"></span> Featured Case Study
+        </div>
+        <h3 class="text-2xl font-bold mt-2">Private Villa • Emirates Hills</h3>
+        <p class="text-gray-600 mt-3">Full design & build: architecture, interior fit-out, bespoke joinery and native/low-water landscape with pool and lighting.</p>
+
+        <dl class="mt-6 grid grid-cols-2 gap-4 text-sm">
+          <div>
+            <dt class="text-gray-500">Scope</dt>
+            <dd class="font-semibold">Design + Build</dd>
+          </div>
+          <div>
+            <dt class="text-gray-500">Size</dt>
+            <dd class="font-semibold">12,500 sq ft</dd>
+          </div>
+          <div>
+            <dt class="text-gray-500">Timeline</dt>
+            <dd class="font-semibold">10 months</dd>
+          </div>
+          <div>
+            <dt class="text-gray-500">Status</dt>
+            <dd class="font-semibold">Completed</dd>
+          </div>
+        </dl>
+
+        <div class="mt-6 flex flex-wrap gap-2">
+          <span class="px-3 py-1 rounded-full bg-gray-100 text-xs font-semibold">Architecture</span>
+          <span class="px-3 py-1 rounded-full bg-gray-100 text-xs font-semibold">Interior Fit-Out</span>
+          <span class="px-3 py-1 rounded-full bg-gray-100 text-xs font-semibold">Joinery</span>
+          <span class="px-3 py-1 rounded-full bg-gray-100 text-xs font-semibold">Landscape</span>
+        </div>
+
+        <div class="mt-7">
+          <a href="#"
+             class="inline-flex items-center gap-2 bg-[#18AFAB] text-[#282D27] font-semibold px-5 py-3 rounded-full shadow-lg shadow-black/30 hover:shadow-[#18AFAB]/40 hover:scale-[1.02] transition">
+            View Case Study <i class="fa-solid fa-arrow-right-long"></i>
+          </a>
+        </div>
       </div>
     </article>
-    {% endfor %}
+
+    <!-- Grid of projects -->
+    <div class="grid md:grid-cols-3 gap-8">
+      {% for i in "123456"|make_list %}
+      <article class="group relative rounded-2xl overflow-hidden border border-black/5 bg-white shadow-sm hover:shadow-lg transition">
+        <div class="relative aspect-[16/10] overflow-hidden">
+          <div class="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-105"
+               style="background-image:url('https://picsum.photos/1200/800?random={{ i }}')"></div>
+          <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent"></div>
+
+          <!-- Hover CTA -->
+          <div class="absolute inset-x-0 bottom-0 p-4 flex items-center justify-between">
+            <div>
+              <span class="inline-flex items-center gap-2 text-white font-semibold">
+                Luxury Project {{ i }}
+              </span>
+              <p class="text-white/80 text-xs">Dubai, UAE</p>
+            </div>
+            <span class="opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0 transition text-white text-sm font-semibold">
+              View Project →
+            </span>
+          </div>
+        </div>
+
+        <!-- Meta row -->
+        <div class="p-4 flex items-center justify-between">
+          <div class="flex items-center gap-3 text-sm text-gray-600">
+            <span class="inline-flex items-center gap-1"><i class="fa-regular fa-image"></i> Gallery</span>
+            <span class="inline-flex items-center gap-1"><i class="fa-regular fa-clock"></i> 202{{ i|slice:":1" }}</span>
+          </div>
+          <span class="px-2.5 py-1 rounded-full text-xs font-semibold border border-[#18AFAB] text-[#18AFAB]">
+            Case Study
+          </span>
+        </div>
+      </article>
+      {% endfor %}
+    </div>
+
+    <!-- Footer CTA -->
+    <div class="text-center mt-12">
+      <a href="#"
+         class="inline-flex items-center gap-2 bg-[#18AFAB] text-[#282D27] font-semibold px-6 py-3 rounded-full shadow-md hover:scale-105 hover:shadow-lg transition">
+        View All Projects <i class="fa-solid fa-arrow-right-long"></i>
+      </a>
+    </div>
   </div>
 </section>

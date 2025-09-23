@@ -1,122 +1,138 @@
+/* -----------------------------------------------------------
+   HAMMER — Brand CSS (Tailwind v4 friendly)
+   Palette from Brand Book:
+   - Teal  (Pantone 2397 CP)  #18AFAB
+   - Blue  (Pantone 7700  CP) #27647F
+   - Slate (Pantone 6224  CP) #3D5155
+   - Ink   (Pantone Black 3)  #282D27
+   ----------------------------------------------------------- */
+
 /* Fonts */
 @import url("https://fonts.googleapis.com/css2?family=Titillium+Web:wght@300;400;600;700;900&display=swap");
 
 /* Tailwind v4 layers */
 @layer theme, base, components, utilities;
 
-/* Brand tokens (swap HEX with exact brand kit if needed) */
+/* ===================== THEME TOKENS ===================== */
 @theme {
   --font-sans: "Titillium Web", ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", sans-serif;
 
-  --color-hammer-ink: #1A1A1A;   /* deep ink */
-  --color-hammer-gold: #C8A74E;  /* gold accent */
-  --color-hammer-gray: #F5F5F5;  /* light neutral */
+  /* Core brand */
+  --color-hammer-ink:  #282D27; /* near-black */
+  --color-hammer-teal: #18AFAB; /* primary accent */
+  --color-hammer-blue: #27647F; /* secondary accent */
+  --color-hammer-slate:#3D5155; /* supporting neutral */
 
+  /* Neutrals & tints (derived) */
+  --color-hammer-ink-900: #1F231F;
+  --color-hammer-ink-700: #2E342E;
+  --color-hammer-ink-50:  #F6F7F6;
+
+  /* Light tints using color-mix (with fallback) */
+  --color-teal-10-fallback: #E3F2F1; /* ~10% teal on white */
+  --color-teal-25-fallback: #C8E7E6; /* ~25% teal on white */
+  --color-blue-10-fallback: #E4EDF1;
+  --color-blue-25-fallback: #C8D9E2;
+
+  /* Shadows */
   --shadow-card: 0 10px 25px -10px rgba(0,0,0,.25);
 }
 
-/* --- Hammer fallback utilities so classes always exist --- */
-.bg-hammer-ink   { background-color: #1A1A1A !important; }
-.text-hammer-ink { color:            #1A1A1A !important; }
-.bg-hammer-gold  { background-color: #C8A74E !important; }
-.text-hammer-gold{ color:            #C8A74E !important; }
-.bg-hammer-gray  { background-color: #F5F5F5 !important; }
-.text-hammer-gray{ color:            #F5F5F5 !important; }
+/* Fallback utility classes so they exist even if Tailwind tokens aren't compiled */
+.bg-hammer-ink   { background-color: var(--color-hammer-ink) !important; }
+.text-hammer-ink { color:            var(--color-hammer-ink) !important; }
+.bg-hammer-teal  { background-color: var(--color-hammer-teal) !important; }
+.text-hammer-teal{ color:            var(--color-hammer-teal) !important; }
+.bg-hammer-blue  { background-color: var(--color-hammer-blue) !important; }
+.text-hammer-blue{ color:            var(--color-hammer-blue) !important; }
+.bg-hammer-slate { background-color: var(--color-hammer-slate) !important; }
+.text-hammer-slate{color:            var(--color-hammer-slate) !important; }
 
-/* Button & input polish to guarantee contrast */
-.btn-gold { color:#1A1A1A !important; }
-.input::placeholder { color:#9CA3AF; }
-
-
-/* Reusable UI helpers */
-.hero-gradient {
-  background: linear-gradient(180deg, rgba(0,0,0,.55) 0%, rgba(0,0,0,.35) 45%, rgba(0,0,0,.25) 100%);
-}
-
+/* ===================== BASE TYPO ===================== */
+:root { font-family: var(--font-sans); }
 .eyebrow {
   letter-spacing: .18em;
   text-transform: uppercase;
   font-weight: 600;
   font-size: .75rem;
-  color: var(--color-hammer-gold);
+  color: var(--color-hammer-teal);
   margin-bottom: .75rem;
 }
+.section { padding: 5rem 1.5rem; }
+.section-head { max-width: 56rem; margin: 0 auto 2.5rem; text-align: center; }
+.section-title { font-size: clamp(1.75rem, 2.5vw, 2.25rem); font-weight: 800; }
+.section-sub { color: #4b5563; margin-top: .75rem; }
 
-.section {
-  padding: 5rem 1.5rem;
-}
-.section-head {
-  max-width: 56rem; margin: 0 auto 2.5rem auto; text-align: center;
-}
-.section-title {
-  font-size: clamp(1.75rem, 2.5vw, 2.25rem);
-  font-weight: 800;
-}
-.section-sub {
-  color: #4b5563; /* gray-600 */
-  margin-top: .75rem;
+/* ===================== HERO / OVERLAYS ===================== */
+.hero-gradient {
+  /* subtle vignette over photography */
+  background: radial-gradient(120% 100% at 50% 0%, rgba(0,0,0,.55) 0%, rgba(0,0,0,.35) 45%, rgba(0,0,0,.25) 100%);
 }
 
-/* Cards */
+/* ===================== CARDS ===================== */
 .card {
   border-radius: 1rem;
   overflow: hidden;
-  background: white;
+  background: #fff;
   border: 1px solid rgba(0,0,0,.06);
   box-shadow: var(--shadow-card);
   display: flex; flex-direction: column;
 }
-.card-media {
-  background-size: cover; background-position: center;
-  aspect-ratio: 4/3;
-}
-.card-body {
-  padding: 1.1rem 1rem 1.25rem 1rem;
-}
-.card-title {
-  margin-top: .75rem;
-  font-weight: 700;
-}
-.card-text {
-  font-size: .9rem;
-  color: #6b7280; /* gray-500 */
-  margin-top: .5rem;
-}
+.card-media { background-size: cover; background-position: center; aspect-ratio: 4/3; }
+.card-body  { padding: 1.1rem 1rem 1.25rem; }
+.card-title { margin-top: .75rem; font-weight: 700; }
+.card-text  { font-size: .9rem; color: #6b7280; margin-top: .5rem; }
 
-/* Project grid */
+/* ===================== PROJECT GRID ===================== */
 .project {
-  background: white; border: 1px solid rgba(0,0,0,.06);
-  border-radius: 1rem; overflow: hidden;
+  background: #fff;
+  border: 1px solid rgba(0,0,0,.06);
+  border-radius: 1rem;
+  overflow: hidden;
   transition: transform .25s ease, box-shadow .25s ease;
 }
 .project:hover { transform: translateY(-3px); box-shadow: var(--shadow-card); }
 .project-media { background-size: cover; background-position: center; aspect-ratio: 16/10; }
-.project-body { padding: 1rem 1.1rem 1.25rem 1.1rem; }
+.project-body  { padding: 1rem 1.1rem 1.25rem; }
 
-/* Buttons */
-.btn-gold {
-  background: var(--color-hammer-gold);
-  color: var(--color-hammer-ink);
+/* ===================== BUTTONS ===================== */
+.btn-primary {
+  background: var(--color-hammer-teal);
+  color: #0F1413; /* dark text for contrast on teal */
   padding: .75rem 1rem;
   border-radius: 9999px;
   font-weight: 700;
   border: 1px solid rgba(0,0,0,.05);
-  transition: opacity .2s ease, transform .1s ease;
+  transition: transform .1s ease, filter .2s ease;
 }
-.btn-gold:hover { opacity: .95; }
-.btn-gold:active { transform: translateY(1px); }
+.btn-primary:hover { filter: brightness(.97); }
+.btn-primary:active { transform: translateY(1px); }
 
+/* Outline (on dark hero) */
 .btn-outline {
-  color: white;
+  color: #fff;
   padding: .75rem 1rem;
   border-radius: 9999px;
   border: 1px solid rgba(255,255,255,.6);
   font-weight: 700;
-  transition: background .2s ease, color .2s ease;
+  transition: background .2s ease, color .2s ease, border-color .2s ease;
 }
-.btn-outline:hover { background: white; color: var(--color-hammer-ink); }
+.btn-outline:hover { background: #fff; color: var(--color-hammer-ink); border-color: #fff; }
 
-/* Inputs */
+/* Secondary (blue) */
+.btn-secondary {
+  background: var(--color-hammer-blue);
+  color: #ffffff;
+  padding: .75rem 1rem;
+  border-radius: 9999px;
+  font-weight: 700;
+  border: 1px solid rgba(0,0,0,.05);
+  transition: transform .1s ease, opacity .2s ease;
+}
+.btn-secondary:hover { opacity: .95; }
+.btn-secondary:active { transform: translateY(1px); }
+
+/* ===================== INPUTS ===================== */
 .input {
   width: 100%;
   border-radius: .75rem;
@@ -126,51 +142,63 @@
   padding: .75rem 1rem;
   outline: none;
 }
+.input::placeholder { color:#9CA3AF; }
 .input:focus {
-  border-color: var(--color-hammer-gold);
-  box-shadow: 0 0 0 3px rgba(200,167,78,.25);
+  border-color: var(--color-hammer-teal);
+  /* fallback ring */
+  box-shadow: 0 0 0 3px rgba(24,175,171,.25);
 }
 
-/* Partners logo pills (placeholder) */
+/* ===================== STATS ===================== */
+.stat { font-size: 2rem; font-weight: 800; color: var(--color-hammer-teal); }
+
+/* ===================== LOGO PILLS (partners) ===================== */
 .logo-pill {
   padding: .6rem 1rem;
   border-radius: 999px;
-  background: #F3F4F6; /* gray-100 */
-  color: #111827;      /* gray-900 */
+  background: var(--color-hammer-ink-50);
+  color: var(--color-hammer-ink);
   font-weight: 700;
   font-size: .85rem;
 }
 
-/* WhatsApp floating button */
+/* ===================== MARQUEE ===================== */
+@keyframes marquee { 0%{transform:translateX(0)} 100%{transform:translateX(-50%)} }
+.marquee { width: 200%; animation: marquee 25s linear infinite; }
+
+/* ===================== WHATSAPP FAB ===================== */
 .whatsapp-fab { position: fixed; right: 1.25rem; bottom: 1.25rem; }
 
+/* ===================== BACKGROUNDS / TINT HELPERS ===================== */
+.bg-teal-tint-10 { background-color: var(--color-teal-10-fallback); }
+.bg-teal-tint-25 { background-color: var(--color-teal-25-fallback); }
+.bg-blue-tint-10 { background-color: var(--color-blue-10-fallback); }
+.bg-blue-tint-25 { background-color: var(--color-blue-25-fallback); }
 
-/* Shimmer animation on CTA */
+/* ===================== DARK SECTIONS ===================== */
+.section-dark {
+  background: var(--color-hammer-ink);
+  color: #fff;
+}
+.section-dark .eyebrow { color: var(--color-hammer-teal); }
+.section-dark .section-sub { color: rgba(255,255,255,.72); }
+
+/* ===================== HERO CTA SHIMMER (brand teal) ===================== */
 @keyframes shimmer {
   0% { background-position: -200% 0; }
   100% { background-position: 200% 0; }
 }
 .animate-shimmer {
   background-image: linear-gradient(110deg,
-    var(--color-hammer-gold) 25%,
+    color-mix(in srgb, var(--color-hammer-teal) 80%, white) 25%,
     #fff 37%,
-    var(--color-hammer-gold) 63%);
+    color-mix(in srgb, var(--color-hammer-teal) 80%, white) 63%);
   background-size: 200% 100%;
   animation: shimmer 2.5s infinite;
-  color: var(--color-hammer-ink);
+  color: #0F1413;
   font-weight: 700;
 }
-.stat {
-  font-size: 2rem;
-  font-weight: 800;
-}
 
-
-@keyframes marquee {
-  0%   { transform: translateX(0); }
-  100% { transform: translateX(-50%); }
-}
-.marquee {
-  width: 200%;
-  animation: marquee 25s linear infinite;
-}
+/* ===================== UTIL POLISH ===================== */
+.hr-soft { height:1px; background: rgba(0,0,0,.06); }
+.text-slate-600 { color: #6b7280; } /* convenience */
