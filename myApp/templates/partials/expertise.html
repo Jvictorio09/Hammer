@@ -1,27 +1,26 @@
-
-<!-- Expertise -->
-<section class="relative py-20 bg-gray-50">
+<!-- Expertise (Modernized + Motion) -->
+<section class="relative py-20 bg-gray-50" id="expertise">
   <!-- faint texture -->
-  <div class="pointer-events-none absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/white-diamond.png')] opacity-[.04]"></div>
+  <div class="pointer-events-none absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/white-diamond.png')] opacity-[.03]"></div>
 
   <div class="relative max-w-7xl mx-auto px-6">
     <!-- Heading -->
-    <div class="text-center mb-16">
+    <div class="text-center mb-16 reveal-up">
       <p class="eyebrow text-[#18AFAB]">Our Expertise</p>
       <h2 class="text-3xl md:text-4xl font-extrabold">
-        Precision • Quality • Efficiency - At Every Stage
+        Precision • Quality • Efficiency — At Every Stage
       </h2>
       <p class="text-gray-600 max-w-3xl mx-auto mt-4">
-        With Hammer, every stage is handled under one roof. Design, permits, procurement, joinery, construction and aftercare-so you never juggle multiple contractors or risk delays.
+        With Hammer, every stage is handled under one roof: design, permits, procurement, joinery, construction and aftercare—so you never juggle multiple contractors or risk delays.
       </p>
     </div>
 
     <!-- 3 Expertise Cards -->
     <div class="grid md:grid-cols-3 gap-8">
       <!-- 1: Design & Pre-Con -->
-      <article class="group relative p-8 bg-white rounded-2xl border border-black/5 shadow-sm hover:shadow-lg transition">
+      <article class="expertise-card reveal-stagger" style="--d:0ms">
         <div class="flex items-center gap-3">
-          <div class="h-10 w-10 flex items-center justify-center rounded-full bg-[#18AFAB]/10 text-[#18AFAB]">
+          <div class="icon-wrap">
             <i class="fa-solid fa-drafting-compass"></i>
           </div>
           <h3 class="font-semibold text-lg">Design & Pre-Construction</h3>
@@ -34,9 +33,9 @@
       </article>
 
       <!-- 2: Build & Fit-Out -->
-      <article class="group relative p-8 bg-white rounded-2xl border border-black/5 shadow-sm hover:shadow-lg transition">
+      <article class="expertise-card reveal-stagger" style="--d:150ms">
         <div class="flex items-center gap-3">
-          <div class="h-10 w-10 flex items-center justify-center rounded-full bg-[#18AFAB]/10 text-[#18AFAB]">
+          <div class="icon-wrap">
             <i class="fa-solid fa-helmet-safety"></i>
           </div>
           <h3 class="font-semibold text-lg">Build & Fit-Out</h3>
@@ -49,9 +48,9 @@
       </article>
 
       <!-- 3: Handover & Aftercare -->
-      <article class="group relative p-8 bg-white rounded-2xl border border-black/5 shadow-sm hover:shadow-lg transition">
+      <article class="expertise-card reveal-stagger" style="--d:300ms">
         <div class="flex items-center gap-3">
-          <div class="h-10 w-10 flex items-center justify-center rounded-full bg-[#18AFAB]/10 text-[#18AFAB]">
+          <div class="icon-wrap">
             <i class="fa-solid fa-hands-holding-circle"></i>
           </div>
           <h3 class="font-semibold text-lg">Handover & Aftercare</h3>
@@ -65,9 +64,68 @@
     </div>
 
     <!-- CTA -->
-    <div class="text-center mt-14">
-      <a href="#contact" class="btn-primary">Talk to Our Experts</a>
-      <p class="text-gray-500 text-sm mt-2">Your vision, our responsibility-from sketch to keys-in-hand.</p>
+    <div class="text-center mt-14 reveal-up">
+      <a href="#contact" class="inline-flex items-center justify-center rounded-full bg-[#18AFAB] text-[#0F0F10] px-6 py-3 font-semibold shadow-lg shadow-black/20 hover:shadow-[#18AFAB]/40 hover:scale-[1.02] transition">
+        Talk to Our Experts
+      </a>
+      <p class="text-gray-500 text-sm mt-2">Your vision, our responsibility — from sketch to keys-in-hand.</p>
     </div>
   </div>
 </section>
+
+<style>
+/* Card styling */
+#expertise .expertise-card {
+  position: relative;
+  padding: 2rem;
+  border-radius: 1rem;
+  background: #fff;
+  border: 1px solid rgba(0,0,0,.05);
+  box-shadow: 0 6px 18px rgba(0,0,0,.06);
+  transition: transform .35s ease, box-shadow .35s ease, border-color .35s ease;
+}
+#expertise .expertise-card:hover {
+  transform: translateY(-4px);
+  border-color: rgba(24,175,171,.3);
+  box-shadow: 0 12px 26px rgba(0,0,0,.1), 0 0 0 1px rgba(24,175,171,.1) inset;
+}
+
+/* Icon circle */
+#expertise .icon-wrap {
+  display: flex; align-items: center; justify-content: center;
+  width: 2.5rem; height: 2.5rem;
+  border-radius: 9999px;
+  background: linear-gradient(135deg, rgba(24,175,171,.15), rgba(24,175,171,.05));
+  color: #18AFAB;
+  font-size: 1.1rem;
+}
+
+/* Scroll reveal */
+.reveal-up {
+  opacity:0; transform: translateY(18px); transition: all .7s cubic-bezier(.22,1,.36,1);
+}
+.reveal-up.in { opacity:1; transform: translateY(0); }
+
+.reveal-stagger {
+  opacity:0; transform: translateY(20px) scale(.98); transition: all .75s cubic-bezier(.22,1,.36,1);
+  transition-delay: var(--d,0ms);
+}
+.reveal-stagger.in { opacity:1; transform: translateY(0) scale(1); }
+</style>
+
+<script>
+/* IntersectionObserver reveal */
+(function(){
+  const targets = document.querySelectorAll('#expertise .reveal-up, #expertise .reveal-stagger');
+  if(!('IntersectionObserver' in window)){ targets.forEach(el=>el.classList.add('in')); return; }
+  const io = new IntersectionObserver((entries, obs)=>{
+    entries.forEach(e=>{
+      if(e.isIntersecting){
+        e.target.classList.add('in');
+        obs.unobserve(e.target);
+      }
+    });
+  }, {threshold:.15, rootMargin:'0px 0px -40px 0px'});
+  targets.forEach(t=>io.observe(t));
+})();
+</script>

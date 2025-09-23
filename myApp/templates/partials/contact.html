@@ -1,19 +1,19 @@
-<!-- Contact (Flagship) -->
+<!-- Contact (Flagship, Polished + Motion) -->
 <section id="contact" class="relative overflow-hidden bg-[#0A0A0B] text-white">
-  <!-- faint diamond texture + vignette -->
+  <!-- texture + vignette -->
   <div class="pointer-events-none absolute inset-0 opacity-[.05] bg-[url('https://www.transparenttextures.com/patterns/white-diamond.png')]"></div>
-  <div class="pointer-events-none absolute inset-0 bg-[radial-gradient(80%_60%_at_20%_20%,rgba(200,167,78,.14),transparent_60%)]"></div>
+  <div class="pointer-events-none absolute inset-0 bg-[radial-gradient(80%_60%_at_20%_20%,rgba(24,175,171,.12),transparent_60%)]"></div>
   <div class="pointer-events-none absolute inset-x-0 bottom-0 h-44 bg-gradient-to-t from-black/40"></div>
 
   <div class="relative max-w-7xl mx-auto px-6 py-24 lg:py-32 grid lg:grid-cols-2 gap-16 items-center">
     <!-- Left: narrative + trust -->
-    <div>
+    <div class="reveal-left">
       <p class="text-[11px] tracking-[.35em] uppercase text-[#18AFAB]">Start a Project</p>
       <h2 class="mt-2 text-3xl md:text-5xl font-extrabold leading-[1.1]">
         Ready to Transform<br class="hidden md:block"/> Your Space?
       </h2>
       <p class="mt-4 text-white/85 max-w-xl">
-        Let Hammer design the villa, interior, or landscape of your dreams-executed with
+        Let Hammer design the villa, interior, or landscape of your dreams—executed with
         <span class="text-[#18AFAB]">precision</span>, <span class="text-[#18AFAB]">discretion</span>, and unmatched craftsmanship.
         One integrated team. One contract. Zero friction.
       </p>
@@ -41,30 +41,26 @@
           <i class="fab fa-whatsapp text-[#25D366]"></i> WhatsApp a Specialist
         </a>
         <span class="inline-flex items-center gap-2 rounded-full bg-white/5 px-3 py-1.5 text-xs">
-          <span class="h-2 w-2 rounded-full bg-[#18AFAB]"></span> Typical reply: ~4h
+          <span class="h-2 w-2 rounded-full bg-[#18AFAB] animate-pulse"></span> Typical reply: ~4h
         </span>
       </div>
     </div>
 
     <!-- Right: form card -->
-    <div class="relative">
-      <!-- subtle gold aura -->
-      <div class="pointer-events-none absolute -inset-6 rounded-[28px] bg-[radial-gradient(40%_30%_at_80%_10%,rgba(200,167,78,.18),transparent)]"></div>
+    <div class="relative reveal-right">
+      <!-- subtle teal aura -->
+      <div class="pointer-events-none absolute -inset-6 rounded-[28px] bg-[radial-gradient(40%_30%_at_80%_10%,rgba(24,175,171,.18),transparent)]"></div>
 
-      <form class="relative grid gap-5 bg-white text-[#0A0A0B] rounded-2xl shadow-[0_20px_60px_rgba(0,0,0,.45)] p-6 md:p-8">
+      <form id="contactForm" class="relative grid gap-5 bg-white text-[#0A0A0B] rounded-2xl shadow-[0_20px_60px_rgba(0,0,0,.45)] p-6 md:p-8">
         <!-- floating field -->
         <label class="relative block">
           <span class="pointer-events-none absolute left-4 top-3 text-gray-400">
             <i class="fa-regular fa-user"></i>
           </span>
           <input required name="full_name" type="text"
-                 class="peer w-full rounded-xl border border-gray-200 pl-10 pr-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#18AFAB] focus:border-[#18AFAB]"
+                 class="peer input-fx"
                  placeholder=" "/>
-          <span class="absolute left-8 -top-2 bg-white px-2 text-[11px] tracking-wide text-gray-500 transition-all
-                       peer-placeholder-shown:top-3 peer-placeholder-shown:left-10 peer-placeholder-shown:bg-transparent
-                       peer-placeholder-shown:text-sm peer-placeholder-shown:text-gray-400 peer-focus:-top-2 peer-focus:left-8 peer-focus:bg-white peer-focus:text-[11px]">
-            Full Name
-          </span>
+          <span class="float-label">Full Name</span>
         </label>
 
         <label class="relative block">
@@ -72,13 +68,9 @@
             <i class="fa-regular fa-envelope"></i>
           </span>
           <input required name="email" type="email"
-                 class="peer w-full rounded-xl border border-gray-200 pl-10 pr-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#18AFAB] focus:border-[#18AFAB]"
+                 class="peer input-fx"
                  placeholder=" "/>
-          <span class="absolute left-8 -top-2 bg-white px-2 text-[11px] tracking-wide text-gray-500 transition-all
-                       peer-placeholder-shown:top-3 peer-placeholder-shown:left-10 peer-placeholder-shown:bg-transparent
-                       peer-placeholder-shown:text-sm peer-placeholder-shown:text-gray-400 peer-focus:-top-2 peer-focus:left-8 peer-focus:bg-white peer-focus:text-[11px]">
-            Email Address
-          </span>
+          <span class="float-label">Email Address</span>
         </label>
 
         <label class="relative block">
@@ -86,13 +78,9 @@
             <i class="fa-solid fa-phone"></i>
           </span>
           <input name="phone" type="text"
-                 class="peer w-full rounded-xl border border-gray-200 pl-10 pr-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#18AFAB] focus:border-[#18AFAB]"
+                 class="peer input-fx"
                  placeholder=" "/>
-          <span class="absolute left-8 -top-2 bg-white px-2 text-[11px] tracking-wide text-gray-500 transition-all
-                       peer-placeholder-shown:top-3 peer-placeholder-shown:left-10 peer-placeholder-shown:bg-transparent
-                       peer-placeholder-shown:text-sm peer-placeholder-shown:text-gray-400 peer-focus:-top-2 peer-focus:left-8 peer-focus:bg-white peer-focus:text-[11px]">
-            Phone Number
-          </span>
+          <span class="float-label">Phone Number</span>
         </label>
 
         <label class="relative block">
@@ -100,13 +88,9 @@
             <i class="fa-regular fa-pen-to-square"></i>
           </span>
           <textarea name="message" rows="4"
-                    class="peer w-full rounded-xl border border-gray-200 pl-10 pr-4 py-3 resize-y focus:outline-none focus:ring-2 focus:ring-[#18AFAB] focus:border-[#18AFAB]"
+                    class="peer input-fx resize-y"
                     placeholder=" "></textarea>
-          <span class="absolute left-8 -top-2 bg-white px-2 text-[11px] tracking-wide text-gray-500 transition-all
-                       peer-placeholder-shown:top-3 peer-placeholder-shown:left-10 peer-placeholder-shown:bg-transparent
-                       peer-placeholder-shown:text-sm peer-placeholder-shown:text-gray-400 peer-focus:-top-2 peer-focus:left-8 peer-focus:bg-white peer-focus:text-[11px]">
-            Tell us about your project
-          </span>
+          <span class="float-label">Tell us about your project</span>
         </label>
 
         <div class="flex flex-col md:flex-row items-center justify-between gap-4 pt-2">
@@ -114,26 +98,133 @@
             By submitting, you agree to our <a href="#" class="underline hover:text-[#18AFAB]">privacy policy</a>.
           </p>
 
-          <button type="submit"
-                  class="group inline-flex w-full md:w-auto items-center justify-center gap-2 rounded-full bg-[#18AFAB] px-6 py-3 font-semibold text-[#0A0A0B] shadow-lg hover:shadow-xl transition">
-            <span class="inline-flex h-6 w-6 items-center justify-center rounded-full bg-black/10">
-              <i class="fa-solid fa-paper-plane text-sm"></i>
+          <button id="submitBtn" type="submit"
+                  class="group inline-flex w-full md:w-auto items-center justify-center gap-2 rounded-full bg-[#18AFAB] px-6 py-3 font-semibold text-[#0A0A0B] shadow-lg hover:shadow-xl transition will-change-transform">
+            <span class="inline-flex h-6 w-6 items-center justify-center rounded-full bg-black/10 overflow-hidden">
+              <i class="fa-solid fa-paper-plane text-sm group-[.is-loading]:hidden"></i>
+              <svg class="animate-spin h-4 w-4 group-[.is-loading]:inline-block hidden" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4A4 4 0 004 12z"/>
+              </svg>
             </span>
-            Submit Inquiry
+            <span class="group-[.is-loading]:opacity-60">Submit Inquiry</span>
           </button>
         </div>
       </form>
+
+      <!-- Success toast -->
+      <div id="contactToast" class="pointer-events-none fixed left-1/2 -translate-x-1/2 bottom-6 z-50 hidden">
+        <div class="rounded-full bg-white text-[#0A0A0B] shadow-xl px-4 py-2 flex items-center gap-2">
+          <span class="h-2.5 w-2.5 rounded-full bg-[#18AFAB] animate-pulse"></span>
+          <strong>Thanks!</strong> We’ve received your details—expect a reply within 24h.
+        </div>
+      </div>
     </div>
   </div>
 </section>
 
+<!-- WhatsApp FAB -->
+<a href="https://wa.me/971551234567" target="_blank"
+   class="whatsapp-fab fixed bottom-6 right-6 bg-[#25D366] text-white px-5 py-3 rounded-full shadow-lg flex items-center gap-2 hover:brightness-110 transition">
+  <i class="fab fa-whatsapp text-xl"></i><span>Let’s Discuss</span>
+</a>
 
-  <!-- WhatsApp FAB -->
-  <a href="https://wa.me/971551234567" target="_blank"
-     class="whatsapp-fab fixed bottom-6 right-6 bg-green-500 text-white px-5 py-3 rounded-full shadow-lg flex items-center gap-2 hover:bg-green-600">
-    <i class="fab fa-whatsapp text-xl"></i><span>Let’s Discuss</span>
-  </a>
+<style>
+/* Float labels + input focus ring */
+.input-fx{
+  width:100%;
+  border-radius: .875rem;
+  border:1px solid #E5E7EB; /* gray-200 */
+  padding:.75rem 1rem .75rem 2.5rem;
+  outline:none;
+  transition: box-shadow .25s ease, border-color .25s ease, background-color .25s ease;
+  background:#fff;
+}
+.input-fx:focus{
+  border-color:#18AFAB;
+  box-shadow:0 0 0 3px rgba(24,175,171,.2);
+  background:#fff;
+}
+.float-label{
+  position:absolute; left:2rem; top:-.5rem;
+  background:#fff; padding:0 .4rem; border-radius:.35rem;
+  font-size:11px; letter-spacing:.04em; color:#6B7280; transition: all .2s ease;
+}
+.peer::placeholder { color:transparent; }
+.peer:placeholder-shown ~ .float-label{
+  top:.75rem; left:2.5rem; background:transparent; font-size: .85rem;
+}
 
+/* Reveal animations */
+.reveal-left, .reveal-right { opacity:0; transform: translateY(18px); }
+.reveal-left.revealed, .reveal-right.revealed{
+  opacity:1; transform:translateY(0); transition: all .8s cubic-bezier(.22,1,.36,1);
+}
+.reveal-right{ transform: translateY(18px) translateX(16px); }
+.reveal-right.revealed{ transform:none; }
 
+/* Subtle hover micro-movement for the form submit */
+#submitBtn:hover{ transform: translateY(-1px); }
 
-  
+/* Optional: soften the WhatsApp FAB hover */
+.whatsapp-fab{ box-shadow: 0 14px 30px -10px rgba(0,0,0,.35); }
+</style>
+
+<script>
+/* Intersection reveal */
+(function(){
+  const nodes = document.querySelectorAll('#contact .reveal-left, #contact .reveal-right');
+  if(!nodes.length) return;
+  if(!('IntersectionObserver' in window)){
+    nodes.forEach(n=>n.classList.add('revealed'));
+    return;
+  }
+  const io = new IntersectionObserver((entries, obs)=>{
+    entries.forEach(e=>{
+      if(e.isIntersecting){
+        e.target.style.transitionDelay = '80ms';
+        e.target.classList.add('revealed');
+        obs.unobserve(e.target);
+      }
+    });
+  }, { threshold:.15 });
+  nodes.forEach(n=>io.observe(n));
+})();
+
+/* Lightweight submit flow (demo) */
+(function(){
+  const form = document.getElementById('contactForm');
+  const btn  = document.getElementById('submitBtn');
+  const toast= document.getElementById('contactToast');
+  if(!form) return;
+  form.addEventListener('submit', function(e){
+    e.preventDefault();
+
+    // lock button
+    btn.classList.add('is-loading');
+    btn.setAttribute('disabled','disabled');
+
+    // simulate async request
+    setTimeout(()=>{
+      btn.classList.remove('is-loading');
+      btn.removeAttribute('disabled');
+      form.reset();
+
+      // show toast
+      toast.classList.remove('hidden');
+      toast.style.opacity = '0';
+      toast.style.transform = 'translate(-50%, 10px)';
+      requestAnimationFrame(()=>{
+        toast.style.transition = 'all .4s ease';
+        toast.style.opacity = '1';
+        toast.style.transform = 'translate(-50%, 0)';
+      });
+      setTimeout(()=>{
+        toast.style.opacity = '0';
+        toast.style.transform = 'translate(-50%, 10px)';
+        setTimeout(()=>toast.classList.add('hidden'), 350);
+      }, 2800);
+    }, 900);
+  });
+})();
+</script>

@@ -1,24 +1,63 @@
-<section class="relative overflow-hidden py-20 text-white">
+<!-- Mission / Brand Promise -->
+<section class="relative overflow-hidden py-20 text-white" id="mission">
   <div class="absolute inset-0 bg-[url('https://picsum.photos/1920/1080?random=999')] bg-cover bg-center"></div>
   <div class="absolute inset-0 bg-black/70"></div>
 
   <div class="relative max-w-5xl mx-auto px-6 text-center">
-    <h2 class="text-3xl md:text-4xl font-extrabold">We build spaces that shape lives.</h2>
-    <p class="mt-4 text-white/90">
-      Hammer is Dubai’s partner for luxury design & build-bold environments delivered with quiet precision.
+    <h2 class="reveal-up text-3xl md:text-4xl font-extrabold">
+      We build spaces that shape lives.
+    </h2>
+    <p class="reveal-up mt-4 text-white/90">
+      Hammer is Dubai’s partner for luxury design & build — bold environments delivered with quiet precision.
       Every decision protects your time, your privacy and your investment.
     </p>
-    <div class="mt-8">
+    <div class="reveal-up mt-8">
       <a href="#about-hammer"
-   class="relative inline-flex items-center gap-2 px-10 py-3 rounded-full font-semibold text-[#282D27] 
-          bg-[#18AFAB] overflow-hidden transition-transform duration-300 hover:scale-105">
-  <span class="relative z-10">Learn More about Hammer</span>
-  <i class="fa-solid fa-arrow-right-long relative z-10"></i>
-  <span class="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent 
-               animate-[shimmer_2.5s_infinite]"></span>
-</a>
-
-
+         class="relative inline-flex items-center gap-2 px-10 py-3 rounded-full font-semibold text-[#282D27] 
+                bg-[#18AFAB] overflow-hidden transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-[#18AFAB]/40">
+        <span class="relative z-10">Learn More about Hammer</span>
+        <i class="fa-solid fa-arrow-right-long relative z-10"></i>
+        <!-- shimmer layer -->
+        <span class="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent animate-shimmer"></span>
+      </a>
     </div>
   </div>
 </section>
+
+<style>
+/* Shimmer */
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+.animate-shimmer {
+  background-size: 200% 100%;
+  animation: shimmer 2.5s infinite;
+}
+
+/* Reveal animation */
+.reveal-up {
+  opacity:0; transform: translateY(20px);
+  transition: all .7s cubic-bezier(.22,1,.36,1);
+}
+.reveal-up.in {
+  opacity:1; transform: translateY(0);
+}
+</style>
+
+<script>
+/* IntersectionObserver for reveal */
+(function(){
+  const targets = document.querySelectorAll('#mission .reveal-up');
+  if(!('IntersectionObserver' in window)){ targets.forEach(el=>el.classList.add('in')); return; }
+  const io = new IntersectionObserver((entries, obs)=>{
+    entries.forEach(e=>{
+      if(e.isIntersecting){
+        e.target.classList.add('in');
+        obs.unobserve(e.target);
+      }
+    });
+  }, { threshold:0.2 });
+  targets.forEach(t=>io.observe(t));
+})();
+</script>

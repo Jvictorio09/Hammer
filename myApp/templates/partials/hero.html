@@ -2,37 +2,48 @@
   <div class="absolute inset-0 bg-gradient-to-b from-black/70 via-black/40 to-black/70"></div>
 
   <div class="relative z-10 max-w-7xl mx-auto px-6 py-32 md:py-48 text-white">
-    <p class="eyebrow">Dubai • Design & Build • End-to-End</p>
+    <!-- Eyebrow -->
+    <p class="eyebrow opacity-0 animate-fadeInUp [animation-delay:200ms]">Dubai • Design & Build • End-to-End</p>
 
-    <h1 class="text-4xl md:text-6xl font-extrabold leading-tight max-w-5xl tracking-tight">
+    <!-- Headline -->
+    <h1 class="text-4xl md:text-6xl font-extrabold leading-tight max-w-5xl tracking-tight opacity-0 animate-fadeInUp [animation-delay:400ms]">
       Luxury Villa Construction, Landscaping & Interior Design in Dubai
     </h1>
 
-    <p class="mt-6 max-w-2xl text-lg/7 text-white/90">
-      You want one accountable partner-not ten vendors. Hammer plans, designs, builds and maintains
+    <!-- Subtext -->
+    <p class="mt-6 max-w-2xl text-lg/7 text-white/90 opacity-0 animate-fadeInUp [animation-delay:600ms]">
+      You want one accountable partner—not ten vendors. Hammer plans, designs, builds and maintains
       luxury villas and spaces so you get certainty on quality, cost, and timelines.
     </p>
 
-    <div class="mt-10 flex flex-wrap gap-4">
-  <!-- Gold primary button -->
-  <a href="#services"
-     class="inline-flex items-center justify-center rounded-full bg-[#18AFAB] px-6 py-3 font-semibold text-[#0A0A0B] shadow-lg hover:bg-[#b28f3f] transition">
-    Explore Services
-  </a>
+    <!-- Buttons -->
+    <div class="mt-10 flex flex-wrap gap-4 opacity-0 animate-fadeInUp [animation-delay:800ms]">
+      <a href="#services"
+         class="inline-flex items-center justify-center rounded-full bg-[#18AFAB] px-6 py-3 font-semibold text-[#0A0A0B] shadow-lg hover:bg-[#0e8d89] transition">
+        Explore Services
+      </a>
+      <a href="#projects"
+         class="inline-flex items-center justify-center rounded-full border border-white px-6 py-3 font-semibold text-white hover:bg-white hover:text-[#0A0A0B] transition">
+        View Projects
+      </a>
+    </div>
 
-  <!-- Outline button -->
-  <a href="#projects"
-     class="inline-flex items-center justify-center rounded-full border border-white px-6 py-3 font-semibold text-white hover:bg-white hover:text-[#0A0A0B] transition">
-    View Projects
-  </a>
-</div>
-
-
-    <!-- Pain relievers / trust pills -->
-    <div class="mt-8 flex flex-wrap gap-3 text-sm">
+    <!-- Pills -->
+    <div class="mt-8 flex flex-wrap gap-3 text-sm opacity-0 animate-fadeInUp [animation-delay:1000ms]">
       <span class="px-3 py-1 rounded-full bg-white/10 backdrop-blur">Single point of accountability</span>
       <span class="px-3 py-1 rounded-full bg-white/10 backdrop-blur">Fixed milestones & transparent reporting</span>
       <span class="px-3 py-1 rounded-full bg-white/10 backdrop-blur">Aftercare & facility management</span>
     </div>
   </div>
 </section>
+
+<!-- Custom animations -->
+<style>
+@keyframes fadeInUp {
+  0% { opacity: 0; transform: translateY(20px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+.animate-fadeInUp {
+  animation: fadeInUp 0.9s ease forwards;
+}
+</style>

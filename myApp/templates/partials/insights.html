@@ -1,44 +1,156 @@
-
 <!-- Insights -->
 <section class="py-20 bg-gray-50" id="insights">
   <div class="max-w-7xl mx-auto px-6">
+    <!-- Heading -->
     <div class="text-center mb-12">
       <p class="eyebrow text-[#18AFAB]">Insights</p>
       <h2 class="text-3xl md:text-4xl font-extrabold">Design decisions that protect your investment</h2>
       <p class="text-gray-600 max-w-3xl mx-auto">
-        Short, practical reads from Hammer’s team-so you avoid overruns, change orders and quality compromises.
+        Short, practical reads from Hammer’s team—so you avoid overruns, change orders and quality compromises.
       </p>
     </div>
 
+    <!-- Cards -->
     <div class="grid md:grid-cols-4 gap-6">
-      <a href="#" class="card hover:shadow-lg transition">
-        <div class="card-media" style="background-image:url('https://picsum.photos/600/400?random=561')"></div>
-        <div class="p-5">
-          <h3 class="font-semibold">How to fix budgets before drawings</h3>
-          <p class="text-sm text-gray-600 mt-1">Pre-con that prevents “surprise” costs.</p>
+      <!-- Card 1 -->
+      <a href="#" class="ins-card group reveal-stagger" aria-label="How to fix budgets before drawings">
+        <div class="ins-media" style="background-image:url('https://picsum.photos/600/400?random=561')"></div>
+        <div class="ins-body">
+          <div class="ins-meta">
+            <span class="ins-chip">Pre-Con</span>
+            <span class="ins-time">4 min read</span>
+          </div>
+          <h3 class="ins-title">How to fix budgets before drawings</h3>
+          <p class="ins-text">Pre-con that prevents “surprise” costs.</p>
+          <span class="ins-cta">Read article <i class="fa-solid fa-arrow-right-long"></i></span>
         </div>
       </a>
-      <a href="#" class="card hover:shadow-lg transition">
-        <div class="card-media" style="background-image:url('https://picsum.photos/600/400?random=562')"></div>
-        <div class="p-5">
-          <h3 class="font-semibold">Joinery that lasts: a materials guide</h3>
-          <p class="text-sm text-gray-600 mt-1">What to specify-and what to avoid-in Dubai.</p>
+
+      <!-- Card 2 -->
+      <a href="#" class="ins-card group reveal-stagger" aria-label="Joinery that lasts: a materials guide">
+        <div class="ins-media" style="background-image:url('https://picsum.photos/600/400?random=562')"></div>
+        <div class="ins-body">
+          <div class="ins-meta">
+            <span class="ins-chip">Joinery</span>
+            <span class="ins-time">6 min read</span>
+          </div>
+          <h3 class="ins-title">Joinery that lasts: a materials guide</h3>
+          <p class="ins-text">What to specify—and what to avoid—in Dubai.</p>
+          <span class="ins-cta">Read article <i class="fa-solid fa-arrow-right-long"></i></span>
         </div>
       </a>
-      <a href="#" class="card hover:shadow-lg transition">
-        <div class="card-media" style="background-image:url('https://picsum.photos/600/400?random=563')"></div>
-        <div class="p-5">
-          <h3 class="font-semibold">Landscapes that reduce water use</h3>
-          <p class="text-sm text-gray-600 mt-1">Native planting, smart irrigation, real savings.</p>
+
+      <!-- Card 3 -->
+      <a href="#" class="ins-card group reveal-stagger" aria-label="Landscapes that reduce water use">
+        <div class="ins-media" style="background-image:url('https://picsum.photos/600/400?random=563')"></div>
+        <div class="ins-body">
+          <div class="ins-meta">
+            <span class="ins-chip">Landscape</span>
+            <span class="ins-time">3 min read</span>
+          </div>
+          <h3 class="ins-title">Landscapes that reduce water use</h3>
+          <p class="ins-text">Native planting, smart irrigation, real savings.</p>
+          <span class="ins-cta">Read article <i class="fa-solid fa-arrow-right-long"></i></span>
         </div>
       </a>
-      <a href="#" class="card hover:shadow-lg transition">
-        <div class="card-media" style="background-image:url('https://picsum.photos/600/400?random=564')"></div>
-        <div class="p-5">
-          <h3 class="font-semibold">The post-handover plan you need</h3>
-          <p class="text-sm text-gray-600 mt-1">FM that protects asset value from day one.</p>
+
+      <!-- Card 4 -->
+      <a href="#" class="ins-card group reveal-stagger" aria-label="The post-handover plan you need">
+        <div class="ins-media" style="background-image:url('https://picsum.photos/600/400?random=564')"></div>
+        <div class="ins-body">
+          <div class="ins-meta">
+            <span class="ins-chip">Aftercare</span>
+            <span class="ins-time">5 min read</span>
+          </div>
+          <h3 class="ins-title">The post-handover plan you need</h3>
+          <p class="ins-text">FM that protects asset value from day one.</p>
+          <span class="ins-cta">Read article <i class="fa-solid fa-arrow-right-long"></i></span>
         </div>
       </a>
     </div>
   </div>
 </section>
+
+<!-- Insights styles -->
+<style>
+/* container card */
+.ins-card{
+  display:flex; flex-direction:column; background:#fff;
+  border:1px solid rgba(0,0,0,.06); border-radius:1rem; overflow:hidden;
+  box-shadow: 0 10px 25px -12px rgba(0,0,0,.15);
+  transition: transform .35s cubic-bezier(.22,1,.36,1), box-shadow .35s ease, border-color .25s ease;
+}
+.ins-card:hover{
+  transform: translateY(-4px);
+  box-shadow: 0 18px 35px -12px rgba(24,175,171,.25);
+  border-color: rgba(24,175,171,.25);
+}
+
+/* media with zoom + sheen */
+.ins-media{
+  position:relative; background-size:cover; background-position:center; aspect-ratio: 4/3;
+  transition: transform .6s cubic-bezier(.22,1,.36,1), filter .4s ease;
+}
+.ins-card:hover .ins-media{ transform: scale(1.04); filter: saturate(1.05); }
+/* subtle sheen on hover */
+.ins-media::after{
+  content:""; position:absolute; inset:0;
+  background: linear-gradient(120deg, transparent 0%, rgba(255,255,255,.18) 40%, transparent 70%);
+  transform: translateX(-120%); transition: transform .9s cubic-bezier(.22,1,.36,1);
+}
+.ins-card:hover .ins-media::after{ transform: translateX(120%); }
+
+/* body */
+.ins-body{ padding:1rem 1.1rem 1.25rem 1.1rem; display:flex; flex-direction:column; gap:.35rem; }
+
+/* meta row */
+.ins-meta{ display:flex; align-items:center; justify-content:space-between; }
+.ins-chip{
+  padding:.25rem .6rem; border-radius:9999px; font-size:.7rem; font-weight:700;
+  color:#0f1210; background:#E8F8F7; border:1px solid rgba(24,175,171,.25);
+}
+.ins-time{ font-size:.7rem; color:#6b7280; }
+
+/* content */
+.ins-title{ font-weight:700; line-height:1.25; }
+.ins-text{ font-size:.9rem; color:#6b7280; }
+
+/* CTA line with slide arrow */
+.ins-cta{
+  display:inline-flex; align-items:center; gap:.5rem; font-weight:600; margin-top:.25rem;
+  color:#18AFAB;
+}
+.ins-cta i{ transform: translateX(-4px); opacity:.0; transition: all .25s ease; }
+.ins-card:hover .ins-cta i{ transform: translateX(0); opacity:1; }
+
+/* reveal */
+.reveal-stagger{ opacity:0; transform: translateY(18px); }
+.reveal-in{ opacity:1; transform: translateY(0); transition: all .7s cubic-bezier(.22,1,.36,1); }
+</style>
+
+<!-- Insights reveal script -->
+<script>
+(function(){
+  const items = document.querySelectorAll('#insights .reveal-stagger');
+  if(!items.length) return;
+
+  if(!('IntersectionObserver' in window)){
+    items.forEach(el=>el.classList.add('reveal-in'));
+    return;
+  }
+
+  const io = new IntersectionObserver((entries, obs)=>{
+    entries.forEach((e)=>{
+      if(e.isIntersecting){
+        const el = e.target;
+        const idx = [...items].indexOf(el);
+        el.style.transitionDelay = (idx * 90) + 'ms'; // stagger
+        el.classList.add('reveal-in');
+        obs.unobserve(el);
+      }
+    });
+  }, { threshold: .15 });
+
+  items.forEach(it=>io.observe(it));
+})();
+</script>

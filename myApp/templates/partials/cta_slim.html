@@ -1,35 +1,65 @@
-<!-- Slim CTA Band (Premium) -->
-<section class="relative py-10 bg-[#0F0F10] text-white">
-  <!-- subtle top divider -->
-  <div class="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent"></div>
+<!-- Slim CTA Band (Elevated) -->
+<section class="relative py-12 bg-[#0F0F10] text-white overflow-hidden">
+  <!-- gradient divider -->
+  <div class="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#18AFAB]/40 to-transparent"></div>
 
-  <div class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-5">
+  <div class="relative max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-6">
     <!-- Copy -->
-    <div class="text-center md:text-left">
+    <div class="text-center md:text-left max-w-xl fade-up">
       <p class="text-sm tracking-[.28em] uppercase text-[#18AFAB]">Start Smart</p>
-      <h3 class="text-xl md:text-2xl font-semibold mt-1">
+      <h3 class="text-xl md:text-2xl font-bold mt-2 leading-snug">
         Not sure where to begin? We’ll map your best path in a 20-minute consult.
       </h3>
-      <p class="text-white/70 text-sm mt-1">
-        No obligation. <span class="text-white/80 font-medium">Response within 24 hours.</span>
+      <p class="text-white/70 text-sm mt-2">
+        No obligation. <span class="text-white font-medium">Response within 24 hours.</span>
       </p>
     </div>
 
     <!-- Actions -->
-    <div class="flex flex-col sm:flex-row items-center gap-3">
+    <div class="flex flex-col sm:flex-row items-center gap-3 fade-right">
+      <!-- Primary CTA -->
       <a href="#contact"
-         class="inline-flex items-center gap-2 bg-[#18AFAB] text-[#111] font-semibold px-5 py-3 rounded-full shadow-lg hover:shadow-xl transition">
+         class="inline-flex items-center gap-2 bg-[#18AFAB] text-[#0F0F10] font-semibold px-6 py-3 rounded-full shadow-lg hover:scale-105 hover:shadow-xl transition-all duration-300">
         <i class="fa-solid fa-calendar-check"></i>
-        Request a Consultation
+        Request Consultation
       </a>
+
+      <!-- Secondary CTA -->
       <a href="https://wa.me/971551234567" target="_blank"
-         class="inline-flex items-center gap-2 px-5 py-3 rounded-full border border-white/20 hover:border-white/40 text-white/90">
-        <i class="fa-brands fa-whatsapp"></i>
+         class="inline-flex items-center gap-2 px-6 py-3 rounded-full border border-white/20 hover:border-[#18AFAB] text-white/90 hover:text-white transition">
+        <i class="fa-brands fa-whatsapp text-[#18AFAB]"></i>
         Chat on WhatsApp
       </a>
-      <span class="flex items-center gap-2 text-xs text-white/50">
-        <i class="fa-solid fa-lock"></i> We respect your privacy
-      </span>
     </div>
+    
   </div>
+
+  
 </section>
+
+<!-- Animations -->
+<style>
+.fade-up, .fade-right {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: all .7s cubic-bezier(.22,1,.36,1);
+}
+.fade-right { transform: translateX(40px); }
+.is-visible { opacity: 1; transform: translate(0,0); }
+.delay-200 { transition-delay: .2s; }
+</style>
+
+<script>
+(function(){
+  const els = document.querySelectorAll('.fade-up, .fade-right');
+  const io = new IntersectionObserver((entries, obs)=>{
+    entries.forEach(entry=>{
+      if(entry.isIntersecting){
+        entry.target.classList.add('is-visible');
+        obs.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.2 });
+  els.forEach(el=>io.observe(el));
+})();
+</script>

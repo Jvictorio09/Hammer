@@ -1,64 +1,58 @@
 <!-- Projects -->
-<section id="projects" class="py-20 bg-gray-50">
+<section id="projects" class="py-20 bg-gray-50 relative overflow-hidden">
   <div class="max-w-7xl mx-auto px-6">
     <!-- Heading -->
-    <div class="text-center mb-10">
+    <div class="text-center mb-12 fade-up">
       <p class="text-[10px] tracking-[.3em] uppercase text-[#18AFAB]">Signature Projects</p>
       <h2 class="text-3xl md:text-4xl font-extrabold">Design & Build Masterpieces</h2>
-      <p class="text-gray-600 max-w-2xl mx-auto mt-3">Selected villas, interiors and landscapes delivered across Dubai—built with precision and handled end-to-end by Hammer.</p>
+      <p class="text-gray-600 max-w-2xl mx-auto mt-3">
+        Selected villas, interiors and landscapes delivered across Dubai—built with precision and handled end-to-end by Hammer.
+      </p>
     </div>
 
-    <!-- Quick filters (non-functional placeholders) -->
-    <div class="flex flex-wrap items-center justify-center gap-3 mb-10">
-      <a class="px-4 py-2 rounded-full border border-[#18AFAB] text-[#18AFAB] text-sm font-semibold hover:bg-[#18AFAB] hover:text-white transition">All</a>
-      <a class="px-4 py-2 rounded-full border border-[#18AFAB] text-[#18AFAB] text-sm font-semibold hover:bg-[#18AFAB] hover:text-white transition">Villas</a>
-      <a class="px-4 py-2 rounded-full border border-[#18AFAB] text-[#18AFAB] text-sm font-semibold hover:bg-[#18AFAB] hover:text-white transition">Interiors</a>
-      <a class="px-4 py-2 rounded-full border border-[#18AFAB] text-[#18AFAB] text-sm font-semibold hover:bg-[#18AFAB] hover:text-white transition">Landscape</a>
-      <a class="px-4 py-2 rounded-full border border-[#18AFAB] text-[#18AFAB] text-sm font-semibold hover:bg-[#18AFAB] hover:text-white transition">Facility</a>
+    <!-- Quick filters -->
+    <div class="flex flex-wrap items-center justify-center gap-3 mb-12 fade-up delay-100">
+      <button class="filter-btn active">All</button>
+      <button class="filter-btn">Villas</button>
+      <button class="filter-btn">Interiors</button>
+      <button class="filter-btn">Landscape</button>
+      <button class="filter-btn">Facility</button>
     </div>
 
     <!-- Featured case study -->
-    <article class="grid lg:grid-cols-5 gap-6 items-stretch mb-10">
-      <div class="lg:col-span-3 relative rounded-2xl overflow-hidden shadow-lg">
-        <div class="absolute inset-0 bg-cover bg-center" style="background-image:url('https://picsum.photos/1600/1100?random=701')"></div>
-        <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent"></div>
+    <article class="grid lg:grid-cols-5 gap-6 items-stretch mb-14 fade-up delay-200">
+      <!-- Image -->
+      <div class="lg:col-span-3 relative rounded-2xl overflow-hidden shadow-lg group">
+        <div class="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105"
+             style="background-image:url('https://picsum.photos/1600/1100?random=701')"></div>
+        <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent"></div>
       </div>
-      <div class="lg:col-span-2 bg-white rounded-2xl border border-black/5 shadow-sm p-7 flex flex-col">
+      <!-- Text -->
+      <div class="lg:col-span-2 bg-white rounded-2xl border border-black/5 shadow-sm p-7 flex flex-col justify-center fade-right">
         <div class="flex items-center gap-2 text-xs uppercase tracking-[.2em] text-[#18AFAB]">
           <span class="h-1.5 w-1.5 rounded-full bg-[#18AFAB]"></span> Featured Case Study
         </div>
         <h3 class="text-2xl font-bold mt-2">Private Villa • Emirates Hills</h3>
-        <p class="text-gray-600 mt-3">Full design & build: architecture, interior fit-out, bespoke joinery and native/low-water landscape with pool and lighting.</p>
+        <p class="text-gray-600 mt-3">
+          Full design & build: architecture, interior fit-out, bespoke joinery and native/low-water landscape with pool and lighting.
+        </p>
 
         <dl class="mt-6 grid grid-cols-2 gap-4 text-sm">
-          <div>
-            <dt class="text-gray-500">Scope</dt>
-            <dd class="font-semibold">Design + Build</dd>
-          </div>
-          <div>
-            <dt class="text-gray-500">Size</dt>
-            <dd class="font-semibold">12,500 sq ft</dd>
-          </div>
-          <div>
-            <dt class="text-gray-500">Timeline</dt>
-            <dd class="font-semibold">10 months</dd>
-          </div>
-          <div>
-            <dt class="text-gray-500">Status</dt>
-            <dd class="font-semibold">Completed</dd>
-          </div>
+          <div><dt class="text-gray-500">Scope</dt><dd class="font-semibold">Design + Build</dd></div>
+          <div><dt class="text-gray-500">Size</dt><dd class="font-semibold">12,500 sq ft</dd></div>
+          <div><dt class="text-gray-500">Timeline</dt><dd class="font-semibold">10 months</dd></div>
+          <div><dt class="text-gray-500">Status</dt><dd class="font-semibold">Completed</dd></div>
         </dl>
 
         <div class="mt-6 flex flex-wrap gap-2">
-          <span class="px-3 py-1 rounded-full bg-gray-100 text-xs font-semibold">Architecture</span>
-          <span class="px-3 py-1 rounded-full bg-gray-100 text-xs font-semibold">Interior Fit-Out</span>
-          <span class="px-3 py-1 rounded-full bg-gray-100 text-xs font-semibold">Joinery</span>
-          <span class="px-3 py-1 rounded-full bg-gray-100 text-xs font-semibold">Landscape</span>
+          <span class="tag">Architecture</span>
+          <span class="tag">Interior Fit-Out</span>
+          <span class="tag">Joinery</span>
+          <span class="tag">Landscape</span>
         </div>
 
         <div class="mt-7">
-          <a href="#"
-             class="inline-flex items-center gap-2 bg-[#18AFAB] text-[#282D27] font-semibold px-5 py-3 rounded-full shadow-lg shadow-black/30 hover:shadow-[#18AFAB]/40 hover:scale-[1.02] transition">
+          <a href="#" class="btn-primary">
             View Case Study <i class="fa-solid fa-arrow-right-long"></i>
           </a>
         </div>
@@ -68,46 +62,88 @@
     <!-- Grid of projects -->
     <div class="grid md:grid-cols-3 gap-8">
       {% for i in "123456"|make_list %}
-      <article class="group relative rounded-2xl overflow-hidden border border-black/5 bg-white shadow-sm hover:shadow-lg transition">
+      <article class="group relative rounded-2xl overflow-hidden border border-black/5 bg-white shadow-sm hover:shadow-xl transition fade-up delay-{{ forloop.counter|add:"2" }}00">
+        <!-- Image -->
         <div class="relative aspect-[16/10] overflow-hidden">
           <div class="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-105"
                style="background-image:url('https://picsum.photos/1200/800?random={{ i }}')"></div>
-          <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent"></div>
+          <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent"></div>
 
-          <!-- Hover CTA -->
-          <div class="absolute inset-x-0 bottom-0 p-4 flex items-center justify-between">
+          <!-- Hover overlay -->
+          <div class="absolute inset-0 flex items-end p-5 bg-black/40 opacity-0 group-hover:opacity-100 transition">
             <div>
-              <span class="inline-flex items-center gap-2 text-white font-semibold">
-                Luxury Project {{ i }}
-              </span>
+              <h4 class="text-white font-semibold">Luxury Project {{ i }}</h4>
               <p class="text-white/80 text-xs">Dubai, UAE</p>
             </div>
-            <span class="opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0 transition text-white text-sm font-semibold">
-              View Project →
-            </span>
+            <span class="ml-auto text-[#18AFAB] font-semibold">View →</span>
           </div>
         </div>
 
-        <!-- Meta row -->
-        <div class="p-4 flex items-center justify-between">
-          <div class="flex items-center gap-3 text-sm text-gray-600">
+        <!-- Meta -->
+        <div class="p-4 flex items-center justify-between text-sm text-gray-600">
+          <div class="flex items-center gap-3">
             <span class="inline-flex items-center gap-1"><i class="fa-regular fa-image"></i> Gallery</span>
             <span class="inline-flex items-center gap-1"><i class="fa-regular fa-clock"></i> 202{{ i|slice:":1" }}</span>
           </div>
-          <span class="px-2.5 py-1 rounded-full text-xs font-semibold border border-[#18AFAB] text-[#18AFAB]">
-            Case Study
-          </span>
+          <span class="px-2.5 py-1 rounded-full text-xs font-semibold border border-[#18AFAB] text-[#18AFAB]">Case Study</span>
         </div>
       </article>
       {% endfor %}
     </div>
 
     <!-- Footer CTA -->
-    <div class="text-center mt-12">
-      <a href="#"
-         class="inline-flex items-center gap-2 bg-[#18AFAB] text-[#282D27] font-semibold px-6 py-3 rounded-full shadow-md hover:scale-105 hover:shadow-lg transition">
+    <div class="text-center mt-14 fade-up delay-500">
+      <a href="#" class="btn-primary animate-shimmer">
         View All Projects <i class="fa-solid fa-arrow-right-long"></i>
       </a>
     </div>
   </div>
 </section>
+
+<!-- Supporting styles -->
+<style>
+/* Filter buttons styled as pill buttons */
+.filter-btn {
+  @apply inline-flex items-center justify-center px-5 py-2.5 rounded-full 
+         border border-[#18AFAB] text-[#18AFAB] text-sm font-semibold
+         transition duration-300;
+}
+.filter-btn:hover {
+  @apply bg-[#18AFAB] text-white shadow-md;
+}
+.filter-btn.active {
+  @apply bg-[#18AFAB] text-white shadow-md;
+}
+
+.tag {
+  @apply px-3 py-1 rounded-full bg-gray-100 text-xs font-semibold;
+}
+</style>
+
+<!-- Animations -->
+<script>
+(function(){
+  const els = document.querySelectorAll('.fade-up, .fade-right');
+  const io = new IntersectionObserver((entries, obs)=>{
+    entries.forEach(entry=>{
+      if(entry.isIntersecting){
+        entry.target.classList.add('is-visible');
+        obs.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.2 });
+  els.forEach(el=>io.observe(el));
+})();
+</script>
+
+<style>
+.fade-up, .fade-right { opacity:0; transform:translateY(20px); transition:all .7s cubic-bezier(.22,1,.36,1); }
+.fade-right { transform:translateX(40px); }
+.is-visible { opacity:1; transform:translate(0,0); }
+.animate-shimmer {
+  background-image:linear-gradient(110deg,#18AFAB 25%,#fff 37%,#18AFAB 63%);
+  background-size:200% 100%;
+  animation:shimmer 2.5s infinite;
+}
+@keyframes shimmer { 0%{background-position:-200% 0;} 100%{background-position:200% 0;} }
+</style>
