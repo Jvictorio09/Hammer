@@ -25,10 +25,20 @@ SECRET_KEY = 'django-insecure-0i&)ni%4j5)#f4y$yw7)op(d-f24b5qnp_z1ymh!=-o)d08@r-
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+# settings.py
 
+ALLOWED_HOSTS = [
+    'hammer-production-315f.up.railway.app',
+    'localhost',
+    '127.0.0.1',
+    # maybe also your domain if you add a custom domain later
+]
 
-# Application definition
+CSRF_TRUSTED_ORIGINS = [
+    'https://hammer-production-315f.up.railway.app',
+    # include your custom domain with https if applied
+]
+
 
 INSTALLED_APPS = [
     'django.contrib.admin',
