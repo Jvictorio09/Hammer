@@ -1,0 +1,176 @@
+/* Fonts */
+@import url("https://fonts.googleapis.com/css2?family=Titillium+Web:wght@300;400;600;700;900&display=swap");
+
+/* Tailwind v4 layers */
+@layer theme, base, components, utilities;
+
+/* Brand tokens (swap HEX with exact brand kit if needed) */
+@theme {
+  --font-sans: "Titillium Web", ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", sans-serif;
+
+  --color-hammer-ink: #1A1A1A;   /* deep ink */
+  --color-hammer-gold: #C8A74E;  /* gold accent */
+  --color-hammer-gray: #F5F5F5;  /* light neutral */
+
+  --shadow-card: 0 10px 25px -10px rgba(0,0,0,.25);
+}
+
+/* --- Hammer fallback utilities so classes always exist --- */
+.bg-hammer-ink   { background-color: #1A1A1A !important; }
+.text-hammer-ink { color:            #1A1A1A !important; }
+.bg-hammer-gold  { background-color: #C8A74E !important; }
+.text-hammer-gold{ color:            #C8A74E !important; }
+.bg-hammer-gray  { background-color: #F5F5F5 !important; }
+.text-hammer-gray{ color:            #F5F5F5 !important; }
+
+/* Button & input polish to guarantee contrast */
+.btn-gold { color:#1A1A1A !important; }
+.input::placeholder { color:#9CA3AF; }
+
+
+/* Reusable UI helpers */
+.hero-gradient {
+  background: linear-gradient(180deg, rgba(0,0,0,.55) 0%, rgba(0,0,0,.35) 45%, rgba(0,0,0,.25) 100%);
+}
+
+.eyebrow {
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  font-weight: 600;
+  font-size: .75rem;
+  color: var(--color-hammer-gold);
+  margin-bottom: .75rem;
+}
+
+.section {
+  padding: 5rem 1.5rem;
+}
+.section-head {
+  max-width: 56rem; margin: 0 auto 2.5rem auto; text-align: center;
+}
+.section-title {
+  font-size: clamp(1.75rem, 2.5vw, 2.25rem);
+  font-weight: 800;
+}
+.section-sub {
+  color: #4b5563; /* gray-600 */
+  margin-top: .75rem;
+}
+
+/* Cards */
+.card {
+  border-radius: 1rem;
+  overflow: hidden;
+  background: white;
+  border: 1px solid rgba(0,0,0,.06);
+  box-shadow: var(--shadow-card);
+  display: flex; flex-direction: column;
+}
+.card-media {
+  background-size: cover; background-position: center;
+  aspect-ratio: 4/3;
+}
+.card-body {
+  padding: 1.1rem 1rem 1.25rem 1rem;
+}
+.card-title {
+  margin-top: .75rem;
+  font-weight: 700;
+}
+.card-text {
+  font-size: .9rem;
+  color: #6b7280; /* gray-500 */
+  margin-top: .5rem;
+}
+
+/* Project grid */
+.project {
+  background: white; border: 1px solid rgba(0,0,0,.06);
+  border-radius: 1rem; overflow: hidden;
+  transition: transform .25s ease, box-shadow .25s ease;
+}
+.project:hover { transform: translateY(-3px); box-shadow: var(--shadow-card); }
+.project-media { background-size: cover; background-position: center; aspect-ratio: 16/10; }
+.project-body { padding: 1rem 1.1rem 1.25rem 1.1rem; }
+
+/* Buttons */
+.btn-gold {
+  background: var(--color-hammer-gold);
+  color: var(--color-hammer-ink);
+  padding: .75rem 1rem;
+  border-radius: 9999px;
+  font-weight: 700;
+  border: 1px solid rgba(0,0,0,.05);
+  transition: opacity .2s ease, transform .1s ease;
+}
+.btn-gold:hover { opacity: .95; }
+.btn-gold:active { transform: translateY(1px); }
+
+.btn-outline {
+  color: white;
+  padding: .75rem 1rem;
+  border-radius: 9999px;
+  border: 1px solid rgba(255,255,255,.6);
+  font-weight: 700;
+  transition: background .2s ease, color .2s ease;
+}
+.btn-outline:hover { background: white; color: var(--color-hammer-ink); }
+
+/* Inputs */
+.input {
+  width: 100%;
+  border-radius: .75rem;
+  background: #fff;
+  color: var(--color-hammer-ink);
+  border: 1px solid #D1D5DB; /* gray-300 */
+  padding: .75rem 1rem;
+  outline: none;
+}
+.input:focus {
+  border-color: var(--color-hammer-gold);
+  box-shadow: 0 0 0 3px rgba(200,167,78,.25);
+}
+
+/* Partners logo pills (placeholder) */
+.logo-pill {
+  padding: .6rem 1rem;
+  border-radius: 999px;
+  background: #F3F4F6; /* gray-100 */
+  color: #111827;      /* gray-900 */
+  font-weight: 700;
+  font-size: .85rem;
+}
+
+/* WhatsApp floating button */
+.whatsapp-fab { position: fixed; right: 1.25rem; bottom: 1.25rem; }
+
+
+/* Shimmer animation on CTA */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+.animate-shimmer {
+  background-image: linear-gradient(110deg,
+    var(--color-hammer-gold) 25%,
+    #fff 37%,
+    var(--color-hammer-gold) 63%);
+  background-size: 200% 100%;
+  animation: shimmer 2.5s infinite;
+  color: var(--color-hammer-ink);
+  font-weight: 700;
+}
+.stat {
+  font-size: 2rem;
+  font-weight: 800;
+}
+
+
+@keyframes marquee {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+.marquee {
+  width: 200%;
+  animation: marquee 25s linear infinite;
+}

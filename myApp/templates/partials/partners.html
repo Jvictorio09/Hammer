@@ -1,0 +1,28 @@
+
+<!-- Partners -->
+<section class="py-16 border-y border-black/5 bg-white">
+  <div class="max-w-7xl mx-auto px-6">
+    <div class="flex items-center justify-between mb-8">
+      <h3 class="text-lg font-semibold">Trusted by leading brands & developers</h3>
+      <div class="h-px flex-1 mx-6 bg-black/10"></div>
+      <a href="#projects" class="text-sm font-semibold hover:text-[var(--hammer-gold)]">View Projects →</a>
+    </div>
+
+    <!-- marquee -->
+    <div class="relative overflow-hidden">
+      <div class="marquee flex items-center gap-12 opacity-70">
+        <!-- duplicate set for seamless loop -->
+        {% for _ in "12"|make_list %}
+          <div class="logo-pill grayscale hover:grayscale-0 transition">EMAAR</div>
+          <div class="logo-pill grayscale hover:grayscale-0 transition">WATSONS</div>
+          <div class="logo-pill grayscale hover:grayscale-0 transition">CISCO</div>
+          <div class="logo-pill grayscale hover:grayscale-0 transition">DUBAI HILLS</div>
+          <div class="logo-pill grayscale hover:grayscale-0 transition">TOYS R US</div>
+          <div class="logo-pill grayscale hover:grayscale-0 transition">BURJ</div>
+          <div class="logo-pill grayscale hover:grayscale-0 transition">EMIRATES HILLS</div>
+          <div class="logo-pill grayscale hover:grayscale-0 transition">NAKHEEL</div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</section>

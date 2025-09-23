@@ -1,0 +1,21 @@
+
+<!-- Projects -->
+<section id="projects" class="section bg-gray-50">
+  <div class="section-head">
+    <p class="eyebrow">Signature Projects</p>
+    <h2 class="section-title">Design & Build Masterpieces</h2>
+  </div>
+
+  <div class="grid md:grid-cols-3 gap-8">
+    {% for i in "123456"|make_list %}
+    <article class="project group overflow-hidden">
+      <div class="project-media transform group-hover:scale-105 transition duration-500"
+           style="background-image:url('https://picsum.photos/1200/800?random={{ i }}')"></div>
+      <div class="project-body">
+        <h3 class="font-semibold text-lg">Luxury Villa Project {{ i }}</h3>
+        <p class="text-sm text-gray-600">Dubai, UAE</p>
+      </div>
+    </article>
+    {% endfor %}
+  </div>
+</section>

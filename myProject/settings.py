@@ -123,10 +123,17 @@ USE_I18N = True
 USE_TZ = True
 
 
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/5.1/howto/static-files/
+STATIC_URL = "static/"
+STATICFILES_DIRS = [BASE_DIR / "static"]          # where YOUR assets live during dev
+STATIC_ROOT = BASE_DIR / "staticfiles"            # where collectstatic puts files for prod
 
-STATIC_URL = 'static/'
+# Optional but recommended for Railway:
+MIDDLEWARE.insert(1, "whitenoise.middleware.WhiteNoiseMiddleware")  # right after SecurityMiddleware
+STORAGES = {
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+    }
+}
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
