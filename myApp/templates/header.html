@@ -1,22 +1,161 @@
+{# templates/header.html #}
 <header class="fixed top-0 inset-x-0 z-50 bg-white/80 backdrop-blur-md border-b border-black/5">
   <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-    <a href="/" class="text-2xl tracking-wide font-bold">HAMMER</a>
+    <a href="{% url 'home' %}" class="text-2xl tracking-wide font-bold">HAMMER</a>
 
-    <nav class="hidden md:flex items-center gap-8 font-medium">
-      <a href="/" class="hover:text-hammer-gold">Home</a>
-      <a href="#services" class="hover:text-hammer-gold">Services</a>
-      <a href="#projects" class="hover:text-hammer-gold">Projects</a>
-      <a href="#about" class="hover:text-hammer-gold">About</a>
-      <a href="#contact" class="hover:text-hammer-gold">Contact</a>
+    <!-- Desktop nav -->
+    <nav class="hidden md:flex items-center gap-6 font-medium">
+      <a href="{% url 'home' %}" class="{% if request.path == '/' %}text-hammer-gold{% else %}hover:text-hammer-gold{% endif %}">
+        Home
+      </a>
+
+      <!-- Services dropdown -->
+      <div class="relative">
+        <button
+          id="servicesToggle"
+          type="button"
+          class="inline-flex items-center gap-1 {% if request.path|slice:':10' == '/services/' %}text-hammer-gold{% else %}hover:text-hammer-gold{% endif %}"
+          aria-haspopup="true"
+          aria-expanded="false"
+          aria-controls="servicesMenu">
+          <span>Services</span>
+          <i class="fa-solid fa-chevron-down text-[11px] mt-[1px]"></i>
+        </button>
+
+        <!-- Panel -->
+        <div
+          id="servicesMenu"
+          class="hidden absolute left-0 mt-3 w-80 rounded-xl border border-black/10 bg-white shadow-xl z-50"
+          role="menu"
+          aria-labelledby="servicesToggle">
+          <ul class="py-2" role="none">
+            {% if nav_services %}
+              {% for s in nav_services %}
+                <li role="none">
+                  <a href="{% url nav_detail_urlname|default:'service_detail' s.slug %}"
+                     class="block px-4 py-2.5 focus:outline-none hover:bg-gray-50 focus:bg-gray-50 {% if nav_current_slug == s.slug %}text-hammer-gold{% endif %}"
+                     role="menuitem" tabindex="-1">
+                    <span class="block text-sm font-semibold">{{ s.title }}</span>
+                    {% if s.eyebrow %}
+                      <span class="block text-xs text-gray-500 mt-0.5">{{ s.eyebrow }}</span>
+                    {% endif %}
+                  </a>
+                </li>
+              {% endfor %}
+            {% else %}
+              <li role="none">
+                <span class="block px-4 py-2.5 text-sm text-gray-500">No services yet</span>
+              </li>
+            {% endif %}
+          </ul>
+
+          <div class="border-t border-gray-100 px-4 py-2.5">
+            <a href="{% url nav_index_urlname|default:'service_index' %}"
+               class="text-sm font-semibold text-[#18AFAB] hover:opacity-80"
+               role="menuitem" tabindex="-1">
+              View all services <i class="fa-solid fa-arrow-right-long ml-1"></i>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <a href="{% url 'projects_index' %}" class="hover:text-hammer-gold">Projects</a>
+      <a href="{% url 'about' %}" class="hover:text-hammer-gold">About</a>
+      <a href="{% url 'contact' %}" class="hover:text-hammer-gold">Contact</a>
     </nav>
 
-    <a href="#contact" class="hidden md:inline-flex items-center gap-2 btn-primary">
+    <a href="{% url 'contact' %}" class="hidden md:inline-flex items-center gap-2 btn-primary">
       <i class="fa-regular fa-envelope"></i>
       <span>Request Consultation</span>
     </a>
 
-    <button class="md:hidden text-2xl" aria-label="Menu">
+    <!-- Mobile button -->
+    <button class="md:hidden text-2xl" aria-label="Menu" id="navToggle">
       <i class="fa-solid fa-bars"></i>
     </button>
   </div>
+
+  <!-- Mobile drawer -->
+  <div id="mobileNav"
+       class="md:hidden max-h-0 overflow-hidden transition-[max-height] duration-300 bg-white border-t border-black/5">
+    <nav class="px-6 py-3 space-y-2">
+      <a href="{% url 'home' %}" class="block py-2">Home</a>
+
+      <!-- Services accordion -->
+      <details class="group">
+        <summary class="flex items-center justify-between py-2 cursor-pointer">
+          <span>Services</span>
+          <i class="fa-solid fa-chevron-down text-[12px] transition group-open:rotate-180"></i>
+        </summary>
+        <ul class="pl-3 border-l border-gray-100">
+          {% if nav_services %}
+            {% for s in nav_services %}
+              <li>
+                <a href="{% url nav_detail_urlname|default:'service_detail' s.slug %}" class="block py-2 text-sm">
+                  {{ s.title }}
+                </a>
+              </li>
+            {% endfor %}
+          {% else %}
+            <li class="py-2 text-sm text-gray-500">No services yet</li>
+          {% endif %}
+          <li class="py-2">
+            <a href="{% url nav_index_urlname|default:'service_index' %}" class="text-sm font-semibold text-[#18AFAB]">
+              View all services
+            </a>
+          </li>
+        </ul>
+      </details>
+
+      <a href="{% url 'projects_index' %}" class="block py-2">Projects</a>
+      <a href="{% url 'about' %}" class="block py-2">About</a>
+      <a href="{% url 'contact' %}" class="block py-2">Contact</a>
+
+      <a href="{% url 'contact' %}" class="mt-2 inline-flex items-center gap-2 btn-primary">
+        <i class="fa-regular fa-envelope"></i>
+        <span>Request Consultation</span>
+      </a>
+    </nav>
+  </div>
 </header>
+
+<script>
+  // mobile drawer toggle
+  (function () {
+    const btn = document.getElementById('navToggle');
+    const panel = document.getElementById('mobileNav');
+    if (!btn || !panel) return;
+    let open = false;
+    btn.addEventListener('click', () => {
+      open = !open;
+      panel.style.maxHeight = open ? panel.scrollHeight + 'px' : '0px';
+    });
+    panel.querySelectorAll('a').forEach(a => {
+      a.addEventListener('click', () => { open = false; panel.style.maxHeight = '0px'; });
+    });
+  })();
+
+  // services dropdown (desktop)
+  (function () {
+    const toggle = document.getElementById('servicesToggle');
+    const menu   = document.getElementById('servicesMenu');
+    if (!toggle || !menu) return;
+
+    const open = () => { menu.classList.remove('hidden'); toggle.setAttribute('aria-expanded','true'); };
+    const close = () => { menu.classList.add('hidden'); toggle.setAttribute('aria-expanded','false'); };
+    const isOpen = () => !menu.classList.contains('hidden');
+
+    toggle.addEventListener('click', (e) => {
+      e.stopPropagation();
+      isOpen() ? close() : open();
+    });
+
+    document.addEventListener('click', (e) => {
+      if (isOpen() && !menu.contains(e.target) && !toggle.contains(e.target)) close();
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && isOpen()) close();
+    });
+  })();
+</script>

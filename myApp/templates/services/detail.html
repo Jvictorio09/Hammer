@@ -1,0 +1,268 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ meta_title }}{% endblock %}
+
+{% block extra_head %}
+  <meta name="description" content="{{ meta_desc }}">
+  <link rel="canonical" href="{{ request.scheme }}://{{ request.get_host }}{{ canonical|cut:'?' }}">
+  <script type="application/ld+json">
+  {"@context":"https://schema.org","@type":"Service",
+   "name":"{{ service.title|escapejs }}",
+   "provider":{"@type":"Organization","name":"Hammer Group"},
+   "areaServed":"Dubai, UAE",
+   "serviceType":"Landscape architecture, pool design, pergolas, lighting",
+   "description":"{{ meta_desc|escapejs }}"}
+  </script>
+{% endblock %}
+
+{% block content %}
+
+<!-- ============ HERO (Cinematic) ============ -->
+<section class="relative overflow-hidden bg-black text-white">
+  <div class="relative h-[62vh] md:h-[78vh]">
+    <img src="{{ service.hero_media_url|default:'https://picsum.photos/1920/1080?random=2001' }}"
+         alt="{{ service.title }} hero"
+         class="absolute inset-0 w-full h-full object-cover will-change-transform"
+         id="heroMedia">
+    <div class="absolute inset-0 bg-gradient-to-r from-black/75 via-black/35 to-transparent"></div>
+  </div>
+
+  <div class="absolute inset-0">
+    <div class="max-w-7xl mx-auto h-full px-6 flex items-center">
+      <div class="max-w-2xl">
+        {% if service.eyebrow %}
+          <p class="text-[11px] tracking-[.4em] uppercase text-[#18AFAB]">{{ service.eyebrow }}</p>
+        {% endif %}
+        <h1 class="mt-3 text-4xl md:text-6xl font-extrabold leading-tight">
+          {{ service.hero_headline }}
+        </h1>
+        {% if service.hero_subcopy %}
+          <p class="mt-4 text-white/80 text-lg">{{ service.hero_subcopy }}</p>
+        {% endif %}
+        <div class="mt-7 flex flex-wrap gap-3">
+          <a href="#contact" class="inline-flex items-center justify-center rounded-full bg-[#18AFAB] text-white px-7 py-3.5 font-semibold shadow-lg hover:scale-[1.02] transition">
+            Request Consultation <i class="fa-solid fa-arrow-right-long ml-2"></i>
+          </a>
+          <a href="#projects" class="inline-flex items-center gap-2 font-semibold text-white/90 hover:text-white">
+            See Recent Work <i class="fa-solid fa-arrow-right-long"></i>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- floating stat chip -->
+  <div class="absolute top-5 right-5">
+    <span class="px-3 py-1.5 rounded-full bg-white/90 text-[#0F0F10] text-xs font-semibold shadow">
+      {{ service.stat_projects }} Projects
+    </span>
+  </div>
+</section>
+
+<!-- ============ CREDIBILITY STRIP ============ -->
+<section class="bg-[#0F0F10] text-white border-t border-white/10">
+  <div class="max-w-7xl mx-auto px-6 py-6 grid sm:grid-cols-3 gap-4 text-center text-sm">
+    <div class="rounded-xl border border-white/10 bg-white/5 backdrop-blur p-4">
+      <p class="text-3xl font-extrabold text-[#18AFAB]">{{ service.stat_projects }}</p>
+      <p class="text-white/70">Projects Delivered</p>
+    </div>
+    <div class="rounded-xl border border-white/10 bg-white/5 backdrop-blur p-4">
+      <p class="text-3xl font-extrabold text-[#18AFAB]">{{ service.stat_years }}</p>
+      <p class="text-white/70">Years in Dubai</p>
+    </div>
+    <div class="rounded-xl border border-white/10 bg-white/5 backdrop-blur p-4">
+      <p class="text-3xl font-extrabold text-[#18AFAB]">{{ service.stat_specialists }}</p>
+      <p class="text-white/70">In-house Specialists</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ STICKY EDITORIAL ============ -->
+<section class="relative bg-white py-18 md:py-24">
+  <div class="max-w-7xl mx-auto px-6 grid md:grid-cols-12 gap-10">
+    <!-- Pinned text -->
+    <div class="md:col-span-5">
+      <div class="md:sticky md:top-24">
+        {% if service.pinned_heading %}
+          <p class="text-[11px] tracking-[.35em] uppercase text-[#18AFAB]">{{ service.pinned_heading }}</p>
+        {% endif %}
+        {% if service.pinned_title %}
+          <h2 class="mt-3 text-3xl md:text-4xl font-extrabold tracking-tight text-[#0F0F10]">
+            {{ service.pinned_title }}
+          </h2>
+        {% endif %}
+        {% if service.pinned_body_1 %}
+          <p class="mt-5 text-gray-700 leading-[1.85]">{{ service.pinned_body_1 }}</p>
+        {% endif %}
+        {% if service.pinned_body_2 %}
+          <p class="mt-4 text-gray-700 leading-[1.85]">{{ service.pinned_body_2 }}</p>
+        {% endif %}
+
+        {% if service.features.all %}
+        <ul class="mt-6 grid grid-cols-2 gap-3 text-sm">
+          {% for f in service.features.all %}
+            <li class="flex items-center gap-2">
+              <i class="{{ f.icon_class }} text-[#18AFAB]"></i> {{ f.label }}
+            </li>
+          {% endfor %}
+        </ul>
+        {% endif %}
+
+        <div class="mt-8">
+          <a href="#contact" class="inline-flex items-center justify-center rounded-full bg-[#18AFAB] text-white px-7 py-3.5 font-semibold shadow-lg hover:scale-[1.02] transition">
+            Speak to a {{ service.eyebrow|default:"Service" }} Lead <i class="fa-solid fa-arrow-right-long ml-2"></i>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Scroll column (images) -->
+    <div class="md:col-span-7 grid gap-6">
+      {% if editorial %}
+        {% for e in editorial %}
+          <figure class="relative rounded-2xl overflow-hidden shadow-lg group min-h-[260px] reveal">
+            <img src="{{ e.image_url }}" alt="{{ e.caption|default:service.title }}"
+                class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                loading="lazy" decoding="async" />
+            {% if e.caption %}
+              <figcaption class="absolute left-4 bottom-4 px-3 py-1.5 text-xs font-semibold rounded-full bg-white/90 text-[#0F0F10]">
+                {{ e.caption }}
+              </figcaption>
+            {% endif %}
+          </figure>
+        {% endfor %}
+
+      {% else %}
+        {# graceful fallback #}
+        {% for i in "123"|make_list %}
+          <figure class="relative rounded-2xl overflow-hidden shadow-lg group min-h-[260px] reveal">
+            <img src="https://picsum.photos/1200/800?random={{ forloop.counter|add:2210 }}" alt="{{ service.title }}"
+                 class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105">
+          </figure>
+        {% endfor %}
+      {% endif %}
+    </div>
+  </div>
+</section>
+
+<!-- ============ CINEMATIC GALLERY ============ -->
+<section id="projects" class="py-16 bg-gray-50">
+  <div class="max-w-7xl mx-auto px-6">
+    <div class="flex items-end justify-between mb-6">
+      <div class="reveal">
+        <p class="text-[10px] tracking-[.35em] uppercase text-[#18AFAB]">Projects</p>
+        <h3 class="text-2xl md:text-3xl font-extrabold text-[#0F0F10]">Recent {{ service.eyebrow|default:service.title }} Work</h3>
+      </div>
+      <div class="hidden md:flex gap-2 reveal">
+        <button class="gallery-prev px-3 py-2 rounded-lg border border-black/10 bg-white hover:bg-gray-50" aria-label="Previous"><i class="fa-solid fa-chevron-left"></i></button>
+        <button class="gallery-next px-3 py-2 rounded-lg border border-black/10 bg-white hover:bg-gray-50" aria-label="Next"><i class="fa-solid fa-chevron-right"></i></button>
+      </div>
+    </div>
+
+    <div class="relative reveal">
+      <div id="galleryTrack" class="flex gap-4 overflow-x-auto scroll-smooth snap-x snap-mandatory pb-2 items-stretch" style="scrollbar-width: thin;">
+        {% if gallery %}
+          {% for item in gallery %}
+  <figure class="gallery-card min-w-[260px] md:min-w-[360px] aspect-[4/3] snap-center relative rounded-2xl overflow-hidden shadow-md group cursor-pointer"
+          data-img="{{ item.full_url }}" data-caption="{{ item.caption|default:'' }}">
+    <img src="{{ item.thumb_url }}" alt="{{ item.caption|default:service.title }}"
+         class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+         loading="lazy" decoding="async" />
+    <div class="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent"></div>
+    <figcaption class="absolute left-3 bottom-3 px-3 py-1.5 text-xs font-semibold rounded-full bg-white/90 text-[#0F0F10]">
+      {{ forloop.counter|stringformat:"02" }}
+    </figcaption>
+  </figure>
+{% endfor %}
+
+        {% else %}
+          {% for i in "123456"|make_list %}
+          <figure class="gallery-card min-w-[260px] md:min-w-[360px] aspect-[4/3] snap-center relative rounded-2xl overflow-hidden shadow-md group cursor-pointer"
+                  data-img="https://picsum.photos/1600/1200?random={{ forloop.counter|add:2400 }}"
+                  data-caption="{{ service.title }} Project {{ forloop.counter }}">
+            <img src="https://picsum.photos/800/600?random={{ forloop.counter|add:2400 }}" alt="{{ service.title }} project"
+                 class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" loading="lazy">
+            <div class="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent"></div>
+            <figcaption class="absolute left-3 bottom-3 px-3 py-1.5 text-xs font-semibold rounded-full bg-white/90 text-[#0F0F10]">
+              {{ forloop.counter|stringformat:"02" }}
+            </figcaption>
+          </figure>
+          {% endfor %}
+        {% endif %}
+      </div>
+
+      <div class="md:hidden flex justify-center gap-2 mt-4">
+        <button class="gallery-prev px-3 py-2 rounded-lg border border-black/10 bg-white"><i class="fa-solid fa-chevron-left"></i></button>
+        <button class="gallery-next px-3 py-2 rounded-lg border border-black/10 bg-white"><i class="fa-solid fa-chevron-right"></i></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Inline Lightbox -->
+  <div id="lightbox" class="pointer-events-none opacity-0 transition-opacity duration-300 fixed inset-0 z-50 flex items-center justify-center">
+    <div class="absolute inset-0 bg-black/40"></div>
+    <div class="relative max-w-5xl w-[92%] rounded-2xl overflow-hidden bg-white shadow-2xl scale-95 transition-transform duration-300">
+      <button id="lightboxClose" class="absolute top-3 right-3 z-10 inline-flex items-center justify-center w-9 h-9 rounded-full bg-black/70 text-white hover:bg-black" aria-label="Close preview">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+      <img id="lightboxImg" src="" alt="Expanded project preview" class="w-full h-[70vh] object-cover">
+      <div class="px-5 py-3 text-sm text-gray-700 border-t border-black/10" id="lightboxCaption"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CLOSER ============ -->
+<section class="relative overflow-hidden">
+  <div class="max-w-7xl mx-auto px-6 pb-16">
+    <div class="rounded-2xl border border-black/5 bg-[#0F0F10] text-white p-8 lg:p-12 flex flex-col md:flex-row items-start md:items-center justify-between gap-6 reveal">
+      <div>
+        <h3 class="text-2xl font-extrabold">Ready to plan your {{ service.eyebrow|default:'project'|lower }}?</h3>
+        <p class="text-white/70 mt-1">We’ll map scope, timeline and budget—then craft something enduring.</p>
+      </div>
+      <a href="#contact" class="inline-flex items-center justify-center rounded-full bg-[#18AFAB] text-white px-6 py-3 font-semibold shadow-lg hover:scale-[1.02] transition">
+        Book a Consultation <i class="fa-solid fa-arrow-right-long ml-2"></i>
+      </a>
+    </div>
+  </div>
+</section>
+
+{% include "partials/insights_dynamic.html" %}
+
+
+{% endblock %}
+
+{# ====== Scripts & page CSS (same as your working version) ====== #}
+<script>
+(function(){const m=document.getElementById('heroMedia');if(!m)return;window.addEventListener('scroll',()=>{const y=Math.min(60,window.scrollY*0.06);m.style.transform=`translateY(${y}px) scale(1.03)`;},{passive:true});})();
+(function(){
+  const els=document.querySelectorAll('.reveal');
+  if(!('IntersectionObserver'in window)){els.forEach(e=>e.style.opacity=1);return;}
+  els.forEach(el=>{el.style.opacity=0;el.style.transform='translateY(18px)';el.style.transition='all .7s cubic-bezier(.22,1,.36,1)';});
+  const io=new IntersectionObserver((entries,obs)=>{entries.forEach(e=>{if(e.isIntersecting){e.target.style.opacity=1;e.target.style.transform='translateY(0)';obs.unobserve(e.target);}});},{threshold:.18});
+  els.forEach(el=>io.observe(el));
+})();
+(function(){
+  const track=document.getElementById('galleryTrack');if(!track)return;
+  const cards=[...track.querySelectorAll('.gallery-card')];
+  const setActive=()=>{const center=track.scrollLeft+track.clientWidth/2;let best,bestDist=1/0;cards.forEach(card=>{const rect=card.getBoundingClientRect();const mid=rect.left+rect.width/2+track.scrollLeft-track.getBoundingClientRect().left;const d=Math.abs(center-mid);if(d<bestDist){bestDist=d;best=card;}});cards.forEach(c=>c.classList.remove('is-active'));if(best)best.classList.add('is-active');};
+  setActive();track.addEventListener('scroll',()=>{requestAnimationFrame(setActive);},{passive:true});
+  document.querySelectorAll('.gallery-prev').forEach(b=>b.addEventListener('click',()=>track.scrollBy({left:-track.clientWidth*0.9,behavior:'smooth'})));
+  document.querySelectorAll('.gallery-next').forEach(b=>b.addEventListener('click',()=>track.scrollBy({left: track.clientWidth*0.9,behavior:'smooth'})));
+})();
+(function(){
+  const lb=document.getElementById('lightbox');if(!lb)return;
+  const panel=lb.querySelector('.relative');const img=document.getElementById('lightboxImg');const cap=document.getElementById('lightboxCaption');
+  function open(src,text){img.src=src;cap.textContent=text||'';lb.classList.remove('pointer-events-none');requestAnimationFrame(()=>{lb.style.opacity='1';panel.style.transform='scale(1)';});}
+  function close(){lb.style.opacity='0';panel.style.transform='scale(0.95)';setTimeout(()=>lb.classList.add('pointer-events-none'),280);}
+  document.getElementById('galleryTrack').addEventListener('click',e=>{const fig=e.target.closest('figure[data-img]');if(!fig)return;open(fig.dataset.img,fig.dataset.caption);});
+  document.getElementById('lightboxClose').addEventListener('click',close);
+  lb.addEventListener('click',e=>{if(e.target===lb)close();});
+  document.addEventListener('keydown',e=>{if(e.key==='Escape')close();});
+})();
+</script>
+
+<style>
+.gallery-card{transition:transform .45s cubic-bezier(.22,1,.36,1), box-shadow .45s, border-color .45s;border:1px solid rgba(0,0,0,.06);}
+.gallery-card.is-active{transform:scale(1.03);box-shadow:0 20px 40px rgba(0,0,0,.25),0 0 0 1px rgba(24,175,171,.18) inset;border-color:rgba(24,175,171,.35);}
+</style>

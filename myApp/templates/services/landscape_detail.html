@@ -1,0 +1,1185 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Landscape Design & Build in Dubai | Hammer Group{% endblock %}
+
+{% block extra_head %}
+  <meta name="description" content="Premium landscape design & build in Dubai. Hammer Group creates timeless outdoor spaces—native planting, custom pools, pergolas and architectural lighting—with fixed milestones and one accountable team.">
+  <link rel="canonical" href="{{ request.build_absolute_uri|cut:'?' }}">
+  <meta property="og:title" content="Landscape Design & Build in Dubai | Hammer Group">
+  <meta property="og:description" content="Quiet‑luxury outdoor architecture. Native planting, custom pools, pergolas, lighting—end‑to‑end by one accountable team.">
+  <meta property="og:type" content="website">
+  <meta property="og:image" content="{{ service.hero_media_url|default:'https://picsum.photos/1920/1080?random=9001' }}">
+  <meta name="twitter:card" content="summary_large_image">
+
+ <!-- Premium font: Outfit (clean) + Playfair (accent) -->
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Playfair+Display:ital,wght@0,600;0,800;1,600&display=swap" rel="stylesheet">
+
+<style>
+  /* ======================
+   BRAND TOKENS & FONTS
+   ====================== */
+:root{
+  --ink:#0B0E14;
+  --ink-2:#121722;
+  --teal:#18AFAB;
+  --sand:#EDE8DF;
+  --bone:#F6F3EE;
+  --gold:#C7A76A;
+}
+.font-outfit{ font-family:"Outfit",ui-sans-serif,system-ui; }
+.font-playfair{ font-family:"Playfair Display",ui-serif,Georgia; }
+
+/* ======================
+   MATERIALITY SKINS
+   ====================== */
+.grain:before{
+  content:""; position:absolute; inset:0; pointer-events:none;
+  /* tiny noise base64 allowed to remain as-is */
+  background-image:url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAAA...");
+  opacity:.05; mix-blend-mode:overlay;
+}
+.vignette:after{
+  content:""; position:absolute; inset:0; pointer-events:none;
+  background:radial-gradient(120% 80% at 50% 20%, transparent, rgba(0,0,0,.35));
+}
+.mask-radial{
+  --m: radial-gradient(800px 400px at 66% 50%, rgba(255,255,255,.22), transparent 60%);
+  -webkit-mask-image: var(--m); mask-image: var(--m);
+}
+
+/* ======================
+   CTA (Magnetic Shine)
+   ====================== */
+.cta{
+  position:relative; overflow:hidden; transition:transform .25s;
+  box-shadow:0 12px 40px rgba(0,0,0,.25);
+}
+.cta:before{
+  content:""; position:absolute; inset:-150% -20%; transform:rotate(12deg);
+  background:linear-gradient(90deg, transparent, rgba(255,255,255,.35), transparent);
+  transition:transform .7s cubic-bezier(.22,1,.36,1);
+}
+.cta:hover{ transform:translateY(-1px); }
+.cta:hover:before{ transform:translateX(120%); }
+
+/* ======================
+   CONIC BORDER (gborder)
+   ====================== */
+.gborder{ position:relative; border-radius:1rem; background:var(--ink-2); }
+.gborder:before{
+  content:""; position:absolute; inset:-1px; border-radius:inherit; padding:1px;
+  background:conic-gradient(from 180deg, rgba(24,175,171,.6), rgba(199,167,106,.4), rgba(24,175,171,.6));
+  -webkit-mask:linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite:xor; mask-composite:exclude;
+  animation:spin 10s linear infinite;
+}
+@keyframes spin{ to{ transform:rotate(1turn);} }
+
+/* ======================
+   PARALLAX TILT (no lib)
+   ====================== */
+.tilt{ transform-style:preserve-3d; perspective:800px; }
+.tilt > .tilt-inner{
+  transform:rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg)) translateZ(0);
+  transition:transform .15s ease;
+}
+
+/* ======================
+   SIGNATURE GRID (gallery)
+   ====================== */
+.sig-frame{ position:relative; border-radius:1.5rem; overflow:hidden; }
+.sig-frame:before{
+  content:""; position:absolute; inset:-1px; border-radius:inherit; padding:1px;
+  background:conic-gradient(from 220deg, rgba(24,175,171,.6), rgba(255,255,255,.14), rgba(24,175,171,.6));
+  -webkit-mask:linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite:xor; mask-composite:exclude;
+  opacity:0; transition:opacity .35s;
+}
+.sig-frame:hover:before{ opacity:.95; }
+.sig-media{ filter:saturate(1.05) contrast(1.02); transition:transform .6s cubic-bezier(.22,1,.36,1); }
+.group:hover .sig-media{ transform:scale(1.04); }
+
+/* Sliding caption */
+.cap-slide{
+  position:absolute; left:0; right:0; bottom:0;
+  transform:translateY(100%); transition:transform .45s cubic-bezier(.22,1,.36,1);
+  backdrop-filter:saturate(140%) blur(8px);
+  background:linear-gradient(to top, rgba(0,0,0,.55), rgba(0,0,0,.15));
+}
+.group:hover .cap-slide{ transform:translateY(0); }
+
+/* Badge */
+.sig-badge{
+  position:absolute; top:.75rem; left:.75rem;
+  background:rgba(255,255,255,.92); color:var(--ink);
+  padding:.35rem .55rem; font-weight:700; font-size:.7rem; border-radius:999px;
+  box-shadow:0 8px 18px rgba(0,0,0,.18);
+}
+
+/* Section progress (for horizontal reels) */
+#sigProgWrap{ height:6px; background:#eee; border-radius:999px; overflow:hidden; }
+#sigProg{ height:100%; width:0; background:var(--teal); transition:width .2s; }
+
+/* Desktop grid layout */
+@media (min-width: 768px){
+  .sig-grid{ display:grid; grid-template-columns:repeat(12, minmax(0,1fr)); gap:1rem; }
+  .sig-A{ grid-column:span 5 / span 5; grid-row:span 2 / span 2; }
+  .sig-B{ grid-column:span 7 / span 7; }
+  .sig-C,.sig-D,.sig-E{ grid-column:span 4 / span 4; min-height:220px; }
+}
+
+/* ======================
+   MILESTONE RAIL (dark)
+   ====================== */
+.step-dot{
+  position:relative; width:42px; height:42px; border-radius:9999px;
+  display:flex; align-items:center; justify-content:center;
+  color:#fff; background:var(--ink);
+  box-shadow:0 10px 24px rgba(0,0,0,.25), inset 0 0 0 1px rgba(255,255,255,.08);
+}
+.step-dot:after{
+  content:""; position:absolute; top:50%; left:100%; width:220px; height:2px;
+  background:linear-gradient(90deg, var(--teal), transparent);
+  opacity:.35; transform:translateY(-50%);
+}
+.step:last-child .step-dot:after{ display:none; }
+
+.step-card{
+  border-radius:1rem; border:1px solid rgba(255,255,255,.08);
+  background:#121722;
+  transition:transform .3s cubic-bezier(.22,1,.36,1), box-shadow .3s, border-color .3s;
+}
+.step-card:hover{
+  transform:translateY(-2px);
+  box-shadow:0 18px 36px rgba(0,0,0,.35), 0 0 0 1px rgba(24,175,171,.2) inset;
+  border-color:rgba(24,175,171,.35);
+}
+.step-num{
+  position:absolute; top:-14px; left:50%; transform:translateX(-50%);
+  width:42px; height:42px; border-radius:999px; display:flex; align-items:center; justify-content:center;
+  font-weight:700; font-size:.75rem; color:#fff;
+  background:linear-gradient(180deg,#0f1117,#0b0e14);
+  box-shadow:0 10px 24px rgba(0,0,0,.35), inset 0 0 0 1px rgba(255,255,255,.06);
+}
+.rail-line{
+  position:absolute; top:7px; left:0; right:0; height:2px;
+  background:linear-gradient(90deg, rgba(255,255,255,.16), rgba(24,175,171,.35), rgba(255,255,255,.16));
+}
+@media (max-width: 767px){ .rail-line{ display:none; } }
+
+.icon-pill{
+  width:44px; height:44px; border-radius:12px; background:rgba(255,255,255,.06); color:#fff;
+  display:flex; align-items:center; justify-content:center;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.08);
+}
+
+/* ======================
+   CHIP TOKENS (split)
+   ====================== */
+.chip{ font-size:.72rem; padding:.25rem .5rem; border-radius:999px; }
+.chip--light{ background:#f5f5f5; color:#333; }
+.chip--dark{ background:rgba(255,255,255,.08); color:#e6e6e6; }
+
+/* ======================
+   FAQ (editorial)
+   ====================== */
+.faq{ position:relative; border-radius:1rem; background:#fff; border:1px solid rgba(0,0,0,.08); }
+.faq::before{
+  content:""; position:absolute; inset:-1px; border-radius:inherit; padding:1px; opacity:0;
+  background:conic-gradient(from 220deg, rgba(24,175,171,.6), rgba(199,167,106,.35), rgba(24,175,171,.6));
+  -webkit-mask:linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite:xor; mask-composite:exclude; transition:opacity .35s ease;
+}
+.faq[open]::before{ opacity:.9; }
+
+.faq-summary{ list-style:none; cursor:pointer; }
+.faq-summary::-webkit-details-marker{ display:none; }
+.faq-chevron{ transition:transform .3s ease, opacity .3s ease; opacity:.7; }
+details[open] .faq-chevron{ transform:rotate(180deg); opacity:1; }
+
+.faq-num{
+  width:32px; height:32px; border-radius:999px; font-weight:700; font-size:.72rem;
+  background:var(--ink); color:#fff; display:flex; align-items:center; justify-content:center;
+  box-shadow:0 10px 18px rgba(0,0,0,.15), inset 0 0 0 1px rgba(255,255,255,.08);
+}
+
+.faq-content{ overflow:hidden; height:0; }      /* JS animates height */
+details[open] .faq-content{ height:auto; }      /* fallback if JS off */
+
+/* ======================
+   MOBILE REEL (signature)
+   ====================== */
+.reel{ scroll-snap-type:x mandatory; -webkit-overflow-scrolling:touch; }
+.reel-card{
+  scroll-snap-align:center; border-radius:1.25rem; overflow:hidden; position:relative;
+  box-shadow:0 18px 40px rgba(0,0,0,.18); background:#000;
+}
+.edge-fade:before, .edge-fade:after{
+  content:""; position:absolute; top:0; bottom:0; width:36px; pointer-events:none;
+}
+.edge-fade:before{ left:0; background:linear-gradient(to right, rgba(255,255,255,1), rgba(255,255,255,0)); }
+.edge-fade:after{ right:0; background:linear-gradient(to left, rgba(255,255,255,1), rgba(255,255,255,0)); }
+.dots button{ width:7px; height:7px; border-radius:999px; background:#d1d5db; opacity:.7; transition:all .2s; }
+.dots button[aria-current="true"]{ width:22px; background:var(--teal); opacity:1; }
+
+/* Reel captions */
+.cap{
+  position:absolute; left:0; right:0; bottom:0; color:#fff;
+  background:linear-gradient(to top, rgba(0,0,0,.6), rgba(0,0,0,.1)); padding:14px 16px;
+}
+.cap h4{ font-weight:700; font-size:1rem; }
+.cap p{ opacity:.85; font-size:.8rem; }
+
+/* Desktop-only grid replacement for reel */
+@media (min-width: 1024px){
+  .reel-wrap{ display:none; }
+  .sig-grid{ display:grid; grid-template-columns:repeat(12,minmax(0,1fr)); gap:1rem; } /* ensure once */
+  .sig-A{ grid-column:span 5 / span 5; grid-row:span 2 / span 2; }
+  .sig-B{ grid-column:span 7 / span 7; }
+  .sig-C,.sig-D,.sig-E{ grid-column:span 4 / span 4; min-height:220px; }
+  .sig-cap{
+    position:absolute; inset:0; background:linear-gradient(to top, rgba(0,0,0,.55), rgba(0,0,0,.15));
+    opacity:0; transition:opacity .35s;
+  }
+  .sig-frame:hover .sig-cap{ opacity:1; }
+  .sig-chip{
+    position:absolute; left:14px; bottom:14px; padding:.35rem .6rem; border-radius:999px;
+    font-size:.72rem; background:rgba(255,255,255,.92); color:#0f0f10; font-weight:600;
+  }
+}
+
+/* ======================
+   SEGMENTED SWITCHER
+   ====================== */
+.seg{
+  display:inline-grid; grid-auto-flow:column; gap:6px; padding:6px; border-radius:999px; background:#f2f2f2;
+}
+.seg button{
+  padding:.45rem .85rem; border-radius:999px; font-weight:600; font-size:.9rem; color:#444; border:none; cursor:pointer;
+}
+.seg button[aria-pressed="true"]{ background:var(--teal); color:#fff; box-shadow:0 6px 16px rgba(24,175,171,.25); }
+
+/* ======================
+   SERVICES (peek/expand)
+   ====================== */
+.svc-card{
+  border-radius:1rem; border:1px solid rgba(0,0,0,.06); background:#fff;
+  transition:transform .3s cubic-bezier(.22,1,.36,1), box-shadow .3s, border-color .3s;
+}
+.svc-card:hover{
+  transform:translateY(-2px);
+  box-shadow:0 18px 36px rgba(0,0,0,.18), 0 0 0 1px rgba(24,175,171,.16) inset;
+  border-color:rgba(24,175,171,.32);
+}
+.svc-icon{
+  width:44px; height:44px; border-radius:12px; display:flex; align-items:center; justify-content:center;
+  background:rgba(24,175,171,.10); color:var(--teal);
+}
+.svc-peek{ color:#555; }
+.svc-body{ overflow:hidden; height:0; }               /* JS animates height */
+.svc-card[aria-expanded="true"] .svc-body{ height:auto; } /* fallback */
+
+/* ======================
+   BEFORE / AFTER SLIDER
+   ====================== */
+.ba{ position:relative; border-radius:1rem; overflow:hidden; }
+.ba img{ display:block; width:100%; height:56vh; object-fit:cover; }
+.ba .after{ position:absolute; inset:0; width:50%; overflow:hidden; }
+.ba .handle{ position:absolute; top:0; bottom:0; left:50%; width:2px; background:#fff; box-shadow:0 0 0 1px rgba(0,0,0,.2) inset; }
+.ba .knob{
+  position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:36px; height:36px;
+  border-radius:999px; background:#fff; display:flex; align-items:center; justify-content:center;
+  box-shadow:0 8px 18px rgba(0,0,0,.2);
+}
+
+/* ======================
+   COUNTER (metrics)
+   ====================== */
+.countup{ font-variant-numeric: tabular-nums; }
+
+</style>
+<!-- ===== HERO (simple, cinematic) ===== -->
+<section class="relative overflow-hidden bg-black text-white">
+  <div class="relative h-[64vh] md:h-[82vh]">
+    <img src="https://images.unsplash.com/photo-1501004318641-b39e6451bec6?q=80&w=2000&auto=format&fit=crop"
+         alt="Quiet-Luxury Landscape Design & Build in Dubai"
+         class="absolute inset-0 w-full h-full object-cover will-change-transform" id="heroMedia">
+    <div class="absolute inset-0 bg-gradient-to-r from-black/80 via-black/40 to-transparent"></div>
+  </div>
+
+  <div class="absolute inset-0">
+    <div class="max-w-7xl mx-auto h-full px-6 flex items-end pb-10">
+      <div class="max-w-3xl">
+        <p class="text-[11px] tracking-[.4em] uppercase text-[#18AFAB]">Landscape</p>
+        <h1 class="mt-3 text-4xl md:text-6xl font-extrabold leading-tight">
+          Quiet-Luxury Landscape<br class="hidden md:block">Design & Build in Dubai
+        </h1>
+        <p class="mt-4 text-white/85 text-lg">
+          Native planting. Custom pools & pergolas. Architectural lighting. One integrated team—from concept to aftercare.
+        </p>
+        <div class="mt-6 flex flex-wrap gap-3">
+          <a href="#capabilities" class="inline-flex items-center rounded-full bg-white text-[#0F0F10] px-6 py-3 font-semibold shadow hover:scale-[1.02] transition">
+            Explore Capabilities <i class="fa-solid fa-arrow-right-long ml-2"></i>
+          </a>
+          <a href="#projects" class="inline-flex items-center gap-2 font-semibold text-white/90 hover:text-white">
+            View Case Studies <i class="fa-solid fa-arrow-right-long"></i>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- floating stat chip -->
+  <div class="absolute top-5 right-5">
+    <span class="px-3 py-1.5 rounded-full bg-white/90 text-[#0F0F10] text-xs font-semibold shadow">
+      650+ Projects
+    </span>
+  </div>
+</section>
+
+<!-- ===== METRICS (credibility) ===== -->
+<section class="bg-[#0F0F10] text-white border-t border-white/10">
+  <div class="max-w-7xl mx-auto px-6 py-6 grid sm:grid-cols-3 gap-4 text-center text-sm">
+    <div class="rounded-xl border border-white/10 bg-white/5 backdrop-blur p-4">
+      <p class="text-3xl font-extrabold text-[#18AFAB]">
+        <span class="countup" data-target="650" data-suffix="+">0</span>
+      </p>
+      <p class="text-white/70">Projects Delivered</p>
+    </div>
+    <div class="rounded-xl border border-white/10 bg-white/5 backdrop-blur p-4">
+      <p class="text-3xl font-extrabold text-[#18AFAB]">
+        <span class="countup" data-target="20" data-suffix="+">0</span>
+      </p>
+      <p class="text-white/70">Years in Dubai</p>
+    </div>
+    <div class="rounded-xl border border-white/10 bg-white/5 backdrop-blur p-4">
+      <p class="text-3xl font-extrabold text-[#18AFAB]">
+        <span class="countup" data-target="1000" data-suffix="+">0</span>
+      </p>
+      <p class="text-white/70">In-house Specialists</p>
+    </div>
+  </div>
+</section>
+
+<section id="landscape-services" class="bg-white py-20">
+  <div class="max-w-7xl mx-auto px-6">
+
+    <!-- Headline + segmented control -->
+    <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-8">
+      <div>
+        <p class="text-[10px] tracking-[.35em] uppercase text-[var(--teal)]">Landscaping</p>
+        <h3 class="text-2xl md:text-3xl font-extrabold text-[var(--ink)]">
+          End-to-end landscape design & build for modern living
+        </h3>
+        <p class="mt-3 text-gray-700 leading-relaxed max-w-2xl">
+          Hammer Landscape delivers premium outdoor architecture in Dubai—custom pools, pergolas, lighting,
+          water features and native planting—driven by innovative design and meticulous execution.
+        </p>
+      </div>
+
+      <!-- Segmented switcher -->
+      <div class="seg self-start md:self-auto" role="tablist" aria-label="Landscape content switcher">
+        <button class="seg-btn" role="tab" aria-selected="true" aria-pressed="true" data-tab="overview">Overview</button>
+        <button class="seg-btn" role="tab" aria-selected="false" aria-pressed="false" data-tab="services">Services</button>
+        <button class="seg-btn" role="tab" aria-selected="false" aria-pressed="false" data-tab="beforeafter">Before/After</button>
+      </div>
+    </div>
+
+    <!-- ===== Panel: Overview (default) ===== -->
+    <div id="panel-overview" role="tabpanel">
+      <div class="grid lg:grid-cols-12 gap-8 items-start">
+        <div class="lg:col-span-6">
+          <div class="svc-card p-5">
+            <h4 class="font-semibold text-[var(--ink)] mb-3">What we deliver</h4>
+            <ul class="grid grid-cols-1 sm:grid-cols-2 gap-y-2 text-sm text-gray-700">
+              <li class="flex items-center gap-2"><i class="fa-solid fa-pen-ruler text-[var(--teal)]"></i> 2D / 3D Design</li>
+              <li class="flex items-center gap-2"><i class="fa-solid fa-draw-polygon text-[var(--teal)]"></i> Full Drawings</li>
+              <li class="flex items-center gap-2"><i class="fa-solid fa-mountain-sun text-[var(--teal)]"></i> Hardscape</li>
+              <li class="flex items-center gap-2"><i class="fa-solid fa-seedling text-[var(--teal)]"></i> Softscape</li>
+              <li class="flex items-center gap-2"><i class="fa-solid fa-water-ladder text-[var(--teal)]"></i> Pools</li>
+              <li class="flex items-center gap-2"><i class="fa-solid fa-water text-[var(--teal)]"></i> Water Features</li>
+              <li class="flex items-center gap-2"><i class="fa-solid fa-lightbulb text-[var(--teal)]"></i> Architectural Lighting</li>
+              <li class="flex items-center gap-2"><i class="fa-solid fa-diagram-project text-[var(--teal)]"></i> Project Management</li>
+              <li class="flex items-center gap-2"><i class="fa-solid fa-gears text-[var(--teal)]"></i> Engineering</li>
+              <li class="flex items-center gap-2"><i class="fa-solid fa-people-group text-[var(--teal)]"></i> In-house Build Team</li>
+            </ul>
+            <div class="mt-4 flex flex-wrap gap-2">
+              <span class="chip">Concept → Handover</span>
+              <span class="chip">Drawings & Authority</span>
+              <span class="chip">One accountable team</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="lg:col-span-6">
+          <div class="svc-card p-6">
+            <h4 class="font-semibold text-[var(--ink)]">Why it matters</h4>
+            <p class="text-gray-600 mt-2">
+              Fewer handoffs, clearer milestones, and materials that actually last outdoors in Dubai’s climate.
+              We partner with high-end brands and specify only what suits the vision.
+            </p>
+            <div class="mt-3 flex flex-wrap gap-2">
+              <span class="chip">Cost certainty</span>
+              <span class="chip">Weekly cadence</span>
+              <span class="chip">Aftercare</span>
+            </div>
+            <a href="#contact" class="mt-5 inline-flex items-center justify-center rounded-full bg-[var(--teal)] text-white px-5 py-2.5 text-sm font-semibold shadow">
+              Talk to a Landscape Lead <i class="fa-solid fa-arrow-right-long ml-2"></i>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== Panel: Services (tappable peek cards) ===== -->
+    <div id="panel-services" class="hidden" role="tabpanel" aria-hidden="true">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+
+        <!-- Design -->
+        <article class="svc-card p-6" data-expand>
+          <div class="flex items-start gap-3">
+            <div class="svc-icon"><i class="fa-solid fa-compass-drafting"></i></div>
+            <div class="flex-1">
+              <h5 class="font-semibold text-[var(--ink)]">Design Studio</h5>
+              <p class="svc-peek text-sm mt-1">Concept, 2D/3D, planting palettes, lighting scenes.</p>
+              <div class="svc-body">
+                <ul class="mt-3 text-sm text-gray-700 space-y-1">
+                  <li>• Mood + 3D massing</li>
+                  <li>• Planting plan (native/low-water)</li>
+                  <li>• Night/Day lighting concepts</li>
+                </ul>
+              </div>
+            </div>
+            <button class="ml-2 text-[var(--teal)] font-semibold text-sm" data-toggle>More</button>
+          </div>
+        </article>
+
+        <!-- Technical -->
+        <article class="svc-card p-6" data-expand>
+          <div class="flex items-start gap-3">
+            <div class="svc-icon"><i class="fa-solid fa-file-shield"></i></div>
+            <div class="flex-1">
+              <h5 class="font-semibold text-[var(--ink)]">Technical & Drawings</h5>
+              <p class="svc-peek text-sm mt-1">Authority-ready packages with full details.</p>
+              <div class="svc-body">
+                <ul class="mt-3 text-sm text-gray-700 space-y-1">
+                  <li>• GA, details, BOQ</li>
+                  <li>• Structural & MEP coordination</li>
+                  <li>• Authority submissions</li>
+                </ul>
+              </div>
+            </div>
+            <button class="ml-2 text-[var(--teal)] font-semibold text-sm" data-toggle>More</button>
+          </div>
+        </article>
+
+        <!-- Build -->
+        <article class="svc-card p-6" data-expand>
+          <div class="flex items-start gap-3">
+            <div class="svc-icon"><i class="fa-solid fa-helmet-safety"></i></div>
+            <div class="flex-1">
+              <h5 class="font-semibold text-[var(--ink)]">Build & Delivery</h5>
+              <p class="svc-peek text-sm mt-1">One crew. Clear milestones. Clean sites.</p>
+              <div class="svc-body">
+                <ul class="mt-3 text-sm text-gray-700 space-y-1">
+                  <li>• Stone, decking, pergolas</li>
+                  <li>• Irrigation & planting</li>
+                  <li>• Lighting & controls</li>
+                </ul>
+              </div>
+            </div>
+            <button class="ml-2 text-[var(--teal)] font-semibold text-sm" data-toggle>More</button>
+          </div>
+        </article>
+
+        <!-- Pools -->
+        <article class="svc-card p-6" data-expand>
+          <div class="flex items-start gap-3">
+            <div class="svc-icon"><i class="fa-solid fa-water-ladder"></i></div>
+            <div class="flex-1">
+              <h5 class="font-semibold text-[var(--ink)]">Pools</h5>
+              <p class="svc-peek text-sm mt-1">Custom pools; resurfacing & equipment upgrades.</p>
+              <div class="svc-body">
+                <ul class="mt-3 text-sm text-gray-700 space-y-1">
+                  <li>• Tiling & coping</li>
+                  <li>• Filtration & automation</li>
+                  <li>• LED scenes & safety</li>
+                </ul>
+              </div>
+            </div>
+            <button class="ml-2 text-[var(--teal)] font-semibold text-sm" data-toggle>More</button>
+          </div>
+        </article>
+
+        <!-- Water features -->
+        <article class="svc-card p-6" data-expand>
+          <div class="flex items-start gap-3">
+            <div class="svc-icon"><i class="fa-solid fa-water"></i></div>
+            <div class="flex-1">
+              <h5 class="font-semibold text-[var(--ink)]">Water Features</h5>
+              <p class="svc-peek text-sm mt-1">Rills, scuppers, sheet falls—engineered to whisper.</p>
+              <div class="svc-body">
+                <ul class="mt-3 text-sm text-gray-700 space-y-1">
+                  <li>• Noise & flow tuning</li>
+                  <li>• Low-maintenance filtration</li>
+                  <li>• Night highlights</li>
+                </ul>
+              </div>
+            </div>
+            <button class="ml-2 text-[var(--teal)] font-semibold text-sm" data-toggle>More</button>
+          </div>
+        </article>
+
+        <!-- Lighting -->
+        <article class="svc-card p-6" data-expand>
+          <div class="flex items-start gap-3">
+            <div class="svc-icon"><i class="fa-solid fa-lightbulb"></i></div>
+            <div class="flex-1">
+              <h5 class="font-semibold text-[var(--ink)]">Architectural Lighting</h5>
+              <p class="svc-peek text-sm mt-1">Layers that celebrate form—never glare.</p>
+              <div class="svc-body">
+                <ul class="mt-3 text-sm text-gray-700 space-y-1">
+                  <li>• Paths, trees, water</li>
+                  <li>• Dimming & scenes</li>
+                  <li>• Glare control</li>
+                </ul>
+              </div>
+            </div>
+            <button class="ml-2 text-[var(--teal)] font-semibold text-sm" data-toggle>More</button>
+          </div>
+        </article>
+
+      </div>
+    </div>
+
+    <!-- ===== Panel: Before/After (interactive) ===== -->
+    <div id="panel-beforeafter" class="hidden" role="tabpanel" aria-hidden="true">
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Lighting BA -->
+        <figure class="ba">
+          <img src="https://images.unsplash.com/photo-1481627834876-b7833e8f5570?q=80&w=1600&auto=format&fit=crop" alt="Before lighting">
+          <div class="after">
+            <img src="https://images.unsplash.com/photo-1519710164239-da123dc03ef4?q=80&w=1600&auto=format&fit=crop" alt="After lighting">
+          </div>
+          <div class="handle"></div>
+          <div class="knob"><i class="fa-solid fa-arrows-left-right"></i></div>
+          <figcaption class="absolute left-3 bottom-3 px-3 py-1.5 text-xs font-semibold rounded-full bg-white/90 text-[var(--ink)]">
+            Lighting: Before → After
+          </figcaption>
+        </figure>
+
+        <!-- Pool BA -->
+        <figure class="ba">
+          <img src="https://images.unsplash.com/photo-1441974231531-c6227db76b6e?q=80&w=1600&auto=format&fit=crop" alt="Before pool">
+          <div class="after">
+            <img src="https://images.unsplash.com/photo-1505852679233-d9fd70aff56d?q=80&w=1600&auto=format&fit=crop" alt="After pool">
+          </div>
+          <div class="handle"></div>
+          <div class="knob"><i class="fa-solid fa-arrows-left-right"></i></div>
+          <figcaption class="absolute left-3 bottom-3 px-3 py-1.5 text-xs font-semibold rounded-full bg-white/90 text-[var(--ink)]">
+            Pool Upgrade: Before → After
+          </figcaption>
+        </figure>
+      </div>
+      <p class="text-xs text-gray-500 mt-3">Tip: drag the handle to compare.</p>
+    </div>
+
+  </div>
+</section>
+
+
+
+  <!-- ===== SIGNATURE PROJECTS: Masonry + Tilt ===== -->
+<section id="signature-projects" class="bg-white py-20">
+  <div class="max-w-7xl mx-auto px-6">
+    <div class="flex items-end justify-between mb-6">
+      <div>
+        <p class="text-[10px] tracking-[.35em] uppercase text-[var(--teal)]">Signature</p>
+        <h3 class="text-2xl md:text-3xl font-extrabold">Recent Landscape Work</h3>
+      </div>
+    </div>
+
+    <!-- ===== Mobile-first: Story Reel ===== -->
+    <div class="reel-wrap lg:hidden">
+      <div id="sigReel" class="reel edge-fade flex gap-4 overflow-x-auto pb-2" style="scrollbar-width:none;">
+        <!-- Card 01 -->
+        <figure class="reel-card min-w-[86%] max-w-[86%]">
+          <span class="sig-badge">01</span>
+          <img class="w-full h-[60vh] object-cover"
+               src="https://images.unsplash.com/photo-1499793983690-e29da59ef1c2?q=80&w=1600&auto=format&fit=crop"
+               alt="Evening ambience">
+          <figcaption class="cap">
+            <h4>Evening ambience</h4>
+            <p>Jumeirah Villa • Deck + lighting</p>
+          </figcaption>
+        </figure>
+
+        <!-- Card 02 -->
+        <figure class="reel-card min-w-[86%] max-w-[86%]">
+          <span class="sig-badge">02</span>
+          <img class="w-full h-[60vh] object-cover"
+               src="https://images.unsplash.com/photo-1501183638710-841dd1904471?q=80&w=1600&auto=format&fit=crop"
+               alt="Pool & pergola">
+          <figcaption class="cap">
+            <h4>Pool & pergola</h4>
+            <p>Arabian Ranches • Shade + water</p>
+          </figcaption>
+        </figure>
+
+        <!-- Card 03 -->
+        <figure class="reel-card min-w-[86%] max-w-[86%]">
+          <span class="sig-badge">03</span>
+          <img class="w-full h-[60vh] object-cover"
+               src="https://images.unsplash.com/photo-1521737604893-d14cc237f11d?auto=format&fit=crop&w=1200&q=80"
+               alt="Native & low-water">
+          <figcaption class="cap">
+            <h4>Native & low-water</h4>
+            <p>Umm Suqeim • Low-maintenance</p>
+          </figcaption>
+        </figure>
+
+        <!-- Card 04 -->
+        <figure class="reel-card min-w-[86%] max-w-[86%]">
+          <span class="sig-badge">04</span>
+          <img class="w-full h-[60vh] object-cover"
+               src="https://images.unsplash.com/photo-1499951360447-b19be8fe80f5?q=80&w=1600&auto=format&fit=crop"
+               alt="Outdoor rooms">
+          <figcaption class="cap">
+            <h4>Outdoor rooms</h4>
+            <p>Palm Jumeirah • Garden lounge</p>
+          </figcaption>
+        </figure>
+
+        <!-- Card 05 -->
+        <figure class="reel-card min-w-[86%] max-w-[86%]">
+          <span class="sig-badge">05</span>
+          <img class="w-full h-[60vh] object-cover"
+               src="https://images.unsplash.com/photo-1519389950473-47ba0277781c?auto=format&fit=crop&w=1200&q=80"
+               alt="Architectural lighting">
+          <figcaption class="cap">
+            <h4>Architectural lighting</h4>
+            <p>Meydan • Subtle scenes</p>
+          </figcaption>
+        </figure>
+      </div>
+
+      <!-- Dots -->
+      <div class="dots flex justify-center gap-2 mt-4" aria-label="Gallery pagination">
+        <button aria-current="true" aria-label="Slide 1"></button>
+        <button aria-label="Slide 2"></button>
+        <button aria-label="Slide 3"></button>
+        <button aria-label="Slide 4"></button>
+        <button aria-label="Slide 5"></button>
+      </div>
+    </div>
+
+    <!-- ===== Desktop: Luxe Grid ===== -->
+    <div class="hidden lg:block">
+      <div class="sig-grid">
+        <!-- A Tall -->
+        <figure class="sig-A sig-frame group">
+          <span class="sig-badge">01</span>
+          <img class="sig-media w-full h-full object-cover"
+               src="https://images.unsplash.com/photo-1499793983690-e29da59ef1c2?q=80&w=1600&auto=format&fit=crop"
+               alt="Evening ambience">
+          <figcaption class="sig-cap"></figcaption>
+          <span class="sig-chip">Evening ambience</span>
+        </figure>
+
+        <!-- B Wide -->
+        <figure class="sig-B sig-frame group min-h-[260px]">
+          <span class="sig-badge">02</span>
+          <img class="sig-media w-full h-full object-cover"
+               src="https://images.unsplash.com/photo-1501183638710-841dd1904471?q=80&w=1600&auto=format&fit=crop"
+               alt="Pool & pergola">
+          <figcaption class="sig-cap"></figcaption>
+          <span class="sig-chip">Pool & pergola</span>
+        </figure>
+
+        <!-- C/D/E Smalls -->
+        <figure class="sig-C sig-frame group">
+          <span class="sig-badge">03</span>
+          <img class="sig-media w-full h-full object-cover"
+               src="https://images.unsplash.com/photo-1519389950473-47ba0277781c?auto=format&fit=crop&w=1200&q=80"
+               alt="Native & low-water">
+          <figcaption class="sig-cap"></figcaption>
+          <span class="sig-chip">Native & low-water</span>
+        </figure>
+
+        <figure class="sig-D sig-frame group">
+          <span class="sig-badge">04</span>
+          <img class="sig-media w-full h-full object-cover"
+               src="https://images.unsplash.com/photo-1499951360447-b19be8fe80f5?q=80&w=1600&auto=format&fit=crop"
+               alt="Outdoor rooms">
+          <figcaption class="sig-cap"></figcaption>
+          <span class="sig-chip">Outdoor rooms</span>
+        </figure>
+
+        <figure class="sig-E sig-frame group">
+          <span class="sig-badge">05</span>
+          <img class="sig-media w-full h-full object-cover"
+               src="https://images.unsplash.com/photo-1542744173-05336fcc7ad4?auto=format&fit=crop&w=1200&q=80"
+               alt="Architectural lighting">
+          <figcaption class="sig-cap"></figcaption>
+          <span class="sig-chip">Architectural lighting</span>
+        </figure>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+
+  <!-- ===== MILESTONE RAIL: Horizontal with progress ===== -->
+<section class="bg-[var(--ink)] text-white py-20">
+  <div class="max-w-7xl mx-auto px-6">
+    <div class="mb-8 flex items-end justify-between">
+      <div>
+        <p class="text-[10px] tracking-[.35em] uppercase text-[var(--teal)]">Delivery</p>
+        <h3 class="text-2xl md:text-3xl font-extrabold">Fixed milestones. Transparent weekly cadence.</h3>
+      </div>
+    </div>
+
+    <div class="relative">
+      <!-- subtle connector on md+ -->
+      <div class="rail-line hidden md:block"></div>
+
+      <!-- responsive grid: 1 → 2 → 4 -->
+      <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+
+        <!-- 01 -->
+        <div class="relative pt-6">
+          <div class="step-num">01</div>
+          <div class="step-card p-6">
+            <div class="icon-pill mb-3"><i class="fa-solid fa-compass-drafting text-sm"></i></div>
+            <h4 class="font-semibold text-white">Site study & concept</h4>
+            <p class="text-white/75 mt-2">Survey, sun/wind analysis, native palette, 3D mood.</p>
+            <div class="mt-4 flex flex-wrap gap-2">
+              <span class="chip">~1–2 wks</span>
+              <span class="chip">Includes 1 revision</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 02 -->
+        <div class="relative pt-6">
+          <div class="step-num">02</div>
+          <div class="step-card p-6">
+            <div class="icon-pill mb-3"><i class="fa-solid fa-file-shield text-sm"></i></div>
+            <h4 class="font-semibold text-white">Permits & technical</h4>
+            <p class="text-white/75 mt-2">MEP, structural, authority approvals, tender-ready drawings.</p>
+            <div class="mt-4 flex flex-wrap gap-2">
+              <span class="chip">~2–4 wks</span>
+              <span class="chip">Authority lead time</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 03 -->
+        <div class="relative pt-6">
+          <div class="step-num">03</div>
+          <div class="step-card p-6">
+            <div class="icon-pill mb-3"><i class="fa-solid fa-helmet-safety text-sm"></i></div>
+            <h4 class="font-semibold text-white">Build & logistics</h4>
+            <p class="text-white/75 mt-2">One crew. Stone, decking, water features, lighting, planting.</p>
+            <div class="mt-4 flex flex-wrap gap-2">
+              <span class="chip">~3–8 wks</span>
+              <span class="chip">Single accountable team</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 04 -->
+        <div class="relative pt-6">
+          <div class="step-num">04</div>
+          <div class="step-card p-6">
+            <div class="icon-pill mb-3"><i class="fa-solid fa-handshake-simple text-sm"></i></div>
+            <h4 class="font-semibold text-white">Handover & aftercare</h4>
+            <p class="text-white/75 mt-2">Snag-free delivery, irrigation tuning, quarterly plant health checks.</p>
+            <div class="mt-4 flex flex-wrap gap-2">
+              <span class="chip">Day 0 handover</span>
+              <span class="chip">Aftercare plan</span>
+            </div>
+          </div>
+        </div>
+
+      </div> <!-- /grid -->
+    </div>
+  </div>
+</section>
+
+
+  <!-- ===== FAQ: Editorial Gradient Cards (hardcoded) ===== -->
+  <section class="bg-white py-20">
+  <div class="max-w-5xl mx-auto px-6">
+    <div class="mb-8 text-center">
+      <p class="text-[10px] tracking-[.35em] uppercase text-[var(--teal)]">FAQs</p>
+      <h3 class="text-2xl md:text-3xl font-extrabold">Practical questions we get a lot</h3>
+    </div>
+
+    <div class="grid gap-4">
+
+      <!-- Q1 -->
+      <details class="faq group">
+        <summary class="faq-summary flex items-center gap-4 p-5">
+          <span class="faq-num">01</span>
+          <div class="flex-1">
+            <div class="flex items-center justify-between gap-4">
+              <span class="font-semibold text-[var(--ink)]">How soon can you start?</span>
+              <i class="fa-solid fa-chevron-down faq-chevron"></i>
+            </div>
+            <div class="mt-2 hidden md:flex gap-2">
+              <span class="chip">Typical lead: 2–4 wks</span>
+              <span class="chip">Depends on approvals</span>
+            </div>
+          </div>
+        </summary>
+        <div class="faq-content">
+          <div class="px-5 pb-5 pt-0 text-gray-600">
+            Typically 2–4 weeks from concept sign-off. Authority approvals can extend timelines; we’ll surface that early and keep a transparent weekly cadence.
+          </div>
+        </div>
+      </details>
+
+      <!-- Q2 -->
+      <details class="faq group">
+        <summary class="faq-summary flex items-center gap-4 p-5">
+          <span class="faq-num">02</span>
+          <div class="flex-1">
+            <div class="flex items-center justify-between gap-4">
+              <span class="font-semibold text-[var(--ink)]">Do you work with existing pools?</span>
+              <i class="fa-solid fa-chevron-down faq-chevron"></i>
+            </div>
+            <div class="mt-2 hidden md:flex gap-2">
+              <span class="chip">Retrofit lighting</span>
+              <span class="chip">Decking upgrades</span>
+              <span class="chip">Filtration &amp; controls</span>
+            </div>
+          </div>
+        </summary>
+        <div class="faq-content">
+          <div class="px-5 pb-5 pt-0 text-gray-600">
+            Yes. We refresh surfaces and coping, add discreet architectural lighting, upgrade filtration/automation, and integrate planting without disrupting structure.
+          </div>
+        </div>
+      </details>
+
+      <!-- Q3 -->
+      <details class="faq group">
+        <summary class="faq-summary flex items-center gap-4 p-5">
+          <span class="faq-num">03</span>
+          <div class="flex-1">
+            <div class="flex items-center justify-between gap-4">
+              <span class="font-semibold text-[var(--ink)]">What maintenance do you offer?</span>
+              <i class="fa-solid fa-chevron-down faq-chevron"></i>
+            </div>
+            <div class="mt-2 hidden md:flex gap-2">
+              <span class="chip">Quarterly checks</span>
+              <span class="chip">Irrigation tuning</span>
+              <span class="chip">Seasonal scenes</span>
+            </div>
+          </div>
+        </summary>
+        <div class="faq-content">
+          <div class="px-5 pb-5 pt-0 text-gray-600">
+            Our aftercare team handles plant health, irrigation balancing, and seasonal lighting presets. We can also schedule deep cleans and re-mulching annually.
+          </div>
+        </div>
+      </details>
+
+      <!-- Micro-CTA -->
+      <div class="text-center pt-4">
+        <span class="text-sm text-gray-600">Didn’t find what you need?</span>
+        <a href="#contact" class="ml-2 inline-flex items-center justify-center rounded-full bg-[var(--teal)] text-white px-4 py-2 text-sm font-semibold shadow">
+          Ask a Landscape Lead <i class="fa-solid fa-arrow-right-long ml-2"></i>
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+  <!-- ===== CLOSER ===== -->
+  <section class="relative overflow-hidden">
+    <div class="max-w-7xl mx-auto px-6 pb-16">
+      <div class="rounded-2xl border border-black/5 bg-[var(--ink-2)] text-white p-8 lg:p-12 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+        <div>
+          <h3 class="text-2xl font-extrabold">Ready to plan your landscape?</h3>
+          <p class="text-white/70 mt-1">We’ll map scope, timeline and budget—then craft something enduring.</p>
+        </div>
+        <a href="#contact" class="cta inline-flex items-center justify-center rounded-full bg-[var(--teal)] text-white px-6 py-3 font-semibold">
+          Book a Consultation <i class="fa-solid fa-arrow-right-long ml-2"></i>
+        </a>
+      </div>
+    </div>
+  </section>
+
+</div>
+<script>
+
+  (function(){
+  // Subtle parallax on hero media
+  const media = document.getElementById('heroMedia');
+  if(media){
+    window.addEventListener('scroll', ()=>{
+      const y = Math.min(60, window.scrollY * 0.06);
+      media.style.transform = `translateY(${y}px) scale(1.03)`;
+    }, {passive:true});
+  }
+
+  // Count-up when metrics enter viewport
+  const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  function animateCount(el){
+    const target = Number(el.dataset.target || '0');
+    const suffix = el.dataset.suffix || '';
+    if(prefersReduced || target === 0){
+      el.textContent = target.toLocaleString() + suffix;
+      return;
+    }
+    const duration = 1200; // ms
+    const start = performance.now();
+    const startVal = 0;
+
+    function frame(now){
+      const t = Math.min(1, (now - start)/duration);
+      // easeOutCubic
+      const eased = 1 - Math.pow(1 - t, 3);
+      const value = Math.round(startVal + (target - startVal) * eased);
+      el.textContent = value.toLocaleString() + suffix;
+      if(t < 1) requestAnimationFrame(frame);
+    }
+    requestAnimationFrame(frame);
+  }
+
+  const counters = document.querySelectorAll('.countup');
+  if('IntersectionObserver' in window){
+    const io = new IntersectionObserver((entries, obs)=>{
+      entries.forEach(e=>{
+        if(e.isIntersecting){
+          animateCount(e.target);
+          obs.unobserve(e.target);
+        }
+      });
+    }, {threshold: 0.4});
+    counters.forEach(c=> io.observe(c));
+  } else {
+    counters.forEach(animateCount);
+  }
+})();
+
+  (function(){
+  // Tabs
+  const tabs = document.querySelectorAll('#landscape-services .seg-btn');
+  const panels = {
+    overview: document.getElementById('panel-overview'),
+    services: document.getElementById('panel-services'),
+    beforeafter: document.getElementById('panel-beforeafter'),
+  };
+  function show(which){
+    tabs.forEach(b=>{ const on=b.dataset.tab===which; b.setAttribute('aria-pressed', on); b.setAttribute('aria-selected', on); });
+    Object.entries(panels).forEach(([k,el])=>{
+      const on = (k===which); el.classList.toggle('hidden', !on); el.setAttribute('aria-hidden', (!on).toString());
+    });
+  }
+  tabs.forEach(b=> b.addEventListener('click', ()=> show(b.dataset.tab)));
+  show('overview');
+
+  // Expand cards (smooth height)
+  document.querySelectorAll('[data-expand]').forEach(card=>{
+    const btn = card.querySelector('[data-toggle]');
+    const body = card.querySelector('.svc-body');
+    let open=false;
+    const animate = (toOpen)=>{
+      const start = body.offsetHeight;
+      body.style.height = 'auto';
+      const end = toOpen ? body.offsetHeight : 0;
+      body.style.height = start+'px'; body.offsetHeight;
+      body.style.transition = 'height .35s cubic-bezier(.22,1,.36,1)';
+      body.style.height = end+'px';
+      body.addEventListener('transitionend', function te(){
+        body.style.transition=''; body.style.height = toOpen ? 'auto' : '0px'; body.removeEventListener('transitionend', te);
+      });
+    };
+    btn.addEventListener('click', ()=>{
+      open = !open;
+      card.setAttribute('aria-expanded', open);
+      btn.textContent = open ? 'Less' : 'More';
+      animate(open);
+    });
+  });
+
+  // Before/After sliders
+  document.querySelectorAll('.ba').forEach(ba=>{
+    const after = ba.querySelector('.after');
+    const handle= ba.querySelector('.handle');
+    const knob  = ba.querySelector('.knob');
+    const setX = (x)=>{
+      const r = ba.getBoundingClientRect();
+      let pct = (x - r.left)/r.width; pct = Math.max(0, Math.min(1, pct));
+      after.style.width = (pct*100)+'%';
+      handle.style.left = (pct*100)+'%';
+      knob.style.left   = handle.style.left;
+    };
+    const start = e => { ba.dataset.drag = '1'; setX((e.touches? e.touches[0].clientX : e.clientX)); };
+    const move  = e => { if(ba.dataset.drag==='1') setX((e.touches? e.touches[0].clientX : e.clientX)); };
+    const end   = () => { ba.dataset.drag = '0'; };
+    ['mousedown','touchstart'].forEach(ev=> ba.addEventListener(ev, start, {passive:false}));
+    ['mousemove','touchmove'].forEach(ev=> window.addEventListener(ev, move, {passive:false}));
+    ['mouseup','mouseleave','touchend','touchcancel'].forEach(ev=> window.addEventListener(ev, end));
+    // initial center
+    setX(ba.getBoundingClientRect().left + ba.getBoundingClientRect().width/2);
+  });
+})();
+
+  (function(){
+  const reel = document.getElementById('sigReel');
+  const dots = document.querySelectorAll('.dots button');
+  if(!reel || !dots.length) return;
+
+  // map slides
+  const slides = [...reel.querySelectorAll('.reel-card')];
+
+  // wheel → horizontal (nice on mobile trackpads too)
+  reel.addEventListener('wheel', (e)=>{
+    if(Math.abs(e.deltaY)>Math.abs(e.deltaX)){
+      reel.scrollLeft += e.deltaY*0.8;
+      e.preventDefault();
+    }
+  }, {passive:false});
+
+  const setActive = ()=>{
+    const center = reel.scrollLeft + reel.clientWidth/2;
+    let idx=0, best=Infinity;
+    slides.forEach((s,i)=>{
+      const r = s.getBoundingClientRect();
+      const left = r.left + reel.scrollLeft - reel.getBoundingClientRect().left;
+      const mid = left + r.width/2;
+      const d = Math.abs(center - mid);
+      if(d<best){ best=d; idx=i; }
+    });
+    dots.forEach((d,i)=> d.setAttribute('aria-current', i===idx ? 'true' : 'false'));
+  };
+  setActive();
+  reel.addEventListener('scroll', ()=>requestAnimationFrame(setActive), {passive:true});
+  window.addEventListener('resize', setActive);
+
+  // dot clicks
+  dots.forEach((d,i)=> d.addEventListener('click', ()=> {
+    const target = slides[i];
+    if(target) target.scrollIntoView({behavior:'smooth', inline:'center', block:'nearest'});
+  }));
+})();
+// Hero parallax (subtle)
+(function(){
+  const m=document.getElementById('heroMedia'); if(!m) return;
+  window.addEventListener('scroll', ()=> {
+    const y=Math.min(60, window.scrollY*0.06);
+    m.style.transform=`translateY(${y}px) scale(1.03)`;
+  }, {passive:true});
+})();
+
+// Tilt (masonry cards)
+(function(){
+  const host=document.querySelector('.tilt'); if(!host) return;
+  host.addEventListener('pointermove', e=>{
+    const r=host.getBoundingClientRect();
+    const midX=r.left+r.width/2, midY=r.top+r.height/2;
+    const dx=(e.clientX-midX)/r.width, dy=(e.clientY-midY)/r.height;
+    const rx=(dy*6).toFixed(2)+'deg', ry=(-dx*8).toFixed(2)+'deg';
+    host.style.setProperty('--rx', rx);
+    host.style.setProperty('--ry', ry);
+  });
+  host.addEventListener('pointerleave', ()=>{ host.style.setProperty('--rx','0deg'); host.style.setProperty('--ry','0deg'); });
+})();
+
+// Rail progress
+(function(){
+  const rail = document.getElementById('rail');
+  const bar  = document.getElementById('railProgress');
+  const steps= [...rail.querySelectorAll('.step')];
+  const idxEl= document.getElementById('railIndex');
+  const statusEl = document.getElementById('railStatus');
+
+  if(!rail||!bar||!steps.length) return;
+
+  // mark first active
+  steps[0].classList.add('is-active');
+
+  // Make vertical wheel scroll translate to horizontal
+  rail.addEventListener('wheel', (e)=>{
+    if(Math.abs(e.deltaY) > Math.abs(e.deltaX)){
+      rail.scrollLeft += e.deltaY * 0.8;
+      e.preventDefault();
+    }
+  }, {passive:false});
+
+  // Keyboard nudge
+  rail.addEventListener('keydown', (e)=>{
+    if(e.key==='ArrowRight') rail.scrollBy({left: rail.clientWidth*0.9, behavior:'smooth'});
+    if(e.key==='ArrowLeft')  rail.scrollBy({left:-rail.clientWidth*0.9, behavior:'smooth'});
+  });
+
+  const setActive = ()=>{
+    // progress width
+    const max = rail.scrollWidth - rail.clientWidth;
+    const pct = max>0 ? (rail.scrollLeft / max) * 100 : 0;
+    bar.style.width = pct + '%';
+
+    // which card is centered?
+    const center = rail.scrollLeft + rail.clientWidth/2;
+    let active = 0, best = Infinity;
+    steps.forEach((s,i)=>{
+      const r = s.getBoundingClientRect();
+      const left = r.left + rail.scrollLeft - rail.getBoundingClientRect().left;
+      const mid = left + r.width/2;
+      const dist = Math.abs(center - mid);
+      if(dist < best){ best = dist; active = i; }
+    });
+    steps.forEach((s,i)=>{
+      s.classList.toggle('is-active', i===active);
+      s.setAttribute('aria-selected', i===active ? 'true' : 'false');
+    });
+    if(idxEl) idxEl.textContent = String(active+1);
+    if(statusEl) statusEl.style.opacity = 1;
+  };
+
+  setActive();
+  rail.addEventListener('scroll', ()=>requestAnimationFrame(setActive), {passive:true});
+  window.addEventListener('resize', setActive);
+})();
+
+(function(){
+  const els = document.querySelectorAll('.faq');
+  els.forEach(d=>{
+    const content = d.querySelector('.faq-content');
+    if(!content) return;
+
+    d.addEventListener('toggle', ()=>{
+      const start = content.offsetHeight;
+      if(d.open){
+        content.style.height = 'auto';
+        const end = content.offsetHeight;
+        content.style.height = start+'px';
+        content.offsetHeight; // reflow
+        content.style.transition = 'height .35s cubic-bezier(.22,1,.36,1)';
+        content.style.height = end+'px';
+        content.addEventListener('transitionend', function te(){
+          content.style.height = 'auto'; content.style.transition=''; content.removeEventListener('transitionend', te);
+        });
+      } else {
+        const end = 0;
+        content.style.height = content.offsetHeight+'px';
+        content.offsetHeight;
+        content.style.transition = 'height .3s ease';
+        content.style.height = end+'px';
+      }
+    });
+  });
+})();
+</script>
+
+
+{% endblock %}

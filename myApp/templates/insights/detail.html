@@ -1,0 +1,21 @@
+{# templates/insights/detail.html #}
+{% extends "base.html" %}
+{% block title %}{{ insight.title }} | Insights | Hammer Group{% endblock %}
+{% block content %}
+<section class="py-16 bg-white">
+  <div class="max-w-3xl mx-auto px-6">
+    <p class="text-[11px] tracking-[.35em] uppercase text-[#18AFAB]">{{ insight.tag|default:"Insight" }}</p>
+    <h1 class="text-3xl md:text-4xl font-extrabold mt-2">{{ insight.title }}</h1>
+    <p class="text-gray-500 mt-2">{{ insight.read_minutes }} min read • {{ insight.published_at|date:"M j, Y" }}</p>
+    {% if insight.cover_image_url %}
+      <img src="{{ insight.cover_image_url }}" alt="{{ insight.title }}" class="w-full rounded-2xl shadow mt-6">
+    {% endif %}
+    {% if insight.excerpt %}
+      <p class="text-lg text-gray-700 mt-6">{{ insight.excerpt }}</p>
+    {% endif %}
+    {% if insight.body %}
+      <article class="prose lg:prose-lg mt-6 max-w-none">{{ insight.body|safe }}</article>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}

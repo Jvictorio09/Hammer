@@ -73,6 +73,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'myApp.context_processors.nav_services',
             ],
         },
     },
@@ -139,3 +140,12 @@ STORAGES = {
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+# settings.py
+import os
+
+RESEND_API_KEY   = os.getenv("RESEND_API_KEY", "")
+RESEND_FROM      = os.getenv("RESEND_FROM", "Hammer <no-reply@hammer.ae>")
+RESEND_REPLY_TO  = os.getenv("RESEND_REPLY_TO", "hello@hammer.ae")
+RESEND_BASE_URL  = os.getenv("RESEND_BASE_URL", "https://api.resend.com")
+
+DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", "hello@hammer.ae")

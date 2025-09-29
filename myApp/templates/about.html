@@ -1,0 +1,1092 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}About Hammer | Design & Build in Dubai{% endblock %}
+
+{% block extra_head %}
+  <meta name="description" content="Hammer is a Dubai-based design & build company delivering premium landscapes, interiors, joinery, marble and facility management. One accountable team, clear milestones, on-time handover.">
+  <link rel="canonical" href="{{ request.build_absolute_uri|cut:'?' }}">
+  <meta property="og:title" content="About Hammer | Design & Build in Dubai">
+  <meta property="og:description" content="Premium design & build across the UAE — landscapes, interiors, joinery, marble and facility management.">
+  <meta property="og:type" content="website">
+  <meta property="og:image" content="https://picsum.photos/1200/630?random=8501">
+
+  <style>
+    :root{
+      --ink:#0B0E14; --ink2:#121722; --bg:#ffffff; --teal:#18AFAB; --muted:#6B7280; --ring:rgba(24,175,171,.18);
+      --radius:16px; --shadow:0 12px 28px rgba(0,0,0,.10);
+    }
+    /* Utilities */
+    .container{max-width:72rem;margin-inline:auto;padding-inline:1.5rem}
+    .chip{display:inline-flex;align-items:center;gap:.5rem;padding:.35rem .7rem;border-radius:999px;background:#f5f5f5;font-size:.8rem;color:#374151}
+    .card{border:1px solid rgba(0,0,0,.06);border-radius:var(--radius);background:#fff;box-shadow:0 0 0 0 rgba(0,0,0,0);transition:.25s}
+    .card:hover{box-shadow:var(--shadow);border-color:var(--ring)}
+    .eyebrow{letter-spacing:.35em;text-transform:uppercase;font-size:.65rem;color:var(--teal)}
+    .section{padding-block:4rem}
+    .h1{font-weight:800;font-size:clamp(1.875rem,2.5vw + 1rem,3rem);line-height:1.15}
+    .h2{font-weight:800;font-size:clamp(1.5rem,1.2vw + 1rem,2rem)}
+    .lead{color:#ffffffcc}
+    .sub{color:var(--muted)}
+    .grid{display:grid;gap:1rem}
+    @media(min-width:640px){.grid-sm-2{grid-template-columns:repeat(2,minmax(0,1fr))}}
+    @media(min-width:1024px){.grid-lg-3{grid-template-columns:repeat(3,minmax(0,1fr))}}
+    @media(min-width:1280px){.grid-xl-4{grid-template-columns:repeat(4,minmax(0,1fr))}}
+
+    /* Hero */
+     /* Background image + overlay for .hero */
+  .hero{
+    position: relative;
+    isolation: isolate;                 /* keeps overlays inside */
+    min-height: 52vh;                   /* tweak as you like */
+    display: grid;
+    align-items: center;
+    color: #fff;                        /* white text on image */
+    --hero-img: url("{{ hero_image_url|default:'https://images.unsplash.com/photo-1501004318641-b39e6451bec6?q=80&w=2000&auto=format&fit=crop' }}");
+  }
+  .hero::before{
+    content:"";
+    position:absolute; inset:0; z-index:-2;
+    background-image: var(--hero-img);
+    background-size: cover;
+    background-position: center center; /* try 'center 35%' if you need a focal point */
+    background-repeat: no-repeat;
+    filter: none;
+    transform: scale(1.02);             /* tiny zoom to avoid edge gaps on mobile */
+  }
+  .hero::after{
+    content:"";
+    position:absolute; inset:0; z-index:-1;
+    /* soft vignette: darker at bottom for copy legibility */
+    background: radial-gradient(120% 90% at 50% 10%, rgba(0,0,0,.15) 0%, rgba(0,0,0,.35) 60%, rgba(0,0,0,.55) 100%);
+    /* if your image is already dark, reduce the final stop to .45 */
+  }
+
+  /* Optional: taller hero on desktop */
+  @media (min-width: 1024px){
+    .hero{ min-height: 64vh; }
+  }
+
+  /* Respect users who prefer less motion (disables the tiny zoom) */
+  @media (prefers-reduced-motion: reduce){
+    .hero::before{ transform:none; }
+  }
+
+  /* Utility bits you already use */
+  .hero .container{ max-width: 72rem; margin-inline:auto; padding: 4.5rem 1.5rem; }
+  .eyebrow{ letter-spacing:.35em; text-transform:uppercase; color:#18AFAB; font-size:.62rem }
+  .h1{ font-weight:800; font-size:clamp(2rem, 4vw + 1rem, 3rem); line-height:1.1; }
+  .lead{ color:#e5e7eb; }
+  .chips{ display:flex; gap:.5rem; flex-wrap:wrap; margin-top:1rem }
+  .chip{ background:rgba(255,255,255,.12); color:#fff; border:1px solid rgba(255,255,255,.18); padding:.4rem .7rem; border-radius:999px; font-size:.8rem; backdrop-filter:saturate(120%) blur(4px) }
+
+    /* Metrics */
+    .metric{padding:1.25rem;text-align:center}
+    .metric .num{color:var(--teal);font-weight:800;font-size:1.75rem}
+    .metric .lbl{color:#4B5563}
+
+    /* Services list */
+    .svc{padding:1.25rem;display:flex;gap:.75rem}
+    .svc-ico{width:2.5rem;height:2.5rem;border-radius:12px;display:grid;place-items:center;background:rgba(24,175,171,.10);color:var(--teal);flex:0 0 auto}
+
+    /* Values */
+    .value{padding:1.25rem;border-radius:var(--radius);background:#0f1320;border:1px solid rgba(255,255,255,.08)}
+
+    /* Process tiles (2 → 4) */
+    .process-tile{position:relative;padding-top:2rem}
+    .process-num{position:absolute;inset-inline:0;top:.25rem;margin:auto;width:2.25rem;height:2.25rem;border-radius:999px;
+                 display:grid;place-items:center;background:var(--ink);color:#fff;font-weight:700;font-size:.85rem;box-shadow:var(--shadow)}
+    .process-card{border-radius:var(--radius);border:1px solid rgba(255,255,255,.08);background:#121722;padding:1.25rem}
+    .process-ico{width:2.25rem;height:2.25rem;border-radius:10px;background:#ffffff14;display:grid;place-items:center;margin-bottom:.5rem;color:#fff}
+
+    /* Leaders carousel */
+    .carousel-wrap{position:relative}
+    .carousel{display:flex;gap:1rem;overflow:auto;scroll-snap-type:x mandatory;scrollbar-width:none;padding-bottom:.25rem}
+    .carousel::-webkit-scrollbar{display:none}
+    .slide{scroll-snap-align:center;flex:0 0 78%;max-width:78%}
+    @media(min-width:640px){.slide{flex-basis:48%;max-width:48%}}
+    @media(min-width:1024px){.slide{flex-basis:31%;max-width:31%}}
+    @media(min-width:1280px){.slide{flex-basis:24%;max-width:24%}}
+    .lead-card{overflow:hidden}
+    .lead-img{width:100%;aspect-ratio:4/3;object-fit:cover}
+    .car-btn{position:absolute;top:40%;transform:translateY(-50%);width:42px;height:42px;border-radius:999px;border:1px solid rgba(0,0,0,.08);
+             background:#fff;display:grid;place-items:center;box-shadow:var(--shadow)}
+    .car-prev{left:-6px}
+    .car-next{right:-6px}
+    @media(min-width:640px){.car-prev{left:-12px}.car-next{right:-12px}}
+
+    /* Timeline list */
+    .tick{width:8px;height:8px;border-radius:999px;background:var(--teal);margin-top:.35rem}
+
+    /* CTA */
+    .cta{border-radius:20px;background:var(--ink2);color:#fff;border:1px solid rgba(255,255,255,.08);padding:1.5rem}
+    .cta .btn{display:inline-flex;align-items:center;gap:.5rem;border-radius:999px;background:var(--teal);color:#fff;padding:.75rem 1rem;font-weight:600}
+  </style>
+{% endblock %}
+
+{% block content %}
+
+<!-- HERO -->
+<section class="hero hero--image grain" aria-label="About Hammer hero"
+         style="--hero-img: url('{{ hero_image_url|default:"https://images.unsplash.com/photo-1493666438817-866a91353ca9?q=80&w=2000&auto=format&fit=crop" }}');">
+  <div class="hero__overlay"></div>
+  <div class="container hero__inner">
+    <p class="eyebrow">About Hammer</p>
+    <h1 class="h1" style="margin-top:.5rem">Design & Build, done properly.</h1>
+    <p class="lead" style="margin-top:1rem;max-width:48ch">
+      We create spaces that live beautifully — from quiet-luxury landscapes and interiors to bespoke joinery, marble, and aftercare.
+      One accountable team. Clear milestones. On-time handover.
+    </p>
+    <div class="chips">
+      <span class="chip">Dubai • UAE</span>
+      <span class="chip">Residential & Commercial</span>
+      <span class="chip">Concept → Aftercare</span>
+    </div>
+  </div>
+</section>
+
+<style>
+  :root{
+    --ink:#0B0E14;
+    --teal:#18AFAB;
+  }
+
+  .hero{
+    position:relative; overflow:hidden; color:#fff;
+    min-height:62vh; display:grid; place-items:end; /* text sits near bottom */
+    background:#0b0e14; /* safe fallback */
+  }
+  @media (min-width:768px){ .hero{ min-height:78vh } }
+
+  /* background via CSS variable */
+  .hero--image{ 
+    background-image: var(--hero-img);
+    background-size:cover; background-position:center;
+    will-change:transform;
+  }
+
+  /* overlay for legibility (L→R gradient + soft vignette) */
+  .hero__overlay{
+    position:absolute; inset:0; pointer-events:none;
+    background:
+      radial-gradient(120% 80% at 50% 20%, rgba(0,0,0,.35), transparent 55%),
+      linear-gradient(90deg, rgba(0,0,0,.75), rgba(0,0,0,.35) 45%, rgba(0,0,0,.08) 70%, transparent);
+  }
+
+  /* gentle texture for sophistication */
+  .grain::before{
+    content:""; position:absolute; inset:0; mix-blend-mode:overlay; opacity:.07; pointer-events:none;
+    background-image:url('https://www.transparenttextures.com/patterns/white-diamond.png');
+  }
+
+  .hero__inner{
+    position:relative; z-index:1; width:100%;
+    padding:3.5rem 1.5rem; /* tighter on mobile */
+  }
+  @media (min-width:768px){
+    .hero__inner{ padding:5rem 1.5rem }
+  }
+  .hero .eyebrow{ letter-spacing:.35em; text-transform:uppercase; color:var(--teal); font-size:.7rem }
+
+  /* entrance animation (respect reduced motion) */
+  @media (prefers-reduced-motion:no-preference){
+    .hero{ opacity:0; transform: translateY(10px); }
+    .hero.is-in{ opacity:1; transform:none; transition: opacity .7s cubic-bezier(.22,1,.36,1), transform .7s cubic-bezier(.22,1,.36,1); }
+    .hero--image{ background-position:center 12px; transition: background-position .7s cubic-bezier(.22,1,.36,1); }
+    .hero.is-in.hero--image{ background-position:center 0; }
+  }
+
+  /* optional: very subtle parallax on scroll */
+  @media (prefers-reduced-motion:no-preference){
+    .hero[data-parallax="1"]{ will-change:background-position; }
+  }
+</style>
+
+<script>
+  (function(){
+    const hero = document.currentScript.previousElementSibling.previousElementSibling; // the <section>
+    if(!hero) return;
+
+    // reveal on view
+    const prefersReduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if(prefersReduced || !('IntersectionObserver' in window)){
+      hero.classList.add('is-in');
+    } else {
+      const io = new IntersectionObserver((entries, obs)=>{
+        entries.forEach(e=>{
+          if(e.isIntersecting){ hero.classList.add('is-in'); obs.unobserve(hero); }
+        });
+      }, {threshold:.2});
+      io.observe(hero);
+    }
+
+    // subtle parallax (background-position) — safe & GPU-friendly
+    hero.dataset.parallax = '1';
+    const onScroll = ()=>{
+      const r = hero.getBoundingClientRect();
+      const vh = window.innerHeight || 0;
+      const vis = 1 - Math.min(1, Math.max(0, (r.top + r.height*0.2)/ (vh + r.height*0.2)));
+      const offset = Math.round(vis * 14); // 0→14px
+      hero.style.backgroundPosition = `center ${offset}px`;
+    };
+    if(!prefersReduced){
+      window.addEventListener('scroll', onScroll, {passive:true});
+      window.addEventListener('resize', onScroll);
+      onScroll();
+    }
+  })();
+</script>
+
+
+{% include "partials/stats.html" %}
+<!-- VALUES -->
+<section class="section principles" style="background:#0F1117;color:#fff">
+  <div class="container">
+    <header class="pr-head">
+      <p class="eyebrow">Principles</p>
+      <h2 class="h2">How we work</h2>
+    </header>
+
+    <div class="pr-grid">
+      {% for v in values %}
+        <article class="pr-card pr-reveal">
+          <div class="pr-icon">
+            {% if v.icon %}<i class="{{ v.icon }}"></i>{% else %}<i class="fa-solid fa-circle-check"></i>{% endif %}
+          </div>
+          <h3 class="pr-title">{{ v.title }}</h3>
+          <p class="pr-body">{{ v.body }}</p>
+        </article>
+      {% empty %}
+        <!-- tasteful fallbacks -->
+        <article class="pr-card pr-reveal">
+          <div class="pr-icon"><i class="fa-solid fa-gem"></i></div>
+          <h3 class="pr-title">Craft over speed</h3>
+          <p class="pr-body">Every junction resolved. Every finish considered. No shortcuts.</p>
+        </article>
+        <article class="pr-card pr-reveal">
+          <div class="pr-icon"><i class="fa-solid fa-diagram-project"></i></div>
+          <h3 class="pr-title">Transparent cadence</h3>
+          <p class="pr-body">Fixed milestones, weekly reporting, zero surprises.</p>
+        </article>
+        <article class="pr-card pr-reveal">
+          <div class="pr-icon"><i class="fa-solid fa-shield-halved"></i></div>
+          <h3 class="pr-title">Safety & privacy</h3>
+          <p class="pr-body">Clean sites, protected data, and authority approvals handled.</p>
+        </article>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<style>
+  .pr-head{ margin-bottom:1.25rem; position:relative; }
+  .pr-head:after{
+    content:""; display:block; height:1px; margin-top:1rem;
+    background:linear-gradient(90deg, rgba(255,255,255,.08), rgba(24,175,171,.35), rgba(255,255,255,.08));
+  }
+
+  /* grid: 1 → 2 → 3 */
+  .pr-grid{
+    display:grid; gap:1rem;
+    grid-template-columns:repeat(1,minmax(0,1fr));
+  }
+  @media (min-width:640px){ .pr-grid{ grid-template-columns:repeat(2,minmax(0,1fr)); } }
+  @media (min-width:1024px){ .pr-grid{ grid-template-columns:repeat(3,minmax(0,1fr)); } }
+
+  .pr-card{
+    border-radius:16px;
+    background:linear-gradient(180deg,#121722,#0F1117);
+    border:1px solid rgba(255,255,255,.08);
+    padding:1rem;
+    transition: transform .25s cubic-bezier(.22,1,.36,1), box-shadow .25s, border-color .25s;
+  }
+  .pr-card:hover{
+    transform:translateY(-2px);
+    box-shadow:0 18px 36px rgba(0,0,0,.35), 0 0 0 1px rgba(24,175,171,.20) inset;
+    border-color:rgba(24,175,171,.35);
+  }
+
+  .pr-icon{
+    width:44px; height:44px; border-radius:12px; margin-bottom:.6rem;
+    display:flex; align-items:center; justify-content:center;
+    background:rgba(255,255,255,.06); color:#18AFAB;
+    box-shadow:inset 0 0 0 1px rgba(255,255,255,.08);
+  }
+  .pr-title{ font-weight:700; line-height:1.25; }
+  .pr-body{ margin-top:.45rem; color:#cbd5e1; line-height:1.55; }
+
+  /* staggered reveal */
+  .pr-reveal{ opacity:0; transform:translateY(12px); }
+  .pr-reveal.is-in{ opacity:1; transform:none; transition:opacity .6s cubic-bezier(.22,1,.36,1), transform .6s cubic-bezier(.22,1,.36,1); }
+  @media (prefers-reduced-motion: reduce){
+    .pr-reveal{ opacity:1; transform:none; }
+  }
+</style>
+
+<script>
+  // Minimal staggered entrance
+  (function(){
+    const cards = document.querySelectorAll('.pr-reveal');
+    if(!cards.length) return;
+    if(!('IntersectionObserver' in window) || matchMedia('(prefers-reduced-motion: reduce)').matches){
+      cards.forEach(c => c.classList.add('is-in'));
+      return;
+    }
+    const io = new IntersectionObserver((entries, obs)=>{
+      entries.forEach((e, i)=>{
+        if(e.isIntersecting){
+          e.target.style.transitionDelay = (i * 60) + 'ms';
+          e.target.classList.add('is-in');
+          obs.unobserve(e.target);
+        }
+      });
+    }, { threshold: .15 });
+    cards.forEach(c => io.observe(c));
+  })();
+</script>
+
+<!-- WHAT WE DO (Premium cards + motion) -->
+<section class="section whatwedo" style="background:#fff">
+  <div class="container">
+    <header class="wwd-head">
+      <p class="eyebrow">What we do</p>
+      <h2 class="h2" style="margin-top:.25rem;color:var(--ink)">End-to-end capability</h2>
+      <p class="sub" style="margin-top:.5rem;max-width:60ch">
+        Strategy, design, engineering and delivery — under one roof. Fewer hand-offs, better outcomes.
+      </p>
+    </header>
+
+    <div class="grid grid-sm-2 grid-lg-3 grid-xl-4 wwd-grid">
+      {% if services %}
+        {% for s in services %}
+          <article class="card svc wwd-card wwd-reveal">
+            <div class="svc-ico wwd-ico"><i class="{{ s.icon }}"></i></div>
+            <div class="flex-1">
+              <h3 class="wwd-title">{{ s.title }}</h3>
+              {% if s.blurb %}<p class="sub wwd-text">{{ s.blurb }}</p>{% endif %}
+              {% if s.urlname %}
+                <a class="wwd-link" href="{% url s.urlname s.slug %}">
+                  Explore <i class="fa-solid fa-arrow-right-long"></i>
+                </a>
+              {% endif %}
+            </div>
+          </article>
+        {% endfor %}
+      {% else %}
+        <!-- tasteful fallbacks -->
+        <article class="card svc wwd-card wwd-reveal">
+          <div class="svc-ico wwd-ico"><i class="fa-solid fa-compass-drafting"></i></div>
+          <div class="flex-1">
+            <h3 class="wwd-title">Design Studio</h3>
+            <p class="sub wwd-text">Concept development, 2D/3D, palettes and space planning.</p>
+          </div>
+        </article>
+        <article class="card svc wwd-card wwd-reveal">
+          <div class="svc-ico wwd-ico"><i class="fa-solid fa-gears"></i></div>
+          <div class="flex-1">
+            <h3 class="wwd-title">Engineering & Technical</h3>
+            <p class="sub wwd-text">Drawings, MEP coordination and authority-ready packs.</p>
+          </div>
+        </article>
+        <article class="card svc wwd-card wwd-reveal">
+          <div class="svc-ico wwd-ico"><i class="fa-solid fa-helmet-safety"></i></div>
+          <div class="flex-1">
+            <h3 class="wwd-title">Build & Delivery</h3>
+            <p class="sub wwd-text">Sequenced works, QA, and on-time handover.</p>
+          </div>
+        </article>
+        <article class="card svc wwd-card wwd-reveal">
+          <div class="svc-ico wwd-ico"><i class="fa-solid fa-screwdriver-wrench"></i></div>
+          <div class="flex-1">
+            <h3 class="wwd-title">Joinery & Finishes</h3>
+            <p class="sub wwd-text">In-house custom kitchens, wardrobes and feature walls.</p>
+          </div>
+        </article>
+      {% endif %}
+    </div>
+  </div>
+</section>
+
+<style>
+  /* Header divider */
+  .wwd-head{ margin-bottom:1.1rem; position:relative; }
+  .wwd-head:after{
+    content:""; display:block; height:1px; margin-top:1rem;
+    background:linear-gradient(90deg, rgba(0,0,0,.06), rgba(24,175,171,.35), rgba(0,0,0,.06));
+  }
+
+  /* Card skin */
+  .wwd-card{
+    border:1px solid rgba(0,0,0,.06);
+    border-radius:16px;
+    background:#fff;
+    padding:1rem;
+    transition: transform .25s cubic-bezier(.22,1,.36,1), box-shadow .25s, border-color .25s;
+    display:flex; gap:.9rem; align-items:flex-start;
+    min-height: 9rem; /* keeps rows tidy */
+  }
+  .wwd-card:hover{
+    transform:translateY(-2px);
+    box-shadow:0 18px 36px rgba(0,0,0,.12), 0 0 0 1px rgba(24,175,171,.14) inset;
+    border-color:rgba(24,175,171,.28);
+  }
+
+  /* Icon pill */
+  .wwd-ico{
+    width:44px; height:44px; border-radius:12px;
+    display:flex; align-items:center; justify-content:center;
+    background:rgba(24,175,171,.10); color:var(--teal);
+    box-shadow:inset 0 0 0 1px rgba(24,175,171,.12);
+    flex:0 0 auto;
+  }
+
+  .wwd-title{ font-weight:700; color:var(--ink); line-height:1.25; }
+  .wwd-text{ margin-top:.4rem; color:#4b5563; } /* gray-600 */
+
+  /* CTA link */
+  .wwd-link{
+    display:inline-flex; align-items:center; gap:.45rem;
+    margin-top:.55rem; font-weight:600; color:var(--teal);
+  }
+  .wwd-link i{ transition: transform .25s; }
+  .wwd-link:hover i{ transform: translateX(3px); }
+
+  /* Staggered reveal */
+  .wwd-reveal{ opacity:0; transform:translateY(12px); }
+  .wwd-reveal.is-in{ opacity:1; transform:none; transition:opacity .6s cubic-bezier(.22,1,.36,1), transform .6s cubic-bezier(.22,1,.36,1); }
+  @media (prefers-reduced-motion: reduce){
+    .wwd-reveal{ opacity:1; transform:none; }
+  }
+</style>
+
+<script>
+  // Minimal intersection-based reveal with per-index delay
+  (function(){
+    const cards = document.querySelectorAll('.wwd-reveal');
+    if(!cards.length) return;
+
+    if(!('IntersectionObserver' in window) || matchMedia('(prefers-reduced-motion: reduce)').matches){
+      cards.forEach(c => c.classList.add('is-in'));
+      return;
+    }
+
+    const io = new IntersectionObserver((entries, obs)=>{
+      entries.forEach(e=>{
+        if(e.isIntersecting){
+          // Stagger by index in DOM flow within the grid
+          const idx = [...cards].indexOf(e.target);
+          e.target.style.transitionDelay = Math.min(idx*70, 350) + 'ms';
+          e.target.classList.add('is-in');
+          obs.unobserve(e.target);
+        }
+      });
+    }, { threshold:.15 });
+    cards.forEach(c => io.observe(c));
+  })();
+</script>
+
+
+
+<!-- PROCESS (2 → 4 tiles) -->
+<!-- PROCESS (2 → 4 tiles) -->
+<section class="section" style="background:var(--ink2);color:#fff">
+  <div class="container">
+    <header style="margin-bottom:1rem">
+      <p class="eyebrow">Delivery</p>
+      <h2 class="h2">Fixed milestones. Transparent cadence.</h2>
+    </header>
+
+    <style>
+      /* container rail (wide screens only) */
+      .proc-grid{ position:relative; }
+      @media (min-width:1280px){
+        .proc-grid::before{
+          content:""; position:absolute; left:0; right:0; top:1.75rem; height:2px;
+          background:linear-gradient(90deg, rgba(255,255,255,.14), rgba(24,175,171,.45), rgba(255,255,255,.14));
+          opacity:.55;
+        }
+      }
+
+      .process-tile{ position:relative; padding-top:2rem; }
+      .process-num{
+        position:absolute; inset-inline:0; top:.2rem; margin:auto;
+        width:2.4rem; height:2.4rem; border-radius:999px; display:grid; place-items:center;
+        font-weight:700; font-size:.85rem; color:#fff;
+        background:linear-gradient(180deg,#0f1117,#0b0e14);
+        border:1px solid rgba(255,255,255,.12);
+        box-shadow:0 10px 24px rgba(0,0,0,.35), inset 0 0 0 1px rgba(255,255,255,.06);
+        z-index:2;
+      }
+      .process-card{
+        border-radius:16px; border:1px solid rgba(255,255,255,.08);
+        background:#121722; padding:1.15rem;
+        transition:transform .28s cubic-bezier(.22,1,.36,1), box-shadow .28s, border-color .28s;
+      }
+      .process-card:hover{
+        transform:translateY(-2px);
+        box-shadow:0 18px 36px rgba(0,0,0,.35), 0 0 0 1px rgba(24,175,171,.18) inset;
+        border-color:rgba(24,175,171,.28);
+      }
+      .process-ico{
+        width:2.25rem; height:2.25rem; border-radius:10px; display:grid; place-items:center; margin-bottom:.55rem;
+        color:#fff; background:rgba(255,255,255,.06); box-shadow:inset 0 0 0 1px rgba(255,255,255,.08);
+      }
+
+      /* staggered reveal (respects reduced motion) */
+      .proc-reveal{ opacity:0; transform:translateY(12px); }
+      .proc-reveal.is-in{ opacity:1; transform:none; transition:opacity .6s cubic-bezier(.22,1,.36,1), transform .6s cubic-bezier(.22,1,.36,1); }
+      @media (prefers-reduced-motion: reduce){
+        .proc-reveal{ opacity:1; transform:none; }
+      }
+    </style>
+
+    <div class="grid grid-sm-2 grid-xl-4 proc-grid">
+      {% if steps %}
+        {% for s in steps %}
+          <article class="process-tile proc-reveal" aria-label="Process step {{ forloop.counter }}">
+            {% with n=s.step_no|default:forloop.counter %}
+              <div class="process-num">{{ n|stringformat:"02d" }}</div>
+            {% endwith %}
+            <div class="process-card">
+              <div class="process-ico">
+                <i class="{{ s.icon|default:'fa-solid fa-circle-check' }} text-sm"></i>
+              </div>
+              <h4 style="font-weight:700">{{ s.title }}</h4>
+              {% if s.body %}
+                <p style="margin-top:.35rem;color:#cbd5e1">{{ s.body }}</p>
+              {% endif %}
+            </div>
+          </article>
+        {% endfor %}
+      {% else %}
+        <!-- tasteful fallback (no template filters / Python calls) -->
+        <article class="process-tile proc-reveal" aria-label="Process step 1">
+          <div class="process-num">01</div>
+          <div class="process-card">
+            <div class="process-ico"><i class="fa-solid fa-circle-check text-sm"></i></div>
+            <h4 style="font-weight:700">Site study &amp; concept</h4>
+          </div>
+        </article>
+
+        <article class="process-tile proc-reveal" aria-label="Process step 2">
+          <div class="process-num">02</div>
+          <div class="process-card">
+            <div class="process-ico"><i class="fa-solid fa-circle-check text-sm"></i></div>
+            <h4 style="font-weight:700">Permits &amp; technical</h4>
+          </div>
+        </article>
+
+        <article class="process-tile proc-reveal" aria-label="Process step 3">
+          <div class="process-num">03</div>
+          <div class="process-card">
+            <div class="process-ico"><i class="fa-solid fa-circle-check text-sm"></i></div>
+            <h4 style="font-weight:700">Build &amp; logistics</h4>
+          </div>
+        </article>
+
+        <article class="process-tile proc-reveal" aria-label="Process step 4">
+          <div class="process-num">04</div>
+          <div class="process-card">
+            <div class="process-ico"><i class="fa-solid fa-circle-check text-sm"></i></div>
+            <h4 style="font-weight:700">Handover &amp; aftercare</h4>
+          </div>
+        </article>
+      {% endif %}
+    </div>
+  </div>
+
+  <script>
+    // Staggered in-view reveal (per DOM order)
+    (function(){
+      const cards = document.querySelectorAll('.proc-reveal');
+      if(!cards.length) return;
+
+      if(!('IntersectionObserver' in window) || matchMedia('(prefers-reduced-motion: reduce)').matches){
+        cards.forEach(c => c.classList.add('is-in'));
+        return;
+      }
+      const io = new IntersectionObserver((entries, obs)=>{
+        entries.forEach(e=>{
+          if(e.isIntersecting){
+            const i = [...cards].indexOf(e.target);
+            e.target.style.transitionDelay = Math.min(i*70, 300) + 'ms';
+            e.target.classList.add('is-in');
+            obs.unobserve(e.target);
+          }
+        });
+      }, {threshold:.15});
+      cards.forEach(c => io.observe(c));
+    })();
+  </script>
+</section>
+
+
+<!-- LEADERSHIP (Linear Carousel) -->
+<section class="section" style="background:#fff">
+  <div class="container">
+    <header style="margin-bottom:1rem">
+      <p class="eyebrow">Leadership</p>
+      <h2 class="h2" style="color:var(--ink)">People who own the outcome</h2>
+      <p class="sub" style="margin-top:.35rem">A multidisciplinary team of designers, engineers and delivery leads.</p>
+    </header>
+
+    <style>
+      .carousel-wrap{
+        position:relative; display:flex; align-items:center; gap:.75rem;
+      }
+      .carousel{
+        --gap: 1rem;
+        display:flex; gap:var(--gap); overflow:auto; scroll-snap-type:x mandatory;
+        padding:.25rem; margin-inline:auto; width:100%;
+        scrollbar-width:none;
+      }
+      .carousel::-webkit-scrollbar{ display:none; }
+
+      /* edge fades */
+      .carousel-wrap::before,
+      .carousel-wrap::after{
+        content:""; position:absolute; top:0; bottom:0; width:42px; pointer-events:none;
+      }
+      .carousel-wrap::before{
+        left:-2px; background:linear-gradient(to right,#fff,rgba(255,255,255,0));
+      }
+      .carousel-wrap::after{
+        right:-2px; background:linear-gradient(to left,#fff,rgba(255,255,255,0));
+      }
+
+      .card{
+        scroll-snap-align:center;
+        border:1px solid rgba(0,0,0,.06); border-radius:16px; background:#fff; overflow:hidden;
+        transition: transform .25s cubic-bezier(.22,1,.36,1), box-shadow .25s, border-color .25s;
+        box-shadow:0 1px 0 rgba(0,0,0,.02);
+      }
+      .card:hover{
+        transform:translateY(-2px);
+        box-shadow:0 18px 36px rgba(0,0,0,.12), 0 0 0 1px rgba(24,175,171,.12) inset;
+        border-color:rgba(24,175,171,.25);
+      }
+
+      /* slide sizing (mobile shows 1, then 1.5, 2, 3, 4) */
+      .slide{ flex:0 0 88%; max-width:88%; }
+      @media (min-width:480px){ .slide{ flex-basis:72%; max-width:72%; } }
+      @media (min-width:768px){ .slide{ flex-basis:50%; max-width:50%; } }
+      @media (min-width:1024px){ .slide{ flex-basis:33.333%; max-width:33.333%; } }
+      @media (min-width:1280px){ .slide{ flex-basis:25%; max-width:25%; } }
+
+      .lead-card{ display:flex; flex-direction:column; height:100%; }
+      .lead-img{ width:100%; height:260px; object-fit:cover; display:block; background:#f3f4f6; }
+
+      .car-btn{
+        flex:0 0 auto;
+        width:40px; height:40px; border-radius:10px; border:1px solid rgba(0,0,0,.08);
+        background:#fff; display:grid; place-items:center; color:#111;
+        box-shadow:0 6px 16px rgba(0,0,0,.06);
+        transition:transform .2s, box-shadow .2s, border-color .2s, opacity .2s;
+      }
+      .car-btn:hover{ transform:translateY(-1px); box-shadow:0 12px 24px rgba(0,0,0,.10); border-color:rgba(24,175,171,.25); }
+      .car-btn[disabled]{ opacity:.4; pointer-events:none; }
+
+      /* focus ring */
+      .car-btn:focus-visible{ outline: none; box-shadow:0 0 0 3px rgba(24,175,171,.25); }
+
+      /* reduced motion */
+      @media (prefers-reduced-motion: reduce){
+        .card, .car-btn{ transition:none !important; }
+      }
+    </style>
+
+    <div class="carousel-wrap">
+      <button class="car-btn car-prev" aria-label="Previous leaders" id="leadersPrev">
+        <i class="fa-solid fa-chevron-left" aria-hidden="true"></i>
+      </button>
+
+      <div class="carousel" id="leadersCarousel" aria-label="Leadership carousel" tabindex="0">
+        {% for p in leaders %}
+          <article class="card slide lead-card">
+            <img class="lead-img" src="{{ p.photo }}" alt="{{ p.name }}" loading="lazy" referrerpolicy="no-referrer">
+            <div style="padding:1rem">
+              <h3 style="font-weight:700;color:var(--ink)">{{ p.name }}</h3>
+              <p class="sub" style="margin-top:.15rem">{{ p.role }}</p>
+              {% if p.bio %}<p class="sub" style="margin-top:.35rem">{{ p.bio }}</p>{% endif %}
+            </div>
+          </article>
+        {% empty %}
+          <!-- simple fallbacks -->
+          {% for i in "1,2,3,4"|cut:"," %}
+          <article class="card slide lead-card">
+            <img class="lead-img" src="https://picsum.photos/600/400?random={{ forloop.counter }}" alt="Leader">
+            <div style="padding:1rem">
+              <h3 style="font-weight:700;color:var(--ink)">Leader {{ forloop.counter }}</h3>
+              <p class="sub" style="margin-top:.15rem">Executive</p>
+              <p class="sub" style="margin-top:.35rem">Bio coming soon.</p>
+            </div>
+          </article>
+          {% endfor %}
+        {% endfor %}
+      </div>
+
+      <button class="car-btn car-next" aria-label="Next leaders" id="leadersNext">
+        <i class="fa-solid fa-chevron-right" aria-hidden="true"></i>
+      </button>
+    </div>
+
+    <script>
+      (function(){
+        const wrap  = document.querySelector('.carousel-wrap');
+        const rail  = document.getElementById('leadersCarousel');
+        const prev  = document.getElementById('leadersPrev');
+        const next  = document.getElementById('leadersNext');
+        if(!rail) return;
+
+        // step size ≈ one slide + gap
+        const step = () => {
+          const slide = rail.querySelector('.slide');
+          const gap = parseFloat(getComputedStyle(rail).gap || '16');
+          return (slide ? slide.getBoundingClientRect().width : rail.clientWidth * 0.8) + gap;
+        };
+
+        const atStart = () => rail.scrollLeft <= 2;
+        const atEnd   = () => (rail.scrollLeft + rail.clientWidth) >= (rail.scrollWidth - 2);
+
+        const updateBtns = () => {
+          if(prev) prev.disabled = atStart();
+          if(next) next.disabled = atEnd();
+        };
+
+        // buttons
+        prev && prev.addEventListener('click', () => {
+          rail.scrollBy({left: -step(), behavior:'smooth'}); 
+          setTimeout(updateBtns, 300);
+        });
+        next && next.addEventListener('click', () => {
+          rail.scrollBy({left:  step(), behavior:'smooth'});
+          setTimeout(updateBtns, 300);
+        });
+
+        // wheel => horizontal
+        rail.addEventListener('wheel', (e)=>{
+          if(Math.abs(e.deltaY) > Math.abs(e.deltaX)){
+            rail.scrollLeft += e.deltaY * 0.85;
+            e.preventDefault();
+          }
+        }, {passive:false});
+
+        // keyboard
+        rail.addEventListener('keydown', (e)=>{
+          if(e.key === 'ArrowRight') rail.scrollBy({left: step(), behavior:'smooth'});
+          if(e.key === 'ArrowLeft')  rail.scrollBy({left:-step(), behavior:'smooth'});
+        });
+
+        // snap center on resize for nicer feel
+        let rAF; 
+        rail.addEventListener('scroll', ()=> {
+          cancelAnimationFrame(rAF);
+          rAF = requestAnimationFrame(updateBtns);
+        }, {passive:true});
+        window.addEventListener('resize', updateBtns);
+
+        // init
+        updateBtns();
+      })();
+    </script>
+  </div>
+</section>
+
+<!-- TIMELINE -->
+<section class="section" style="background:#fff; padding:4rem 0 4.5rem">
+  <style>
+    :root{
+      --ink:#0B0E14; --muted:#6B7280; --teal:#18AFAB; --rail:#e5e7eb; --card:#ffffff;
+    }
+
+    /* fine-tuning knobs */
+    .tlx{
+      --yearW: 130px;         /* width of the year column */
+      --dot:   24px;          /* dot diameter */
+      --dotX:  92px;          /* rail X from left of .tlx (centerline). adjust if needed */
+      --padX:  2.25rem;       /* card side padding (keeps air) */
+      --gapY:  1.5rem;        /* vertical gap between items */
+    }
+
+    .tlx-wrap{
+      width:min(72rem, calc(100% - 4rem));
+      margin-inline:auto;
+    }
+
+    .tlx-card{
+      background:var(--card);
+      border:1px solid rgba(0,0,0,.06);
+      border-radius:20px;
+      padding:2.25rem var(--padX) 2.5rem;
+      box-shadow:0 10px 30px rgba(0,0,0,.04), 0 1px 0 rgba(0,0,0,.02);
+      display:flex; flex-direction:column; align-items:center;
+    }
+
+    .tlx-title{
+      font-weight:800; color:var(--ink); text-align:center;
+      font-size:1.5rem; margin-bottom:1.25rem;
+    }
+    @media (min-width:768px){ .tlx-title{ font-size:1.75rem } }
+
+    /* centered timeline block */
+    .tlx{
+      position:relative;
+      display:grid; gap:var(--gapY);
+      width:min(48rem, 100%); margin-inline:auto;
+    }
+    /* rail aligned to dot center (tweak --dotX if needed) */
+    .tlx::before{
+      content:""; position:absolute; top:0; bottom:0;
+      left:var(--dotX); width:2px; background:var(--rail);
+    }
+
+    .tlx-item{
+      position:relative;
+      display:grid; grid-template-columns:var(--yearW) 1fr; align-items:start; gap:1rem;
+      transform:translateY(8px); opacity:0; /* reveal start */
+    }
+    .tlx-item.is-in{ transform:none; opacity:1; transition:opacity .5s ease, transform .5s ease; }
+
+    .tlx-year{
+      position:relative; z-index:1; width:var(--yearW);
+      display:flex; align-items:center; gap:.85rem; padding-left:.25rem;
+    }
+    .tlx-dot{
+      width:var(--dot); height:var(--dot); border-radius:999px; background:#fff;
+      border:2px solid var(--teal); box-shadow:0 0 0 5px #fff;
+      position:relative; left:4px; flex:0 0 var(--dot);
+    }
+    .tlx-ytext{
+      font-weight:800; color:var(--ink); font-size:1.05rem; letter-spacing:.02em;
+    }
+
+    .tlx-body{min-width:0}
+    .tlx-event{ font-weight:700; color:var(--ink); line-height:1.35; }
+    .tlx-sub{ color:var(--muted); margin-top:.35rem; line-height:1.6; }
+
+    /* hover highlight */
+    .tlx-item:hover .tlx-dot{ box-shadow:0 0 0 7px #fff; border-color:rgba(24,175,171,.9); }
+    .tlx-item:hover .tlx-event{ color:#0b0e14; text-shadow:0 0 0 rgba(0,0,0,0); }
+
+    /* compact */
+    @media (max-width:640px){
+      .tlx-card{ padding:1.25rem 1.25rem 1.5rem }
+      .tlx{ width:min(40rem, 100%); --gapY:1.25rem; }
+      .tlx{ --yearW:108px; --dot:20px; --dotX:70px; } /* keep the rail aligned on small screens */
+      .tlx-ytext{ font-size:1rem }
+      .tlx-dot{ box-shadow:0 0 0 4px #fff; left:3px; }
+    }
+
+    @media (prefers-reduced-motion: reduce){
+      .tlx-item{ transform:none !important; opacity:1 !important; transition:none !important; }
+    }
+  </style>
+
+  <div class="tlx-wrap">
+    <div class="tlx-card">
+      <h3 class="tlx-title">Milestones</h3>
+
+      <ol class="tlx" id="milestones" aria-label="Company milestones">
+        {% for t in timeline %}
+          <li class="tlx-item">
+            <div class="tlx-year">
+              <span class="tlx-dot" aria-hidden="true"></span>
+              <span class="tlx-ytext">{% if t.year %}{{ t.year|stringformat:"s" }}{% else %}—{% endif %}</span>
+            </div>
+            <div class="tlx-body">
+              <div class="tlx-event">{{ t.event }}</div>
+              {% if t.sub %}<div class="tlx-sub">{{ t.sub }}</div>{% endif %}
+            </div>
+          </li>
+        {% empty %}
+          <li class="tlx-item">
+            <div class="tlx-year"><span class="tlx-dot"></span><span class="tlx-ytext">2020</span></div>
+            <div class="tlx-body"><div class="tlx-event">Founded in Dubai</div><div class="tlx-sub">Boutique design & build studio</div></div>
+          </li>
+          <li class="tlx-item">
+            <div class="tlx-year"><span class="tlx-dot"></span><span class="tlx-ytext">2022</span></div>
+            <div class="tlx-body"><div class="tlx-event">Joinery production facility</div><div class="tlx-sub">22,000 sqft; in-house manufacturing</div></div>
+          </li>
+        {% endfor %}
+      </ol>
+    </div>
+  </div>
+
+  <script>
+    // gentle reveal on scroll
+    (function(){
+      const items = document.querySelectorAll('#milestones .tlx-item');
+      if(!items.length) return;
+
+      if(!('IntersectionObserver' in window)){
+        items.forEach(i=> i.classList.add('is-in'));
+        return;
+      }
+      const io = new IntersectionObserver((entries, obs)=>{
+        entries.forEach((e,i)=>{
+          if(e.isIntersecting){
+            // small stagger
+            e.target.style.transitionDelay = (i * 40) + 'ms';
+            e.target.classList.add('is-in');
+            obs.unobserve(e.target);
+          }
+        });
+      }, {threshold:.15});
+      items.forEach(i=> io.observe(i));
+    })();
+  </script>
+</section>
+
+
+
+{% include "partials/partners.html" %}
+{% include "partials/cta_slim.html" %}
+<!-- TESTIMONIALS (Polished + Motion) -->
+<section class="section" style="background:#fff;color:var(--ink)">
+  <style>
+    :root{ --ink:#0B0E14; --muted:#6B7280; --teal:#18AFAB; --border:rgba(0,0,0,.08) }
+
+    .q-wrap{max-width:72rem;margin-inline:auto;padding:0 1.25rem}
+    .q-head{margin-bottom:1rem}
+    .q-eyebrow{letter-spacing:.35em;text-transform:uppercase;color:var(--teal);font-size:.62rem}
+    .q-title{font-weight:800;color:var(--ink);font-size:1.5rem}
+    @media (min-width:768px){ .q-title{font-size:1.875rem} }
+
+    .q-grid{display:grid;grid-template-columns:1fr;gap:1rem}
+    @media (min-width:640px){.q-grid{grid-template-columns:repeat(2,1fr)}}
+    @media (min-width:1024px){.q-grid{grid-template-columns:repeat(3,1fr)}}
+
+    .q-card{
+      position:relative; isolation:isolate;
+      background:#fff; border:1px solid var(--border); border-radius:16px;
+      padding:1.1rem 1.15rem 1.15rem 1.15rem;
+      box-shadow:0 1px 0 rgba(0,0,0,.02);
+      transition:transform .25s, box-shadow .25s, border-color .25s;
+      transform:translateY(10px); opacity:0;
+    }
+    /* accent edge */
+    .q-card:before{
+      content:""; position:absolute; inset:0; border-radius:16px; padding:1px;
+      background:linear-gradient(135deg, rgba(24,175,171,.5), rgba(24,175,171,0));
+      -webkit-mask:linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+      -webkit-mask-composite:xor; mask-composite:exclude; opacity:.0; transition:opacity .25s;
+    }
+    .q-card:hover{
+      transform:translateY(-2px);
+      box-shadow:0 18px 36px rgba(0,0,0,.10), 0 0 0 1px rgba(24,175,171,.12) inset;
+      border-color:rgba(24,175,171,.22);
+    }
+    .q-card:hover:before{opacity:.9}
+
+    .q-quote{
+      display:flex; gap:.6rem; align-items:flex-start;
+    }
+    .q-mark{
+      flex:0 0 auto; line-height:1; font-size:1.6rem; color:var(--teal);
+      filter:drop-shadow(0 2px 4px rgba(24,175,171,.15));
+    }
+    .q-text{
+      font-style:italic; color:#1f2937; line-height:1.6;
+      display:-webkit-box; -webkit-line-clamp:6; -webkit-box-orient:vertical; overflow:hidden;
+    }
+
+    .q-meta{margin-top:.75rem; color:var(--muted); font-size:.9rem}
+    .q-stars{color:#F59E0B; font-size:.85rem; letter-spacing:.1em} /* optional rating */
+
+    /* reveal in */
+    .q-in{transform:none; opacity:1; transition:transform .5s ease, opacity .5s ease}
+    @media (prefers-reduced-motion: reduce){
+      .q-card{transform:none; opacity:1; transition:none}
+    }
+  </style>
+
+  <div class="q-wrap">
+    <header class="q-head">
+      <p class="q-eyebrow">Feedback</p>
+      <h2 class="q-title">What clients say</h2>
+    </header>
+
+    <div class="q-grid" id="qGrid">
+      {% for q in quotes %}
+        <blockquote class="q-card">
+          <div class="q-quote">
+            <div class="q-mark">“</div>
+            <p class="q-text">{{ q.quote }}</p>
+          </div>
+
+          <footer class="q-meta">
+            <!-- Optional stars: add q.stars (1–5) in your data to render -->
+            {% if q.stars %}
+              <span class="q-stars">{% for _ in ""|center:q.stars %}★{% endfor %}</span>
+              &nbsp;·&nbsp;
+            {% endif %}
+            — {{ q.author }}{% if q.role %}, {{ q.role }}{% endif %}
+          </footer>
+        </blockquote>
+      {% empty %}
+        <blockquote class="q-card">
+          <div class="q-quote">
+            <div class="q-mark">“</div>
+            <p class="q-text">Hammer delivered on time and to a level of finish we didn’t think possible.</p>
+          </div>
+          <footer class="q-meta">— Private Client, Dubai</footer>
+        </blockquote>
+      {% endfor %}
+    </div>
+  </div>
+
+  <script>
+    // Staggered reveal on scroll
+    (function(){
+      const cards = document.querySelectorAll('#qGrid .q-card');
+      if(!cards.length) return;
+
+      if(!('IntersectionObserver' in window)){
+        cards.forEach(c=>c.classList.add('q-in'));
+        return;
+      }
+      const io = new IntersectionObserver((entries, obs)=>{
+        entries.forEach((e, i)=>{
+          if(e.isIntersecting){
+            // small stagger by index inside its row
+            e.target.style.transitionDelay = (i * 40) + 'ms';
+            e.target.classList.add('q-in');
+            obs.unobserve(e.target);
+          }
+        });
+      }, { threshold:.15 });
+
+      cards.forEach(c=> io.observe(c));
+    })();
+  </script>
+</section>
+
+
+
+
+{% include "partials/contact.html" %}
+
+<script>
+  // Leaders carousel controls (mouse, keys, touch already via native scroll)
+  (function(){
+    const wrap = document.getElementById('leadersCarousel');
+    const prev = document.getElementById('leadersPrev');
+    const next = document.getElementById('leadersNext');
+    if(!wrap || !prev || !next) return;
+
+    function step(dir){
+      const w = wrap.clientWidth;
+      wrap.scrollBy({left: dir * (w * 0.85), behavior:'smooth'});
+    }
+    prev.addEventListener('click', ()=> step(-1));
+    next.addEventListener('click', ()=> step(1));
+
+    // Keyboard accessibility
+    wrap.setAttribute('tabindex','0');
+    wrap.addEventListener('keydown', (e)=>{
+      if(e.key === 'ArrowRight') step(1);
+      if(e.key === 'ArrowLeft') step(-1);
+    });
+  })();
+</script>
+
+{% endblock %}

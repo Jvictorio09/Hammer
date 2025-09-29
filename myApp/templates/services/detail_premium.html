@@ -1,0 +1,468 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ meta_title }}{% endblock %}
+
+{% block extra_head %}
+  <meta name="description" content="{{ meta_desc }}">
+  <link rel="canonical" href="{{ request.scheme }}://{{ request.get_host }}{{ canonical|cut:'?' }}">
+  <script type="application/ld+json">
+  {"@context":"https://schema.org","@type":"Service",
+   "name":"{{ service.title|escapejs }}",
+   "provider":{"@type":"Organization","name":"Hammer Group"},
+   "areaServed":"Dubai, UAE",
+   "serviceType":"{{ service.pinned_heading|default:service.title|escapejs }}",
+   "description":"{{ meta_desc|escapejs }}"}
+  </script>
+{% endblock %}
+
+{% block content %}
+
+<!-- ============ HERO (Case-study lead) ============ -->
+<section class="relative overflow-hidden bg-black text-white">
+  <div class="relative h-[64vh] md:h-[82vh]">
+    <img src="{{ service.hero_media_url|default:'https://picsum.photos/1920/1080?random=7001' }}"
+         alt="{{ service.title }} hero"
+         class="absolute inset-0 w-full h-full object-cover will-change-transform" id="heroMedia">
+    <div class="absolute inset-0 bg-gradient-to-r from-black/80 via-black/40 to-transparent"></div>
+  </div>
+  <div class="absolute inset-0">
+    <div class="max-w-7xl mx-auto h-full px-6 flex items-end pb-10">
+      <div class="max-w-3xl">
+        {% if service.eyebrow %}<p class="text-[11px] tracking-[.4em] uppercase text-[#18AFAB]">{{ service.eyebrow }}</p>{% endif %}
+        <h1 class="mt-3 text-4xl md:text-6xl font-extrabold leading-tight">{{ service.hero_headline }}</h1>
+        {% if service.hero_subcopy %}<p class="mt-4 text-white/85 text-lg">{{ service.hero_subcopy }}</p>{% endif %}
+        <div class="mt-6 flex flex-wrap gap-3">
+          <a href="#capabilities" class="inline-flex items-center rounded-full bg-white text-[#0F0F10] px-6 py-3 font-semibold shadow hover:scale-[1.02] transition">
+            Explore Capabilities <i class="fa-solid fa-arrow-right-long ml-2"></i>
+          </a>
+          <a href="#projects" class="inline-flex items-center gap-2 font-semibold text-white/90 hover:text-white">
+            View Case Studies <i class="fa-solid fa-arrow-right-long"></i>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="absolute top-5 right-5">
+    <span class="px-3 py-1.5 rounded-full bg-white/90 text-[#0F0F10] text-xs font-semibold shadow">
+      {{ service.stat_projects }} Projects
+    </span>
+  </div>
+</section>
+
+<!-- ============ METRICS (credibility) ============ -->
+<section class="bg-[#0F0F10] text-white border-t border-white/10">
+  <div class="max-w-7xl mx-auto px-6 py-6 grid sm:grid-cols-3 gap-4 text-center text-sm">
+    {% if service.metrics.all %}
+      {% for m in service.metrics.all %}
+      <div class="rounded-xl border border-white/10 bg-white/5 backdrop-blur p-4">
+        <p class="text-3xl font-extrabold text-[#18AFAB]">{{ m.value }}</p>
+        <p class="text-white/70">{{ m.label }}</p>
+      </div>
+      {% endfor %}
+    {% else %}
+      <div class="rounded-xl border border-white/10 bg-white/5 backdrop-blur p-4">
+        <p class="text-3xl font-extrabold text-[#18AFAB]">{{ service.stat_projects }}</p><p class="text-white/70">Projects Delivered</p>
+      </div>
+      <div class="rounded-xl border border-white/10 bg-white/5 backdrop-blur p-4">
+        <p class="text-3xl font-extrabold text-[#18AFAB]">{{ service.stat_years }}</p><p class="text-white/70">Years in Dubai</p>
+      </div>
+      <div class="rounded-xl border border-white/10 bg-white/5 backdrop-blur p-4">
+        <p class="text-3xl font-extrabold text-[#18AFAB]">{{ service.stat_specialists }}</p><p class="text-white/70">In-house Specialists</p>
+      </div>
+    {% endif %}
+  </div>
+</section>
+
+
+<!-- ============ SIGNATURE CAPABILITIES — CINEMATIC / GLASS ============ -->
+<!-- ============ CAPABILITIES — ALTERNATING EDITORIAL CLEAN ============ -->
+<section id="capabilities" class="relative bg-white text-[#0F0F10] py-20">
+  <div class="max-w-7xl mx-auto px-6 space-y-24">
+
+    {% with caps=service.pref_caps|default:service.capabilities.all features_list=service.pref_features|default:service.features.all %}
+    {% if caps %}
+      {% for c in caps %}
+      <div class="grid md:grid-cols-2 gap-12 items-center {% if forloop.counter|divisibleby:2 %}md:flex-row-reverse{% endif %}" data-animate>
+        
+        <!-- IMAGE -->
+        <div class="relative aspect-[4/3] rounded-2xl overflow-hidden shadow-lg">
+          {% if c.image_url %}
+            <img src="{{ c.image_url }}" alt="{{ c.title }}" 
+                 class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 hover:scale-105">
+          {% else %}
+            <img src="https://picsum.photos/800/600?random={{ forloop.counter|add:8000 }}" alt="{{ c.title }}"
+                 class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 hover:scale-105">
+          {% endif %}
+        </div>
+
+        <!-- TEXT -->
+        <div>
+          <span class="inline-flex h-10 w-10 items-center justify-center rounded-full bg-[#18AFAB]/15 text-[#18AFAB] font-bold text-sm shadow-inner">
+            {{ forloop.counter|stringformat:"02" }}
+          </span>
+          <h3 class="mt-4 text-2xl md:text-3xl font-extrabold tracking-tight">
+            {{ c.title }}
+          </h3>
+          {% if c.blurb %}
+            <p class="mt-3 text-gray-700 leading-relaxed text-base md:text-lg">
+              {{ c.blurb }}
+            </p>
+          {% endif %}
+          <div class="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-[#18AFAB]">
+            Scope details
+            <i class="fa-solid fa-arrow-right-long"></i>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+
+    {% elif features_list %}
+      {% for f in features_list %}
+      <div class="grid md:grid-cols-2 gap-12 items-center {% if forloop.counter|divisibleby:2 %}md:flex-row-reverse{% endif %}" data-animate>
+        <div class="relative aspect-[4/3] rounded-2xl overflow-hidden shadow-lg">
+          <img src="https://picsum.photos/800/600?random={{ forloop.counter|add:9000 }}" alt="{{ f.label }}"
+               class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 hover:scale-105">
+        </div>
+        <div>
+          <span class="inline-flex h-10 w-10 items-center justify-center rounded-full bg-[#18AFAB]/15 text-[#18AFAB] font-bold text-sm shadow-inner">
+            {{ forloop.counter|stringformat:"02" }}
+          </span>
+          <h3 class="mt-4 text-2xl md:text-3xl font-extrabold tracking-tight">{{ f.label }}</h3>
+        </div>
+      </div>
+      {% endfor %}
+
+    {% else %}
+      <div class="rounded-2xl border border-dashed border-gray-300 p-10 text-center text-gray-500">
+        Capability list coming soon.
+      </div>
+    {% endif %}
+    {% endwith %}
+  </div>
+
+  <style>
+    [data-animate] { opacity:0; transform: translateY(20px); transition: all 0.7s ease; }
+    [data-animate].visible { opacity:1; transform: translateY(0); }
+  </style>
+  <script>
+    (() => {
+      const els = document.querySelectorAll('#capabilities [data-animate]');
+      if(!('IntersectionObserver' in window)) { els.forEach(el=>el.classList.add('visible')); return; }
+      const io = new IntersectionObserver((entries)=>{
+        entries.forEach(e=>{
+          if(e.isIntersecting){ e.target.classList.add('visible'); io.unobserve(e.target); }
+        });
+      }, {threshold:.1});
+      els.forEach(el=>io.observe(el));
+    })();
+  </script>
+</section>
+
+
+<!-- ============ PROCESS (billion-dollar look) ============ -->
+<section class="relative isolate overflow-hidden py-20">
+  <!-- Soft gradient + vignette -->
+  <div class="pointer-events-none absolute inset-0 -z-10">
+    <div class="absolute -top-24 -left-24 h-72 w-72 rounded-full blur-3xl opacity-20 bg-teal-300"></div>
+    <div class="absolute bottom-0 right-0 h-96 w-96 rounded-full blur-3xl opacity-20 bg-emerald-200"></div>
+    <div class="absolute inset-0 bg-[radial-gradient(80%_60%_at_50%_0%,rgba(24,175,171,0.06),transparent_60%)]"></div>
+  </div>
+
+  <div class="max-w-7xl mx-auto px-6">
+    <!-- Header -->
+    <div class="max-w-3xl">
+      <p class="text-[10px] tracking-[.35em] uppercase text-[#18AFAB]">Process</p>
+      <h3 class="mt-2 text-3xl md:text-4xl font-extrabold tracking-tight text-[#0F0F10]">
+        From concept to handover
+      </h3>
+      <p class="mt-3 text-sm md:text-base text-gray-600">
+        A frictionless journey—clear milestones, hands-on coordination, and white-glove delivery.
+      </p>
+    </div>
+
+    <!-- Steps -->
+    {% if service.process_steps.all %}
+    <ol class="mt-10 grid grid-cols-1 md:grid-cols-2 gap-6">
+      {% for s in service.process_steps.all %}
+      <li class="group relative rounded-2xl border border-slate-200/70 bg-white/70 backdrop-blur-xl p-6 shadow-[0_1px_0_0_rgba(15,15,16,0.04),0_20px_40px_-20px_rgba(0,0,0,0.25)] transition 
+                 hover:shadow-[0_1px_0_0_rgba(15,15,16,0.04),0_30px_60px_-24px_rgba(0,0,0,0.35)]">
+        <!-- Connector (desktop) -->
+        <span class="hidden md:block absolute left-3 top-10 h-[calc(100%-2.5rem)] w-px bg-gradient-to-b from-[#18AFAB]/40 via-slate-200 to-transparent"></span>
+
+        <div class="flex items-start gap-4">
+          <!-- Number badge -->
+          <div class="relative shrink-0">
+            <div class="h-10 w-10 rounded-xl bg-[#18AFAB] text-white grid place-content-center font-bold 
+                        shadow-[0_6px_20px_-6px_rgba(24,175,171,0.8)]">
+              {{ s.step_no|default:forloop.counter|stringformat:"02" }}
+            </div>
+          </div>
+
+          <!-- Content -->
+          <div class="min-w-0">
+            <h4 class="text-base md:text-lg font-semibold text-[#0F0F10]">
+              {{ s.title }}
+            </h4>
+            {% if s.description %}
+              <p class="mt-1.5 text-sm leading-6 text-gray-600">
+                {{ s.description }}
+              </p>
+            {% endif %}
+
+            <!-- Optional meta row (dates, duration, owner) if present in your model -->
+            {% if s.meta or s.owner or s.duration %}
+            <div class="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-[12px] text-gray-500">
+              {% if s.duration %}<span class="inline-flex items-center">⏱️ <span class="ml-1">{{ s.duration }}</span></span>{% endif %}
+              {% if s.owner %}<span class="inline-flex items-center">👤 <span class="ml-1">{{ s.owner }}</span></span>{% endif %}
+              {% if s.meta %}<span class="inline-flex items-center">📎 <span class="ml-1">{{ s.meta }}</span></span>{% endif %}
+            </div>
+            {% endif %}
+          </div>
+        </div>
+      </li>
+      {% endfor %}
+    </ol>
+
+    <!-- Subtle CTA / reassurance -->
+    <div class="mt-8 flex items-center gap-3 text-sm text-gray-600">
+      <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M12 3v18M3 12h18" stroke="#18AFAB" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
+      <span>Permits, procurement, schedule, QA—managed end-to-end by our team.</span>
+    </div>
+
+    {% else %}
+    <!-- Fallback -->
+    <div class="mt-10 rounded-2xl border border-slate-200/70 bg-white/70 backdrop-blur-xl p-8 shadow-[0_1px_0_0_rgba(15,15,16,0.04),0_20px_40px_-20px_rgba(0,0,0,0.25)]">
+      <div class="flex items-start gap-4">
+        <div class="h-10 w-10 rounded-xl bg-[#18AFAB] text-white grid place-content-center font-bold">01</div>
+        <div>
+          <div class="font-semibold">Consult → Design → Engineering → Build → Handover → Aftercare</div>
+          <p class="mt-1.5 text-sm text-gray-600">
+            We coordinate permits, procurement, schedule, and QA end-to-end.
+          </p>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- Scroll-in animation (no deps) -->
+  <script>
+    (function() {
+      const els = document.querySelectorAll('section [data-animate="in"]');
+      if (!('IntersectionObserver' in window) || !els.length) return;
+      const io = new IntersectionObserver((entries) => {
+        entries.forEach(e => {
+          if (e.isIntersecting) {
+            e.target.classList.remove('opacity-0','translate-y-3');
+            io.unobserve(e.target);
+          }
+        });
+      }, { threshold: 0.08 });
+      els.forEach(el => io.observe(el));
+    })();
+  </script>
+</section>
+
+<!-- ============ PARTNER BRANDS (materials & trust) ============ -->
+{% if service.partner_brands.all %}
+<section class="bg-white py-12">
+  <div class="max-w-7xl mx-auto px-6">
+    <div class="flex items-center justify-between mb-4">
+      <div>
+        <p class="text-[10px] tracking-[.35em] uppercase text-[#18AFAB]">Materials & Partners</p>
+        <h3 class="text-xl font-extrabold text-[#0F0F10]">We specify & work with premium brands</h3>
+      </div>
+    </div>
+    <div class="flex gap-8 overflow-x-auto items-center py-2" style="scrollbar-width: thin;">
+      {% for b in service.partner_brands.all %}
+      <a href="{{ b.site_url|default:'#' }}" class="shrink-0 opacity-80 hover:opacity-100 transition" target="_blank" rel="noopener">
+        {% if b.logo_url %}
+          <img src="{{ b.logo_url }}" alt="{{ b.name }}" class="h-10 md:h-12 object-contain">
+        {% else %}
+          <span class="text-sm font-semibold">{{ b.name }}</span>
+        {% endif %}
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<!-- ============ PROJECTS (cinematic carousel + lightbox) ============ -->
+<section id="projects" class="py-16 bg-gray-50">
+  <div class="max-w-7xl mx-auto px-6">
+    <div class="flex items-end justify-between mb-6">
+      <div>
+        <p class="text-[10px] tracking-[.35em] uppercase text-[#18AFAB]">Case Studies</p>
+        <h3 class="text-2xl md:text-3xl font-extrabold text-[#0F0F10]">Recent {{ service.title }} Work</h3>
+      </div>
+      <div class="hidden md:flex gap-2">
+        <button class="gallery-prev px-3 py-2 rounded-lg border border-black/10 bg-white hover:bg-gray-50" aria-label="Previous"><i class="fa-solid fa-chevron-left"></i></button>
+        <button class="gallery-next px-3 py-2 rounded-lg border border-black/10 bg-white hover:bg-gray-50" aria-label="Next"><i class="fa-solid fa-chevron-right"></i></button>
+      </div>
+    </div>
+
+    <div class="relative">
+      <div id="galleryTrack" class="flex gap-4 overflow-x-auto scroll-smooth snap-x snap-mandatory pb-2 items-stretch" style="scrollbar-width: thin;">
+        {% if gallery %}
+          {% for p in gallery %}
+          <figure class="gallery-card min-w-[260px] md:min-w-[360px] aspect-[4/3] snap-center relative rounded-2xl overflow-hidden shadow-md group cursor-pointer"
+                  data-img="{{ p.full_url }}" data-caption="{{ p.caption }}">
+            <img src="{{ p.thumb_url }}" alt="{{ p.caption|default:service.title }}"
+                 class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" loading="lazy" decoding="async">
+            <div class="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent"></div>
+            <figcaption class="absolute left-3 bottom-3 px-3 py-1.5 text-xs font-semibold rounded-full bg-white/90 text-[#0F0F10]">{{ forloop.counter|stringformat:"02" }}</figcaption>
+          </figure>
+          {% endfor %}
+        {% else %}
+          {% for i in "123456"|make_list %}
+          <figure class="gallery-card min-w-[260px] md:min-w-[360px] aspect-[4/3] snap-center relative rounded-2xl overflow-hidden shadow-md group cursor-pointer"
+                  data-img="https://picsum.photos/1600/1200?random={{ forloop.counter|add:2400 }}"
+                  data-caption="{{ service.title }} Project {{ forloop.counter }}">
+            <img src="https://picsum.photos/800/600?random={{ forloop.counter|add:2400 }}" alt="{{ service.title }} project {{ forloop.counter }}"
+                 class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" loading="lazy" decoding="async">
+            <div class="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent"></div>
+            <figcaption class="absolute left-3 bottom-3 px-3 py-1.5 text-xs font-semibold rounded-full bg-white/90 text-[#0F0F10]">{{ forloop.counter|stringformat:"02" }}</figcaption>
+          </figure>
+          {% endfor %}
+        {% endif %}
+      </div>
+
+      <div class="md:hidden flex justify-center gap-2 mt-4">
+        <button class="gallery-prev px-3 py-2 rounded-lg border border-black/10 bg-white"><i class="fa-solid fa-chevron-left"></i></button>
+        <button class="gallery-next px-3 py-2 rounded-lg border border-black/10 bg-white"><i class="fa-solid fa-chevron-right"></i></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Inline Lightbox -->
+  <div id="lightbox" class="pointer-events-none opacity-0 transition-opacity duration-300 fixed inset-0 z-50 flex items-center justify-center">
+    <div class="absolute inset-0 bg-black/40"></div>
+    <div class="relative max-w-5xl w-[92%] rounded-2xl overflow-hidden bg-white shadow-2xl scale-95 transition-transform duration-300">
+      <button id="lightboxClose" class="absolute top-3 right-3 z-10 inline-flex items-center justify-center w-9 h-9 rounded-full bg-black/70 text-white hover:bg-black" aria-label="Close preview">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+      <img id="lightboxImg" src="" alt="Expanded project preview" class="w-full h-[70vh] object-cover">
+      <div class="px-5 py-3 text-sm text-gray-700 border-t border-black/10" id="lightboxCaption"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ TESTIMONIALS (buyers' proof) ============ -->
+{% if service.testimonials.all %}
+<section class="bg-white py-16">
+  <div class="max-w-7xl mx-auto px-6">
+    <div class="mb-6">
+      <p class="text-[10px] tracking-[.35em] uppercase text-[#18AFAB]">Testimonials</p>
+      <h3 class="text-2xl md:text-3xl font-extrabold text-[#0F0F10]">What clients say</h3>
+    </div>
+    <div class="grid md:grid-cols-3 gap-6">
+      {% for t in service.testimonials.all %}
+      <figure class="rounded-2xl border border-black/5 bg-white p-6 shadow-sm">
+        <blockquote class="text-gray-800 leading-relaxed">“{{ t.quote }}”</blockquote>
+        <figcaption class="mt-4 flex items-center gap-3">
+          {% if t.headshot_url %}<img src="{{ t.headshot_url }}" alt="{{ t.author }}" class="h-10 w-10 rounded-full object-cover">{% endif %}
+          <div>
+            <div class="font-semibold">{{ t.author }}</div>
+            {% if t.role_company %}<div class="text-sm text-gray-600">{{ t.role_company }}</div>{% endif %}
+          </div>
+        </figcaption>
+      </figure>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<!-- ============ FAQ (objection handling) ============ -->
+{% if service.faqs.all %}
+<section class="bg-gray-50 py-16">
+  <div class="max-w-7xl mx-auto px-6">
+    <div class="mb-6">
+      <p class="text-[10px] tracking-[.35em] uppercase text-[#18AFAB]">FAQ</p>
+      <h3 class="text-2xl md:text-3xl font-extrabold text-[#0F0F10]">Everything you want to know</h3>
+    </div>
+    <div class="divide-y divide-black/10 rounded-2xl border border-black/10 bg-white">
+      {% for q in service.faqs.all %}
+      <details class="group p-5">
+        <summary class="flex items-center justify-between cursor-pointer">
+          <span class="font-semibold">{{ q.question }}</span>
+          <i class="fa-solid fa-plus text-sm text-gray-500 group-open:hidden"></i>
+          <i class="fa-solid fa-minus text-sm text-gray-500 hidden group-open:inline"></i>
+        </summary>
+        {% if q.answer %}<div class="mt-3 text-gray-700">{{ q.answer|linebreaksbr }}</div>{% endif %}
+      </details>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<!-- ============ CTA ============ -->
+<section class="relative overflow-hidden">
+  <div class="max-w-7xl mx-auto px-6 pb-16">
+    <div class="rounded-2xl border border-black/5 bg-[#0F0F10] text-white p-8 lg:p-12 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+      <div>
+        <h3 class="text-2xl font-extrabold">Ready to plan your {{ service.title|lower }}?</h3>
+        <p class="text-white/70 mt-1">We’ll map scope, timeline and budget—then craft something enduring.</p>
+      </div>
+      <a href="#contact" class="inline-flex items-center justify-center rounded-full bg-[#18AFAB] text-white px-6 py-3 font-semibold shadow-lg hover:scale-[1.02] transition">
+        Book a Consultation <i class="fa-solid fa-arrow-right-long ml-2"></i>
+      </a>
+    </div>
+  </div>
+</section>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Hero parallax
+(() => {
+  const m = document.getElementById('heroMedia'); if(!m) return;
+  addEventListener('scroll', () => {
+    const y = Math.min(60, scrollY * 0.06);
+    m.style.transform = `translateY(${y}px) scale(1.03)`;
+  }, {passive:true});
+})();
+
+// Gallery center-active + lightbox
+(() => {
+  const track = document.getElementById('galleryTrack'); if(!track) return;
+  const cards = [...track.querySelectorAll('.gallery-card')];
+  const setActive = () => {
+    const center = track.scrollLeft + track.clientWidth/2;
+    let best, bestDist = Infinity;
+    cards.forEach(card => {
+      const rect = card.getBoundingClientRect();
+      const mid = rect.left + rect.width/2 + track.scrollLeft - track.getBoundingClientRect().left;
+      const dist = Math.abs(center - mid);
+      if (dist < bestDist){ bestDist = dist; best = card; }
+    });
+    cards.forEach(c => c.classList.remove('is-active')); if(best) best.classList.add('is-active');
+  };
+  setActive();
+  track.addEventListener('scroll', () => requestAnimationFrame(setActive), {passive:true});
+  document.querySelectorAll('.gallery-prev').forEach(b => b.addEventListener('click', () => track.scrollBy({ left: -track.clientWidth*0.9, behavior:'smooth'})));
+  document.querySelectorAll('.gallery-next').forEach(b => b.addEventListener('click', () => track.scrollBy({ left:  track.clientWidth*0.9, behavior:'smooth'})));
+
+  // Lightbox
+  const lb = document.getElementById('lightbox'); if(!lb) return;
+  const panel = lb.querySelector('.relative'), img = document.getElementById('lightboxImg'), cap = document.getElementById('lightboxCaption');
+  const open = (src, text) => { img.src = src; cap.textContent = text || ''; lb.classList.remove('pointer-events-none'); requestAnimationFrame(() => { lb.style.opacity='1'; panel.style.transform='scale(1)'; }); };
+  const close = () => { lb.style.opacity='0'; panel.style.transform='scale(0.95)'; setTimeout(() => lb.classList.add('pointer-events-none'), 280); };
+  track.addEventListener('click', e => { const fig = e.target.closest('figure[data-img]'); if(!fig) return; open(fig.dataset.img, fig.dataset.caption); });
+  document.getElementById('lightboxClose').addEventListener('click', close);
+  lb.addEventListener('click', e => { if(e.target === lb) close(); });
+  addEventListener('keydown', e => { if(e.key === 'Escape') close(); });
+})();
+</script>
+
+<style>
+.gallery-card{transition:transform .45s cubic-bezier(.22,1,.36,1), box-shadow .45s, border-color .45s;border:1px solid rgba(0,0,0,.06);}
+.gallery-card.is-active{transform:scale(1.03);box-shadow:0 20px 40px rgba(0,0,0,.25),0 0 0 1px rgba(24,175,171,.18) inset;border-color:rgba(24,175,171,.35);}
+</style>
+{% endblock %}

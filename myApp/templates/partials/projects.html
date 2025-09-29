@@ -59,41 +59,9 @@
       </div>
     </article>
 
-    <!-- Grid of projects -->
-    <div class="grid md:grid-cols-3 gap-8">
-      {% for i in "123456"|make_list %}
-      <article class="group relative rounded-2xl overflow-hidden border border-black/5 bg-white shadow-sm hover:shadow-xl transition fade-up delay-{{ forloop.counter|add:"2" }}00">
-        <!-- Image -->
-        <div class="relative aspect-[16/10] overflow-hidden">
-          <div class="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-105"
-               style="background-image:url('https://picsum.photos/1200/800?random={{ i }}')"></div>
-          <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent"></div>
-
-          <!-- Hover overlay -->
-          <div class="absolute inset-0 flex items-end p-5 bg-black/40 opacity-0 group-hover:opacity-100 transition">
-            <div>
-              <h4 class="text-white font-semibold">Luxury Project {{ i }}</h4>
-              <p class="text-white/80 text-xs">Dubai, UAE</p>
-            </div>
-            <span class="ml-auto text-[#18AFAB] font-semibold">View →</span>
-          </div>
-        </div>
-
-        <!-- Meta -->
-        <div class="p-4 flex items-center justify-between text-sm text-gray-600">
-          <div class="flex items-center gap-3">
-            <span class="inline-flex items-center gap-1"><i class="fa-regular fa-image"></i> Gallery</span>
-            <span class="inline-flex items-center gap-1"><i class="fa-regular fa-clock"></i> 202{{ i|slice:":1" }}</span>
-          </div>
-          <span class="px-2.5 py-1 rounded-full text-xs font-semibold border border-[#18AFAB] text-[#18AFAB]">Case Study</span>
-        </div>
-      </article>
-      {% endfor %}
-    </div>
-
-    <!-- Footer CTA -->
+    <!-- Footer CTA with shimmer -->
     <div class="text-center mt-14 fade-up delay-500">
-      <a href="#" class="btn-primary animate-shimmer">
+      <a href="#" class="btn-primary shimmer-btn">
         View All Projects <i class="fa-solid fa-arrow-right-long"></i>
       </a>
     </div>
@@ -104,46 +72,79 @@
 <style>
 /* Filter buttons styled as pill buttons */
 .filter-btn {
-  @apply inline-flex items-center justify-center px-5 py-2.5 rounded-full 
-         border border-[#18AFAB] text-[#18AFAB] text-sm font-semibold
-         transition duration-300;
+  display:inline-flex; align-items:center; justify-content:center;
+  padding:0.625rem 1.25rem; border-radius:9999px;
+  border:1px solid #18AFAB; color:#18AFAB;
+  font-size:0.875rem; font-weight:600;
+  background:#fff; transition:all .3s ease;
 }
-.filter-btn:hover {
-  @apply bg-[#18AFAB] text-white shadow-md;
-}
+.filter-btn:hover,
 .filter-btn.active {
-  @apply bg-[#18AFAB] text-white shadow-md;
+  background:#18AFAB; color:#fff; box-shadow:0 2px 6px rgba(0,0,0,.15);
 }
 
 .tag {
-  @apply px-3 py-1 rounded-full bg-gray-100 text-xs font-semibold;
+  padding:0.25rem 0.75rem; border-radius:9999px;
+  background:#f3f4f6; font-size:0.75rem; font-weight:600;
 }
+
+/* Base CTA button */
+.btn-primary {
+  display:inline-flex; align-items:center; justify-content:center;
+  gap:.5rem;
+  padding:.75rem 1.5rem; border-radius:9999px;
+  font-weight:600; text-decoration:none;
+  background:#18AFAB; color:#0F0F10;
+  box-shadow:0 10px 20px rgba(0,0,0,.15);
+  position:relative; overflow:hidden;
+  transition:transform .2s ease, box-shadow .2s ease;
+}
+.btn-primary:hover {
+  transform:translateY(-2px) scale(1.02);
+  box-shadow:0 16px 28px rgba(0,0,0,.25);
+}
+
+/* Shimmer effect overlay */
+.shimmer-btn::before {
+  content:"";
+  position:absolute; top:0; left:-150%;
+  width:50%; height:100%;
+  background:linear-gradient(120deg, rgba(255,255,255,.6) 0%, rgba(255,255,255,0) 60%);
+  transform:skewX(-20deg);
+}
+.shimmer-btn:hover::before {
+  animation:shimmer-slide 1.5s ease-out;
+}
+@keyframes shimmer-slide {
+  0%   { left:-150%; }
+  100% { left:150%; }
+}
+
+/* Animations */
+.fade-up, .fade-right {
+  opacity:0; transform:translateY(20px);
+  transition:all .7s cubic-bezier(.22,1,.36,1);
+}
+.fade-right { transform:translateX(40px); }
+.is-visible { opacity:1; transform:translate(0,0); }
 </style>
 
-<!-- Animations -->
+<!-- Reveal Script -->
 <script>
 (function(){
   const els = document.querySelectorAll('.fade-up, .fade-right');
+  if(!('IntersectionObserver' in window)){
+    els.forEach(e=>e.classList.add('is-visible'));
+    return;
+  }
   const io = new IntersectionObserver((entries, obs)=>{
-    entries.forEach(entry=>{
-      if(entry.isIntersecting){
-        entry.target.classList.add('is-visible');
-        obs.unobserve(entry.target);
+    entries.forEach(e=>{
+      if(e.isIntersecting){
+        e.target.classList.add('is-visible');
+        obs.unobserve(e.target);
       }
     });
-  }, { threshold: 0.2 });
+  }, { threshold:0.2 });
   els.forEach(el=>io.observe(el));
 })();
 </script>
-
-<style>
-.fade-up, .fade-right { opacity:0; transform:translateY(20px); transition:all .7s cubic-bezier(.22,1,.36,1); }
-.fade-right { transform:translateX(40px); }
-.is-visible { opacity:1; transform:translate(0,0); }
-.animate-shimmer {
-  background-image:linear-gradient(110deg,#18AFAB 25%,#fff 37%,#18AFAB 63%);
-  background-size:200% 100%;
-  animation:shimmer 2.5s infinite;
-}
-@keyframes shimmer { 0%{background-position:-200% 0;} 100%{background-position:200% 0;} }
-</style>
