@@ -480,7 +480,7 @@ details[open] .faq-content{ height:auto; }      /* fallback if JS off */
     <!-- Header + switcher -->
     <div class="fx flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-8">
       <div>
-        <p class="text-[10px] tracking-[.35em] uppercase text-[var(--teal)]">{{ service.eyebrow|default:"Landscaping" }}</p>
+        <p class="text-[10px] tracking-[.45em] uppercase text-[var(--teal)]">{{ service.eyebrow|default:"Landscaping" }}</p>
         <h3 class="text-2xl md:text-3xl font-extrabold text-[var(--ink)]">
           {{ service.pinned_title|default:"End-to-end landscape design & build for modern living" }}
         </h3>
@@ -490,60 +490,14 @@ details[open] .faq-content{ height:auto; }      /* fallback if JS off */
       </div>
       <div class="seg self-start md:self-auto" role="tablist" aria-label="Landscape content switcher">
         <button class="seg-btn" role="tab" aria-selected="true" aria-pressed="true" data-tab="overview">Overview</button>
-        <button class="seg-btn" role="tab" aria-selected="false" aria-pressed="false" data-tab="services">Services</button>
         <button class="seg-btn" role="tab" aria-selected="false" aria-pressed="false" data-tab="beforeafter">Before/After</button>
       </div>
+
     </div>
 
     <!-- Overview -->
     <div id="panel-overview" class="is-active" role="tabpanel">
-      <div class="grid lg:grid-cols-12 gap-8 items-start">
-        <div class="lg:col-span-6">
-          <div class="svc-card p-5 fx">
-            <h4 class="font-semibold text-[var(--ink)] mb-3">What we deliver</h4>
-            <ul class="grid grid-cols-1 sm:grid-cols-2 gap-y-2 text-sm text-gray-700" data-stagger>
-              {% if service.features.all %}
-                {% for f in service.features.all %}
-                  <li class="flex items-center gap-2">
-                    <i class="{{ f.icon_class }} text-[var(--teal)]"></i> {{ f.label }}
-                  </li>
-                {% endfor %}
-              {% else %}
-                <li class="flex items-center gap-2"><i class="fa-solid fa-pen-ruler text-[var(--teal)]"></i> 2D / 3D Design</li>
-                <li class="flex items-center gap-2"><i class="fa-solid fa-draw-polygon text-[var(--teal)]"></i> Full Drawings</li>
-                <li class="flex items-center gap-2"><i class="fa-solid fa-water-ladder text-[var(--teal)]"></i> Pools</li>
-                <li class="flex items-center gap-2"><i class="fa-solid fa-lightbulb text-[var(--teal)]"></i> Architectural Lighting</li>
-              {% endif %}
-            </ul>
-            <div class="mt-4 flex flex-wrap gap-2 fade">
-              <span class="chip chip--light">Concept → Handover</span>
-              <span class="chip chip--light">Drawings & Authority</span>
-              <span class="chip chip--light">One accountable team</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="lg:col-span-6">
-          <div class="svc-card p-6 fx">
-            <h4 class="font-semibold text-[var(--ink)]">{{ service.pinned_heading|default:"Why it matters" }}</h4>
-            <p class="text-gray-600 mt-2">
-              {{ service.pinned_body_2|default:"Fewer handoffs, clearer milestones, and materials that actually last outdoors in Dubai’s climate." }}
-            </p>
-            <div class="mt-3 flex flex-wrap gap-2 fade">
-              <span class="chip chip--light">Cost certainty</span>
-              <span class="chip chip--light">Weekly cadence</span>
-              <span class="chip chip--light">Aftercare</span>
-            </div>
-            <a href="#contact" class="mt-5 inline-flex items-center justify-center rounded-full bg-[var(--teal)] text-white px-5 py-2.5 text-sm font-semibold shadow fx">
-              Talk to a Landscape Lead <i class="fa-solid fa-arrow-right-long ml-2"></i>
-            </a>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Services -->
-    <div id="panel-services" class="" role="tabpanel" aria-hidden="true">
+      <!-- Capabilities (moved from former #panel-services) -->
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6" data-stagger>
         {% if service.capabilities.all %}
           {% for c in service.capabilities.all %}
@@ -565,6 +519,12 @@ details[open] .faq-content{ height:auto; }      /* fallback if JS off */
           <article class="svc-card p-6"><h5 class="font-semibold">Build & Delivery</h5><p class="text-sm text-gray-600 mt-1">One crew. Clear milestones.</p></article>
         {% endif %}
       </div>
+
+    </div>
+
+    <!-- Services -->
+    <div id="panel-services" class="" role="tabpanel" aria-hidden="true">
+      
     </div>
 
     <!-- Before/After -->
@@ -704,220 +664,131 @@ details[open] .faq-content{ height:auto; }      /* fallback if JS off */
   </script>
 </section>
 
-<section id="signature-projects" class="bg-white py-20">
+<section id="expand-gallery" class="bg-white py-20">
   <style>
-    /* ---- scoped styles for #signature-projects ---- */
-    :root{ --ink:#0B0E14; --teal:#18AFAB; }
+    :root { --ink:#0B0E14; --teal:#18AFAB; }
 
-    #signature-projects .fx{opacity:0;transform:translateY(10px);transition:opacity .5s cubic-bezier(.22,1,.36,1),transform .5s cubic-bezier(.22,1,.36,1)}
-    #signature-projects .fx.in{opacity:1;transform:none}
+    /* Desktop full-screen flex */
+    #expand-gallery .gallery {
+      display:flex; gap:1rem;
+      height:70vh; /* tall spread */
+      overflow:hidden;
+    }
+    #expand-gallery .item {
+      flex:1; position:relative; overflow:hidden;
+      cursor:pointer; border-radius:0; /* sharp corners */
+      transition:flex .6s cubic-bezier(.22,1,.36,1), filter .4s ease;
+    }
+    #expand-gallery .item img {
+      width:100%; height:100%; object-fit:cover;
+      transition:transform .6s cubic-bezier(.22,1,.36,1);
+    }
+    #expand-gallery .item.active {
+      flex:4; /* spotlight */
+      z-index:2;
+    }
+    #expand-gallery .item:not(.active) {
+      filter:brightness(.65) contrast(.9);
+    }
+    #expand-gallery .item.active img {
+      transform:scale(1.05);
+    }
+    /* caption */
+    #expand-gallery .cap {
+      position:absolute; bottom:1rem; left:1rem;
+      background:rgba(0,0,0,.45); color:#fff;
+      padding:.5rem .9rem; font-weight:600;
+      font-size:.9rem; border-radius:.3rem;
+      backdrop-filter:blur(4px);
+      opacity:0; transition:opacity .3s;
+    }
+    #expand-gallery .item.active .cap { opacity:1; }
 
-    /* mobile reel polish */
-    #signature-projects .reel{scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch}
-    #signature-projects .reel::-webkit-scrollbar{display:none}
-    #signature-projects .reel-card{scroll-snap-align:center;border-radius:1.25rem;overflow:hidden;position:relative;box-shadow:0 18px 40px rgba(0,0,0,.14);background:#000}
-    #signature-projects .cap{position:absolute;left:0;right:0;bottom:0;color:#fff;background:linear-gradient(to top,rgba(0,0,0,.55),rgba(0,0,0,.1));padding:14px 16px}
-    #signature-projects .sig-badge{position:absolute;top:.75rem;left:.75rem;background:rgba(255,255,255,.92);color:var(--ink);padding:.35rem .55rem;font-weight:700;font-size:.7rem;border-radius:999px;box-shadow:0 8px 18px rgba(0,0,0,.18)}
-    #signature-projects .edge-fade:before,#signature-projects .edge-fade:after{content:"";position:absolute;top:0;bottom:0;width:36px;pointer-events:none}
-    #signature-projects .edge-fade:before{left:0;background:linear-gradient(to right,#fff,transparent)}
-    #signature-projects .edge-fade:after{right:0;background:linear-gradient(to left,#fff,transparent)}
-    #signature-projects .dots button{width:7px;height:7px;border-radius:999px;background:#d1d5db;opacity:.7;transition:all .2s}
-    #signature-projects .dots button[aria-current="true"]{width:22px;background:var(--teal);opacity:1}
-
-    /* mobile progress bar */
-    #signature-projects .prog{height:6px;background:#eef2f7;border-radius:999px;overflow:hidden}
-    #signature-projects .prog > span{display:block;height:100%;width:0;background:var(--teal);transition:width .2s}
-
-    /* desktop luxe grid + micro-tilt */
-    @media (min-width:1024px){
-      #signature-projects .sig-grid{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:1rem}
-      #signature-projects .sig-A{grid-column:span 5 / span 5;grid-row:span 2 / span 2}
-      #signature-projects .sig-B{grid-column:span 7 / span 7}
-      #signature-projects .sig-C,#signature-projects .sig-D,#signature-projects .sig-E{grid-column:span 4 / span 4;min-height:220px}
-      #signature-projects .sig-frame{position:relative;border-radius:1.5rem;overflow:hidden;transform-style:preserve-3d;perspective:800px}
-      #signature-projects .sig-media{filter:saturate(1.05) contrast(1.02);transition:transform .6s cubic-bezier(.22,1,.36,1)}
-      #signature-projects .sig-frame:hover .sig-media{transform:scale(1.04)}
-      #signature-projects .sig-cap{position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.55),rgba(0,0,0,.15));opacity:0;transition:opacity .35s}
-      #signature-projects .sig-frame:hover .sig-cap{opacity:1}
-      #signature-projects .sig-chip{position:absolute;left:14px;bottom:14px;padding:.35rem .6rem;border-radius:999px;font-size:.72rem;background:rgba(255,255,255,.92);color:#0f0f10;font-weight:600}
+    /* ===== Mobile behavior: horizontal swipe carousel ===== */
+    @media (max-width: 768px) {
+      #expand-gallery .gallery {
+        flex-direction: row;
+        overflow-x:auto; overflow-y:hidden;
+        scroll-snap-type:x mandatory;
+        -webkit-overflow-scrolling: touch;
+        height:60vh; /* slightly shorter than desktop */
+      }
+      #expand-gallery .item {
+        flex:0 0 90%;  /* card width for swipe feel */
+        scroll-snap-align:center;
+        border-radius:12px;
+        transition: transform .4s ease, filter .3s ease;
+      }
+      #expand-gallery .item img {
+        border-radius:12px;
+      }
+      #expand-gallery .item.active {
+        flex:0 0 90%;
+        transform:scale(1.02);
+        z-index:2;
+      }
+      #expand-gallery .item:not(.active) {
+        filter:brightness(.9) contrast(.95);
+      }
+      #expand-gallery .item.active .cap {
+        opacity:1; font-size:1rem;
+      }
     }
   </style>
 
-  <div class="max-w-7xl mx-auto px-6">
-    <div class="fx flex items-end justify-between mb-6">
-      <div>
-        <p class="text-[10px] tracking-[.35em] uppercase text-[var(--teal)]">Signature</p>
-        <h3 class="text-2xl md:text-3xl font-extrabold">Recent Landscape Work</h3>
-      </div>
-    </div>
+  <div class="max-w-7xl mx-auto px-6 mb-8 text-center">
+    <p class="uppercase text-[10px] tracking-[.35em] text-[var(--teal)]">Signature Projects</p>
+    <h2 class="text-3xl md:text-4xl font-extrabold text-[var(--ink)]">Spaces in Motion</h2>
+    <p class="text-gray-500 mt-2">Explore our portfolio in a gallery that unfolds with every click.</p>
+  </div>
 
-    <!-- Mobile-first: Story Reel -->
-    <div class="reel-wrap lg:hidden fx">
-      <div class="prog mb-3"><span id="sigProg"></span></div>
-      <div id="sigReel" class="reel edge-fade flex gap-4 overflow-x-auto pb-2" style="scrollbar-width:none;">
-        {% for p in service.project_images.all|slice:":5" %}
-          <figure class="reel-card min-w-[86%] max-w-[86%]">
-            <span class="sig-badge">{{ forloop.counter|stringformat:"02d" }}</span>
-            <img class="w-full h-[60vh] object-cover"
-                 src="{{ p.full_url }}"
-                 alt="{{ p.caption|default:'Project ' }}{{ forloop.counter }}">
-            <figcaption class="cap">
-              <h4>{{ p.caption|default:"Project " }}{{ forloop.counter }}</h4>
-              <p>Dubai • Outdoor Architecture</p>
-            </figcaption>
-          </figure>
-        {% empty %}
-          <figure class="reel-card min-w-[86%] max-w-[86%]">
-            <span class="sig-badge">01</span>
-            <img class="w-full h-[60vh] object-cover" src="https://picsum.photos/1600/1000?random=5001" alt="Signature project">
-            <figcaption class="cap"><h4>Signature project</h4><p>Dubai</p></figcaption>
-          </figure>
-        {% endfor %}
-      </div>
-
-      <div class="dots flex justify-center gap-2 mt-4" aria-label="Gallery pagination">
-        {% for _ in service.project_images.all|slice:":5" %}
-          <button aria-current="{{ forloop.first|yesno:'true,false' }}"></button>
-        {% endfor %}
-      </div>
-    </div>
-
-    <!-- Desktop: Luxe Grid -->
-    <div class="hidden lg:block fx">
-      <div class="sig-grid">
-        {% for p in service.project_images.all|slice:":5" %}
-          {% if forloop.counter == 1 %}
-            <figure class="sig-A sig-frame group">
-              <span class="sig-badge">01</span>
-              <img class="sig-media w-full h-full object-cover"
-                   src="{{ p.full_url }}"
-                   alt="{{ p.caption|default:'Project 01' }}">
-              <figcaption class="sig-cap"></figcaption>
-              <span class="sig-chip">{{ p.caption|default:"Evening ambience" }}</span>
-            </figure>
-          {% elif forloop.counter == 2 %}
-            <figure class="sig-B sig-frame group min-h-[260px]">
-              <span class="sig-badge">02</span>
-              <img class="sig-media w-full h-full object-cover"
-                   src="{{ p.full_url }}"
-                   alt="{{ p.caption|default:'Project 02' }}">
-              <figcaption class="sig-cap"></figcaption>
-              <span class="sig-chip">{{ p.caption|default:"Pool & pergola" }}</span>
-            </figure>
-          {% elif forloop.counter == 3 %}
-            <figure class="sig-C sig-frame group">
-              <span class="sig-badge">03</span>
-              <img class="sig-media w-full h-full object-cover"
-                   src="{{ p.full_url }}"
-                   alt="{{ p.caption|default:'Project 03' }}">
-              <figcaption class="sig-cap"></figcaption>
-              <span class="sig-chip">{{ p.caption|default:"Native & low-water" }}</span>
-            </figure>
-          {% elif forloop.counter == 4 %}
-            <figure class="sig-D sig-frame group">
-              <span class="sig-badge">04</span>
-              <img class="sig-media w-full h-full object-cover"
-                   src="{{ p.full_url }}"
-                   alt="{{ p.caption|default:'Project 04' }}">
-              <figcaption class="sig-cap"></figcaption>
-              <span class="sig-chip">{{ p.caption|default:"Outdoor rooms" }}</span>
-            </figure>
-          {% elif forloop.counter == 5 %}
-            <figure class="sig-E sig-frame group">
-              <span class="sig-badge">05</span>
-              <img class="sig-media w-full h-full object-cover"
-                   src="{{ p.full_url }}"
-                   alt="{{ p.caption|default:'Project 05' }}">
-              <figcaption class="sig-cap"></figcaption>
-              <span class="sig-chip">{{ p.caption|default:"Architectural lighting" }}</span>
-            </figure>
-          {% endif %}
-        {% empty %}
-          <figure class="sig-A sig-frame group">
-            <span class="sig-badge">01</span>
-            <img class="sig-media w-full h-full object-cover"
-                 src="https://picsum.photos/1600/1200?random=6001"
-                 alt="Signature Project">
-            <figcaption class="sig-cap"></figcaption>
-            <span class="sig-chip">Signature Project</span>
-          </figure>
-        {% endfor %}
-      </div>
-    </div>
+  <div id="gallery" class="gallery">
+    {% for p in service.project_images.all %}
+      <figure class="item{% if forloop.first %} active{% endif %}">
+        <img src="{{ p.full_url }}" alt="{{ p.caption|default:'Project' }}">
+        {% if p.caption %}<figcaption class="cap">{{ p.caption }}</figcaption>{% endif %}
+      </figure>
+    {% empty %}
+      {% for i in "1,2,3,4"|cut:","|make_list %}
+        <figure class="item{% if forloop.first %} active{% endif %}">
+          <img src="https://picsum.photos/2400/1400?random={{ i }}" alt="Placeholder {{ i }}">
+          <figcaption class="cap">Project {{ i }}</figcaption>
+        </figure>
+      {% endfor %}
+    {% endfor %}
   </div>
 
   <script>
     (function(){
-      const root = document.getElementById('signature-projects');
-      if(!root) return;
-      const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-      // Reveal on enter
-      const fxEls = root.querySelectorAll('.fx');
-      if(prefersReduced){
-        fxEls.forEach(n=> n.classList.add('in'));
-      } else if ('IntersectionObserver' in window){
-        const io = new IntersectionObserver((entries, obs)=>{
-          entries.forEach(e=>{
-            if(e.isIntersecting){ e.target.classList.add('in'); obs.unobserve(e.target); }
-          });
-        }, {threshold:.12});
-        fxEls.forEach(n=> io.observe(n));
-      } else {
-        fxEls.forEach(n=> n.classList.add('in'));
-      }
-
-      // Mobile reel: dots + progress + nice wheel scroll
-      const reel = root.querySelector('#sigReel');
-      const dots = root.querySelectorAll('.dots button');
-      const prog = root.querySelector('#sigProg');
-      if(reel){
-        // vertical wheel → horizontal
-        reel.addEventListener('wheel', (e)=>{
-          if(Math.abs(e.deltaY) > Math.abs(e.deltaX)){
-            reel.scrollLeft += e.deltaY * 0.8;
-            e.preventDefault();
+      const gallery = document.getElementById('gallery');
+      if(!gallery) return;
+      const items = gallery.querySelectorAll('.item');
+      items.forEach(item=>{
+        item.addEventListener('click', ()=>{
+          // On desktop: spotlight expand
+          if(window.innerWidth > 768){
+            items.forEach(i=> i.classList.remove('active'));
+            item.classList.add('active');
+          } else {
+            // On mobile: just toggle highlight
+            items.forEach(i=> i.classList.remove('active'));
+            item.classList.add('active');
+            // smooth scroll into view
+            item.scrollIntoView({behavior:'smooth', inline:'center'});
           }
-        }, {passive:false});
-
-        const slides = Array.from(reel.querySelectorAll('.reel-card'));
-        const setUI = ()=>{
-          // dots
-          const center = reel.scrollLeft + reel.clientWidth/2;
-          let idx = 0, best = Infinity;
-          slides.forEach((s,i)=>{
-            const r = s.getBoundingClientRect();
-            const left = r.left + reel.scrollLeft - reel.getBoundingClientRect().left;
-            const mid = left + r.width/2;
-            const d = Math.abs(center - mid);
-            if(d < best){ best = d; idx = i; }
-          });
-          dots.forEach((d,i)=> d.setAttribute('aria-current', i===idx ? 'true' : 'false'));
-
-          // progress
-          const max = reel.scrollWidth - reel.clientWidth;
-          const pct = max>0 ? (reel.scrollLeft / max) * 100 : 0;
-          if(prog) prog.style.width = pct + '%';
-        };
-        setUI();
-        reel.addEventListener('scroll', ()=>requestAnimationFrame(setUI), {passive:true});
-        window.addEventListener('resize', setUI);
-
-        dots.forEach((d,i)=> d.addEventListener('click', ()=>{
-          const target = slides[i];
-          if(target) target.scrollIntoView({behavior:'smooth', inline:'center', block:'nearest'});
-        }));
-      }
+        });
+      });
     })();
   </script>
 </section>
 
 
 
+
 <section id="process" class="relative bg-[var(--ink)] text-white py-20 overflow-hidden">
   <style>
     /* ---- scoped styling for #process only ---- */
-    #process .eyebrow{letter-spacing:.35em}
+    #process .eyebrow{letter-spacing:.45em}
     #process .rail-line{
       position:absolute; inset-inline:0; top:42px; height:2px;
       background:linear-gradient(90deg, rgba(255,255,255,.14), rgba(24,175,171,.35), rgba(255,255,255,.14));
@@ -1044,7 +915,7 @@ details[open] .faq-content{ height:auto; }      /* fallback if JS off */
 <section id="faqs" class="relative bg-white py-20 overflow-hidden">
   <style>
     /* ---- Scoped styles for #faqs ---- */
-    #faqs .eyebrow{ letter-spacing:.35em }
+    #faqs .eyebrow{ letter-spacing:.45em }
     #faqs .faq-card{ max-width:56rem; margin-inline:auto; padding-inline:1.5rem }
 
     /* Item chrome */
@@ -1144,6 +1015,8 @@ details[open] .faq-content{ height:auto; }      /* fallback if JS off */
       {% endif %}
     </div>
   </div>
+
+  {% include "partials/insights_dynamic.html" %}
 
   <script>
     (function(){

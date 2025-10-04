@@ -61,76 +61,88 @@ def service_index(request):
 # -----------------------------
 # Dynamic Service detail (prefetch + pairs)
 # -----------------------------
+from django.db.models import Prefetch
+
+# -----------------------------
+# Dynamic Service detail (prefetch + pairs)
+# -----------------------------
 def service_detail(request, slug):
     service = get_object_or_404(
         Service.objects.only(
-            "id", "slug", "title", "eyebrow",
-            "hero_headline", "hero_subcopy", "hero_media_url",
-            "stat_projects", "stat_years", "stat_specialists",
-            "pinned_heading", "pinned_title", "pinned_body_1", "pinned_body_2",
-            "insights_heading", "insights_subcopy",
-            "seo_meta_title", "seo_meta_description", "canonical_path",
+            "id","slug","title","eyebrow",
+            "hero_headline","hero_subcopy","hero_media_url",
+            "stat_projects","stat_years","stat_specialists",
+            "pinned_heading","pinned_title","pinned_body_1","pinned_body_2",
+            "insights_heading","insights_subcopy",
+            "seo_meta_title","seo_meta_description","canonical_path",
         ).prefetch_related(
             Prefetch("features",
-                     queryset=ServiceFeature.objects.only(
-                         "id", "service_id", "sort_order", "icon_class", "label"
-                     ).order_by("sort_order", "id")),
+                queryset=ServiceFeature.objects.only(
+                    "id","service_id","sort_order","icon_class","label"
+                ).order_by("sort_order","id")),
             Prefetch("editorial_images",
-                     queryset=ServiceEditorialImage.objects.only(
-                         "id", "service_id", "sort_order", "image_url", "caption"
-                     ).order_by("sort_order", "id")),
+                queryset=ServiceEditorialImage.objects.only(
+                    "id","service_id","sort_order","image_url","caption"
+                ).order_by("sort_order","id")),
             Prefetch("project_images",
-                     queryset=ServiceProjectImage.objects.only(
-                         "id", "service_id", "sort_order", "thumb_url", "full_url", "caption"
-                     ).order_by("sort_order", "id")),
+                queryset=ServiceProjectImage.objects.only(
+                    "id","service_id","sort_order","thumb_url","full_url","caption"
+                ).order_by("sort_order","id")),
             Prefetch("capabilities",
-                     queryset=ServiceCapability.objects.only(
-                         "id", "service_id", "sort_order", "title", "blurb", "icon_class"
-                     ).order_by("sort_order", "id")),
+                queryset=ServiceCapability.objects.only(
+                    "id","service_id","sort_order","title","blurb","icon_class"
+                ).order_by("sort_order","id")),
             Prefetch("process_steps",
-                     queryset=ServiceProcessStep.objects.only(
-                         "id", "service_id", "sort_order", "step_no", "title", "description"
-                     ).order_by("sort_order", "step_no", "id")),
+                queryset=ServiceProcessStep.objects.only(
+                    "id","service_id","sort_order","step_no","title","description"
+                ).order_by("sort_order","step_no","id")),
             Prefetch("metrics",
-                     queryset=ServiceMetric.objects.only(
-                         "id", "service_id", "sort_order", "value", "label"
-                     ).order_by("sort_order", "id")),
+                queryset=ServiceMetric.objects.only(
+                    "id","service_id","sort_order","value","label"
+                ).order_by("sort_order","id")),
             Prefetch("faqs",
-                     queryset=ServiceFAQ.objects.only(
-                         "id", "service_id", "sort_order", "question", "answer"
-                     ).order_by("sort_order", "id")),
+                queryset=ServiceFAQ.objects.only(
+                    "id","service_id","sort_order","question","answer"
+                ).order_by("sort_order","id")),
             Prefetch("partner_brands",
-                     queryset=ServicePartnerBrand.objects.only(
-                         "id", "service_id", "sort_order", "name", "logo_url", "site_url"
-                     ).order_by("sort_order", "id")),
+                queryset=ServicePartnerBrand.objects.only(
+                    "id","service_id","sort_order","name","logo_url","site_url"
+                ).order_by("sort_order","id")),
             Prefetch("testimonials",
-                     queryset=ServiceTestimonial.objects.only(
-                         "id", "service_id", "sort_order", "author", "role_company", "quote", "headshot_url"
-                     ).order_by("sort_order", "id")),
-            Prefetch("insights",
-                     queryset=Insight.objects.filter(published=True, published_at__lte=timezone.now())
-                     .only("id", "service_id", "title", "slug", "tag", "excerpt",
-                           "cover_image_url", "read_minutes", "published_at")
-                     .order_by("-published_at", "-created_at")),
+                queryset=ServiceTestimonial.objects.only(
+                    "id","service_id","sort_order","author","role_company","quote","headshot_url"
+                ).order_by("sort_order","id")),
+            # 👇 give insights a to_attr so we can read the prefetched list directly
+            Prefetch(
+                "insights",
+                queryset=Insight.objects.filter(published=True, published_at__lte=timezone.now())
+                    .only("id","service_id","title","slug","tag","excerpt",
+                          "cover_image_url","read_minutes","published_at")
+                    .order_by("-published_at","-created_at"),
+                to_attr="prefetched_insights",
+            ),
         ),
         slug=slug,
     )
 
     editorial = list(service.editorial_images.all())
-    # Build BA pairs: (0,1), (2,3), …
     ba_pairs = [(editorial[i], editorial[i+1]) for i in range(0, len(editorial) - 1, 2)]
+
+    # 👇 use the prefetched list; slice to 4 if you want only four cards
+    insights = getattr(service, "prefetched_insights", [])[:4]
 
     ctx = {
         "service": service,
         "ba_pairs": ba_pairs,
+        "insights": insights,   # ← the missing piece
         "fallback_metrics": [
-            {"value": service.stat_projects or "650+",  "label": "Projects Delivered"},
-            {"value": service.stat_years or "20+ yrs",  "label": "Operating in Dubai"},
-            {"value": service.stat_specialists or "1000+", "label": "In-house Specialists"},
+            {"value": service.stat_projects or "650+",   "label": "Projects Delivered"},
+            {"value": service.stat_years or "20+ yrs",   "label": "Operating in Dubai"},
+            {"value": service.stat_specialists or "1000+","label": "In-house Specialists"},
         ],
     }
-    # Uses your dynamic template you pasted earlier
     return render(request, "services/service_detail.html", ctx)
+
 
 # -----------------------------
 # Insight detail
@@ -213,21 +225,61 @@ def projects_index(request, service_slug=None):
 
 # myApp/views.py (append)
 from django.shortcuts import render
+from django.db.models import OuterRef, Subquery
+from django.db.models.functions import Coalesce
+
+from .models import (
+    Service,
+    ServiceProjectImage,
+    ServiceEditorialImage,
+)
+
+from django.db.models import OuterRef, Subquery
+from django.db.models.functions import Coalesce
+from .models import (
+    Service, ServiceProjectImage, ServiceEditorialImage, ServiceFeature
+)
 
 def about(request):
+    # first image per service (project → editorial → hero)
+    first_proj_sq = Subquery(
+        ServiceProjectImage.objects
+            .filter(service=OuterRef('pk'))
+            .order_by('sort_order', 'id')
+            .values('full_url')[:1]
+    )
+    first_edit_sq = Subquery(
+        ServiceEditorialImage.objects
+            .filter(service=OuterRef('pk'))
+            .order_by('sort_order', 'id')
+            .values('image_url')[:1]
+    )
+    # first icon (from features) – optional but makes the list feel branded
+    first_icon_sq = Subquery(
+        ServiceFeature.objects
+            .filter(service=OuterRef('pk'))
+            .order_by('sort_order', 'id')
+            .values('icon_class')[:1]
+    )
+
+    services_db = (
+        Service.objects
+        .filter(is_active=True)
+        .order_by('sort_order', 'title')
+        .annotate(_first_proj=first_proj_sq, _first_edit=first_edit_sq)
+        .annotate(first_media_url=Coalesce('_first_proj', '_first_edit', 'hero_media_url'))
+        .annotate(first_icon_class=first_icon_sq)
+    )
+
+
+
     ctx = {
         "metrics": [
             {"value": "1000+", "label": "Projects Delivered"},
             {"value": "20+ yrs", "label": "Operating in Dubai"},
             {"value": "98%",   "label": "On-time Handover"},
         ],
-        "services": [
-            {"title":"Landscape","blurb":"Quiet-luxury outdoor architecture: native planting, custom pools, pergolas and lighting — end-to-end.","icon":"fa-solid fa-seedling","urlname":"service_detail","slug":"landscape-design-build"},
-            {"title":"Interiors","blurb":"Timeless interiors for villas and commercial spaces — concept, drawings, fit-out, joinery and styling.","icon":"fa-solid fa-couch","urlname":"service_detail","slug":"interior-design-build"},
-            {"title":"Joinery","blurb":"In-house 22,000 sqft production for bespoke kitchens, wardrobes and feature walls.","icon":"fa-solid fa-screwdriver-wrench","urlname":"service_detail","slug":"joinery"},
-            {"title":"Marble","blurb":"Custom marble fixtures and finishes, precisely detailed for interior and exterior use.","icon":"fa-solid fa-gem","urlname":"service_detail","slug":"marble"},
-            {"title":"Facility Management","blurb":"Hard & soft services focused on uptime, cleanliness and asset life — aftercare that isn’t an afterthought.","icon":"fa-solid fa-building-shield","urlname":"service_detail","slug":"facility-management"},
-          ],
+        "services_db": services_db,
         "values": [
             {"title":"One accountable team","body":"Design, engineering and build under one roof — fewer hand-offs, faster decisions."},
             {"title":"Clear milestones","body":"Fixed phases and weekly reporting keep scope, cost and timeline visible."},
@@ -267,9 +319,29 @@ def about(request):
             {"name":"Lutron","logo_url":"https://dummyimage.com/240x80/eeeeee/111111&text=Lutron","site_url":"https://www.lutron.com/"},
         ],
         "quotes": [
-            {"quote":"Clear schedule, zero surprises — the team owned the outcome.","author":"R. Al Mansoori","role":"Villa Owner"},
-            {"quote":"Detail-obsessed. Joinery and finishes were immaculate.","author":"N. Haddad","role":"Hospitality GM"},
-            {"quote":"Coordination between design and build saved us weeks.","author":"S. Haddad","role":"Developer"},
+            {
+        "quote": "Real estate construction companies may also engage in sales & marketing activities to promote their developed properties. 👍",
+        "author": "Alex Jordan",
+        "role": "Project Manager",
+        "company": "Jordan Build Co.",
+        "location": "Amman, JO",
+        "stars": 5,
+        "avatar_url": "https://i.pravatar.cc/600?img=5",
+    },
+    {
+        "quote": "These services involve site analysis, feasibility studies, and estimation before construction begins.",
+        "author": "Angelina Rose",
+        "role": "Estimator",
+        "stars": 5,
+        "avatar_url": "https://i.pravatar.cc/600?img=5",
+    },
+    {
+        "quote": "Demolition companies handle safe, controlled removal of existing structures, making way for new builds.",
+        "author": "Alex Jordan",
+        "role": "PM",
+        "stars": 5,
+        "avatar_url": "https://i.pravatar.cc/600?img=5",
+    },
         ],
     }
     return render(request, "about.html", ctx)

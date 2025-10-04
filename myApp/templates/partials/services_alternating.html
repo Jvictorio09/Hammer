@@ -1,37 +1,39 @@
 <!-- Services (Editorial • Alternating with scroll animations) -->
-<section id="services" class="py-20">
-  <div class="max-w-7xl mx-auto px-6">
-    <div class="text-center mb-14">
+<section id="services" class="py-10 md:py-20">
+  <div class="max-w-7xl mx-auto px-4 md:px-6">
+    <div class="text-center mb-8 md:mb-14">
       <p class="text-[10px] tracking-[.3em] uppercase text-[#18AFAB]">What We Do</p>
-      <h2 class="text-3xl md:text-4xl font-extrabold mt-2">Design • Build • Maintain</h2>
-      <p class="text-gray-600 max-w-2xl mx-auto mt-3">
+      <h2 class="text-2xl md:text-4xl font-extrabold mt-1 md:mt-2">Design • Build • Maintain</h2>
+      <p class="text-gray-600 max-w-xl md:max-w-2xl mx-auto mt-2 md:mt-3 text-sm md:text-base">
         End-to-end delivery across villas, interiors, landscapes, and facilities—handled by one accountable partner.
       </p>
     </div>
 
     <!-- Service Articles -->
-    <div class="space-y-20">
+    <div class="space-y-10 md:space-y-20">
       <!-- 1) Landscape -->
-      <article class="grid md:grid-cols-2 gap-8 items-stretch fade-up">
-        <div class="rounded-2xl overflow-hidden shadow-lg relative group">
-          <div class="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105"
+      <article class="grid md:grid-cols-2 gap-5 md:gap-8 items-stretch fade-up">
+        <div class="rounded-xl md:rounded-2xl overflow-hidden shadow-md md:shadow-lg relative group">
+          <div class="absolute inset-0 bg-cover bg-center transition-transform duration-700 md:group-hover:scale-105"
                style="background-image:url('https://picsum.photos/1200/900?random=301')"></div>
-          <div class="absolute inset-0 bg-gradient-to-tr from-black/60 via-black/20 to-transparent"></div>
+          <div class="absolute inset-0 bg-gradient-to-tr from-black/50 via-black/15 to-transparent md:from-black/60 md:via-black/20"></div>
+          <!-- Mobile height cap -->
+          <div class="block md:hidden" style="padding-top:56%"></div>
         </div>
-        <div class="rounded-2xl border border-black/5 p-8 lg:p-10 bg-white shadow-sm flex flex-col justify-center">
-          <p class="text-[10px] tracking-[.3em] uppercase text-[#18AFAB] mb-2">Landscape</p>
-          <h3 class="text-2xl font-bold">Landscape Design & Outdoor Living</h3>
-          <p class="text-gray-600 mt-3">
+        <div class="rounded-xl md:rounded-2xl border border-black/5 p-5 md:p-8 lg:p-10 bg-white shadow-sm flex flex-col justify-center">
+          <p class="text-[10px] tracking-[.3em] uppercase text-[#18AFAB] mb-1.5 md:mb-2">Landscape</p>
+          <h3 class="text-xl md:text-2xl font-bold leading-snug">Landscape Design & Outdoor Living</h3>
+          <p class="text-gray-600 mt-2.5 md:mt-3 text-sm md:text-base">
             Bespoke gardens, pools, pergolas, and lighting—crafted to elevate daily life and property value.
             Efficient irrigation and native planting for long-term sustainability.
           </p>
-          <ul class="mt-5 grid grid-cols-2 gap-2 text-sm">
+          <ul class="mt-4 md:mt-5 grid grid-cols-2 gap-2 text-sm">
             <li class="flex items-center gap-2"><i class="fa-solid fa-seedling text-[#18AFAB]"></i> Native/Low-water planting</li>
             <li class="flex items-center gap-2"><i class="fa-solid fa-water-ladder text-[#18AFAB]"></i> Pools & water features</li>
             <li class="flex items-center gap-2"><i class="fa-solid fa-umbrella-beach text-[#18AFAB]"></i> Pergolas & decks</li>
             <li class="flex items-center gap-2"><i class="fa-solid fa-lightbulb text-[#18AFAB]"></i> Architectural lighting</li>
           </ul>
-          <div class="mt-6">
+          <div class="mt-4 md:mt-6">
             <a href="#projects" class="inline-flex items-center gap-2 font-semibold text-[#18AFAB] hover:opacity-90">
               See Landscaping Projects <i class="fa-solid fa-arrow-right-long"></i>
             </a>
@@ -40,54 +42,56 @@
       </article>
 
       <!-- 2) Interior -->
-      <article class="grid md:grid-cols-2 gap-8 items-stretch fade-left">
-        <div class="rounded-2xl border border-black/5 p-8 lg:p-10 bg-white shadow-sm flex flex-col justify-center order-1 md:order-1">
-          <p class="text-[10px] tracking-[.3em] uppercase text-[#18AFAB] mb-2">Interior</p>
-          <h3 class="text-2xl font-bold">Luxury Interior Design & Fit-Out</h3>
-          <p class="text-gray-600 mt-3">
+      <article class="grid md:grid-cols-2 gap-5 md:gap-8 items-stretch fade-left">
+        <div class="rounded-xl md:rounded-2xl border border-black/5 p-5 md:p-8 lg:p-10 bg-white shadow-sm flex flex-col justify-center order-1 md:order-1">
+          <p class="text-[10px] tracking-[.3em] uppercase text-[#18AFAB] mb-1.5 md:mb-2">Interior</p>
+          <h3 class="text-xl md:text-2xl font-bold leading-snug">Luxury Interior Design & Fit-Out</h3>
+          <p class="text-gray-600 mt-2.5 md:mt-3 text-sm md:text-base">
             From concept to completion—bespoke joinery, premium finishes, and furniture.
             Our in-house team delivers precision fit-outs aligned to your lifestyle.
           </p>
-          <ul class="mt-5 grid grid-cols-2 gap-2 text-sm">
+          <ul class="mt-4 md:mt-5 grid grid-cols-2 gap-2 text-sm">
             <li class="flex items-center gap-2"><i class="fa-solid fa-ruler-combined text-[#18AFAB]"></i> Bespoke joinery</li>
             <li class="flex items-center gap-2"><i class="fa-solid fa-couch text-[#18AFAB]"></i> Furniture & styling</li>
             <li class="flex items-center gap-2"><i class="fa-solid fa-screwdriver-wrench text-[#18AFAB]"></i> Precision fit-out</li>
             <li class="flex items-center gap-2"><i class="fa-solid fa-shield-halved text-[#18AFAB]"></i> Premium materials</li>
           </ul>
-          <div class="mt-6">
+          <div class="mt-4 md:mt-6">
             <a href="#projects" class="inline-flex items-center gap-2 font-semibold text-[#18AFAB] hover:opacity-90">
               View Interiors Portfolio <i class="fa-solid fa-arrow-right-long"></i>
             </a>
           </div>
         </div>
-        <div class="rounded-2xl overflow-hidden shadow-lg relative group order-2 md:order-2">
-          <div class="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105"
+        <div class="rounded-xl md:rounded-2xl overflow-hidden shadow-md md:shadow-lg relative group order-2 md:order-2">
+          <div class="absolute inset-0 bg-cover bg-center transition-transform duration-700 md:group-hover:scale-105"
                style="background-image:url('https://picsum.photos/1200/900?random=302')"></div>
-          <div class="absolute inset-0 bg-gradient-to-tl from-black/60 via-black/20 to-transparent"></div>
+          <div class="absolute inset-0 bg-gradient-to-tl from-black/50 via-black/15 to-transparent md:from-black/60 md:via-black/20"></div>
+          <div class="block md:hidden" style="padding-top:56%"></div>
         </div>
       </article>
 
       <!-- 3) Villas -->
-      <article class="grid md:grid-cols-2 gap-8 items-stretch fade-up">
-        <div class="rounded-2xl overflow-hidden shadow-lg relative group">
-          <div class="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105"
+      <article class="grid md:grid-cols-2 gap-5 md:gap-8 items-stretch fade-up">
+        <div class="rounded-xl md:rounded-2xl overflow-hidden shadow-md md:shadow-lg relative group">
+          <div class="absolute inset-0 bg-cover bg-center transition-transform duration-700 md:group-hover:scale-105"
                style="background-image:url('https://picsum.photos/1200/900?random=303')"></div>
-          <div class="absolute inset-0 bg-gradient-to-tr from-black/60 via-black/20 to-transparent"></div>
+          <div class="absolute inset-0 bg-gradient-to-tr from-black/50 via-black/15 to-transparent md:from-black/60 md:via-black/20"></div>
+          <div class="block md:hidden" style="padding-top:56%"></div>
         </div>
-        <div class="rounded-2xl border border-black/5 p-8 lg:p-10 bg-white shadow-sm flex flex-col justify-center">
-          <p class="text-[10px] tracking-[.3em] uppercase text-[#18AFAB] mb-2">Villas</p>
-          <h3 class="text-2xl font-bold">Custom Villa Design & Construction</h3>
-          <p class="text-gray-600 mt-3">
+        <div class="rounded-xl md:rounded-2xl border border-black/5 p-5 md:p-8 lg:p-10 bg-white shadow-sm flex flex-col justify-center">
+          <p class="text-[10px] tracking-[.3em] uppercase text-[#18AFAB] mb-1.5 md:mb-2">Villas</p>
+          <h3 class="text-xl md:text-2xl font-bold leading-snug">Custom Villa Design & Construction</h3>
+          <p class="text-gray-600 mt-2.5 md:mt-3 text-sm md:text-base">
             Turnkey villas that harmonize architecture, interiors, and landscape.
             Fixed milestones, transparent reporting, and a single point of accountability.
           </p>
-          <ul class="mt-5 grid grid-cols-2 gap-2 text-sm">
+          <ul class="mt-4 md:mt-5 grid grid-cols-2 gap-2 text-sm">
             <li class="flex items-center gap-2"><i class="fa-solid fa-drafting-compass text-[#18AFAB]"></i> Architecture & permits</li>
             <li class="flex items-center gap-2"><i class="fa-solid fa-diagram-project text-[#18AFAB]"></i> Program & cost control</li>
             <li class="flex items-center gap-2"><i class="fa-solid fa-helmet-safety text-[#18AFAB]"></i> Site management</li>
             <li class="flex items-center gap-2"><i class="fa-solid fa-leaf text-[#18AFAB]"></i> Landscape integration</li>
           </ul>
-          <div class="mt-6">
+          <div class="mt-4 md:mt-6">
             <a href="#projects" class="inline-flex items-center gap-2 font-semibold text-[#18AFAB] hover:opacity-90">
               Explore Villa Builds <i class="fa-solid fa-arrow-right-long"></i>
             </a>
@@ -96,30 +100,31 @@
       </article>
 
       <!-- 4) Facility -->
-      <article class="grid md:grid-cols-2 gap-8 items-stretch fade-right">
-        <div class="rounded-2xl border border-black/5 p-8 lg:p-10 bg-white shadow-sm flex flex-col justify-center order-1 md:order-1">
-          <p class="text-[10px] tracking-[.3em] uppercase text-[#18AFAB] mb-2">Facility</p>
-          <h3 class="text-2xl font-bold">Facility Management & Aftercare</h3>
-          <p class="text-gray-600 mt-3">
+      <article class="grid md:grid-cols-2 gap-5 md:gap-8 items-stretch fade-right">
+        <div class="rounded-xl md:rounded-2xl border border-black/5 p-5 md:p-8 lg:p-10 bg-white shadow-sm flex flex-col justify-center order-1 md:order-1">
+          <p class="text-[10px] tracking-[.3em] uppercase text-[#18AFAB] mb-1.5 md:mb-2">Facility</p>
+          <h3 class="text-xl md:text-2xl font-bold leading-snug">Facility Management & Aftercare</h3>
+          <p class="text-gray-600 mt-2.5 md:mt-3 text-sm md:text-base">
             Post-handover care for villas & commercial spaces—HVAC, MEP, lighting, pools, and grounds.
             Discreet, reliable, and preventative by design.
           </p>
-          <ul class="mt-5 grid grid-cols-2 gap-2 text-sm">
+          <ul class="mt-4 md:mt-5 grid grid-cols-2 gap-2 text-sm">
             <li class="flex items-center gap-2"><i class="fa-solid fa-snowflake text-[#18AFAB]"></i> HVAC & MEP</li>
             <li class="flex items-center gap-2"><i class="fa-solid fa-screwdriver text-[#18AFAB]"></i> Preventive maintenance</li>
             <li class="flex items-center gap-2"><i class="fa-solid fa-droplet text-[#18AFAB]"></i> Pools & water treatment</li>
             <li class="flex items-center gap-2"><i class="fa-solid fa-bolt text-[#18AFAB]"></i> Lighting & controls</li>
           </ul>
-          <div class="mt-6">
+          <div class="mt-4 md:mt-6">
             <a href="#projects" class="inline-flex items-center gap-2 font-semibold text-[#18AFAB] hover:opacity-90">
               See FM Case Studies <i class="fa-solid fa-arrow-right-long"></i>
             </a>
           </div>
         </div>
-        <div class="rounded-2xl overflow-hidden shadow-lg relative group order-2 md:order-2">
-          <div class="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105"
+        <div class="rounded-xl md:rounded-2xl overflow-hidden shadow-md md:shadow-lg relative group order-2 md:order-2">
+          <div class="absolute inset-0 bg-cover bg-center transition-transform duration-700 md:group-hover:scale-105"
                style="background-image:url('https://picsum.photos/1200/900?random=304')"></div>
-          <div class="absolute inset-0 bg-gradient-to-tl from-black/60 via-black/20 to-transparent"></div>
+          <div class="absolute inset-0 bg-gradient-to-tl from-black/50 via-black/15 to-transparent md:from-black/60 md:via-black/20"></div>
+          <div class="block md:hidden" style="padding-top:56%"></div>
         </div>
       </article>
     </div>
@@ -130,18 +135,23 @@
 <style>
 .fade-up, .fade-left, .fade-right {
   opacity: 0;
-  transform: translateY(30px);
-  transition: all .8s cubic-bezier(0.22, 1, 0.36, 1);
+  transform: translateY(24px);
+  transition: all .7s cubic-bezier(0.22, 1, 0.36, 1);
 }
-.fade-left { transform: translateX(-40px); }
-.fade-right{ transform: translateX(40px); }
-
+.fade-left { transform: translateX(-28px); }
+.fade-right{ transform: translateX(28px); }
+@media (min-width: 768px){
+  .fade-up, .fade-left, .fade-right { transform: translateY(30px); }
+  .fade-left { transform: translateX(-40px); }
+  .fade-right{ transform: translateX(40px); }
+}
 .is-visible { opacity: 1; transform: translate(0,0); }
 </style>
 
 <script>
 (function(){
   const items = document.querySelectorAll('.fade-up, .fade-left, .fade-right');
+  if(!('IntersectionObserver' in window)){ items.forEach(el=>el.classList.add('is-visible')); return; }
   const io = new IntersectionObserver((entries, obs)=>{
     entries.forEach(entry=>{
       if(entry.isIntersecting){
@@ -149,8 +159,7 @@
         obs.unobserve(entry.target);
       }
     });
-  }, { threshold: 0.2 });
-
+  }, { threshold: 0.15 });
   items.forEach(el=>io.observe(el));
 })();
 </script>

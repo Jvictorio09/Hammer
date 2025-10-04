@@ -1,4 +1,73 @@
 {# templates/header.html #}
+<style>
+/* Desktop-only visibility guard (keeps it gone on mobile/tablet) */
+@media (max-width: 1023px){
+  header .desktop-cta{ display:none !important; }
+}
+
+/* Quiet-luxury CTA */
+.cta-pill{
+  height:44px; padding:0 18px; border-radius:9999px;
+  background: linear-gradient(180deg,#19BDB8 0%, #119E9A 100%);
+  color:#fff; font-weight:600; letter-spacing:.2px;
+  border:1px solid rgba(255,255,255,.35);
+  box-shadow:
+    0 10px 28px -14px rgba(17,158,154,.65),
+    inset 0 1px 0 rgba(255,255,255,.35);
+  -webkit-font-smoothing:antialiased;
+  transition: transform .18s ease, box-shadow .28s ease, filter .2s ease, background .2s ease;
+}
+
+.cta-pill:hover{
+  transform: translateY(-1px);
+  box-shadow:
+    0 16px 36px -14px rgba(17,158,154,.70),
+    inset 0 1px 0 rgba(255,255,255,.45);
+  filter: saturate(1.05);
+}
+
+.cta-pill:active{
+  transform: translateY(0);
+  box-shadow: 0 8px 20px -12px rgba(17,158,154,.55);
+}
+
+.cta-pill:focus-visible{
+  outline: none;
+  box-shadow:
+    0 0 0 3px rgba(24,175,171,.22),
+    0 12px 32px -14px rgba(17,158,154,.65),
+    inset 0 1px 0 rgba(255,255,255,.45);
+}
+
+/* Icon chip: subtle glass + border for a premium feel */
+.cta-icon{
+  display:grid; place-items:center;
+  width:28px; height:28px; border-radius:9999px;
+  background: rgba(255,255,255,.12);
+  border:1px solid rgba(255,255,255,.35);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.45);
+}
+
+/* Dark-mode polish (optional) */
+@media (prefers-color-scheme: dark){
+  .cta-pill{
+    border-color: rgba(255,255,255,.25);
+    box-shadow:
+      0 10px 28px -14px rgba(0,0,0,.55),
+      inset 0 1px 0 rgba(255,255,255,.25);
+  }
+  .cta-icon{
+    background: rgba(255,255,255,.10);
+    border-color: rgba(255,255,255,.25);
+  }
+}
+
+/* Respect users who dislike motion */
+@media (prefers-reduced-motion: reduce){
+  .cta-pill{ transition: none; }
+}
+</style>
+
 <header class="fixed top-0 inset-x-0 z-50 bg-white/80 backdrop-blur-md border-b border-black/5">
   <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
     <a href="{% url 'home' %}" class="text-2xl tracking-wide font-bold">HAMMER</a>
@@ -64,12 +133,18 @@
       <a href="{% url 'contact' %}" class="hover:text-hammer-gold">Contact</a>
     </nav>
 
-    <a href="{% url 'contact' %}" class="hidden md:inline-flex items-center gap-2 btn-primary">
-      <i class="fa-regular fa-envelope"></i>
-      <span>Request Consultation</span>
-    </a>
+    <!-- Desktop CTA (desktop only, hidden on mobile & tablet) -->
+    <a href="{% url 'contact' %}"
+   class="desktop-cta hidden lg:inline-flex items-center gap-3 cta-pill"
+   aria-label="Request Consultation">
+  <span class="cta-icon" aria-hidden="true">
+    <i class="fa-regular fa-envelope text-[14px]"></i>
+  </span>
+  <span>Request Consultation</span>
+</a>
 
-    <!-- Mobile button -->
+
+    <!-- Mobile menu toggle -->
     <button class="md:hidden text-2xl" aria-label="Menu" id="navToggle">
       <i class="fa-solid fa-bars"></i>
     </button>
@@ -111,13 +186,19 @@
       <a href="{% url 'about' %}" class="block py-2">About</a>
       <a href="{% url 'contact' %}" class="block py-2">Contact</a>
 
-      <a href="{% url 'contact' %}" class="mt-2 inline-flex items-center gap-2 btn-primary">
-        <i class="fa-regular fa-envelope"></i>
-        <span>Request Consultation</span>
-      </a>
+      {# 🚫 Removed "Request Consultation" from mobile drawer #}
     </nav>
   </div>
 </header>
+
+<style>
+/* Force hide header CTA in mobile & tablet */
+@media (max-width: 1023px){
+  header .desktop-cta {
+    display: none !important;
+  }
+}
+</style>
 
 <script>
   // mobile drawer toggle

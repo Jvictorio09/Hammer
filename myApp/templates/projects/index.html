@@ -8,276 +8,389 @@
   <meta name="description" content="{{ meta_desc }}">
   <link rel="canonical" href="{{ request.build_absolute_uri|cut:'?' }}">
   <meta name="robots" content="index,follow">
-
-  {# Prev/next for SEO pagination #}
-  {% if page_obj.paginator.num_pages > 1 %}
-    {% if page_obj.has_previous %}
-      <link rel="prev" href="?page={{ page_obj.previous_page_number }}">
-    {% endif %}
-    {% if page_obj.has_next %}
-      <link rel="next" href="?page={{ page_obj.next_page_number }}">
-    {% endif %}
-  {% endif %}
-
-  {# Open Graph / Twitter #}
   <meta property="og:title" content="{{ meta_title }}">
   <meta property="og:description" content="{{ meta_desc }}">
   <meta property="og:type" content="website">
-  {% with hero=page_obj.object_list|first %}
-    {% if hero %}
-      <meta property="og:image" content="{{ hero.thumb_url|default:hero.full_url }}">
-      <meta name="twitter:card" content="summary_large_image">
-    {% endif %}
-  {% endwith %}
-
-  {# JSON-LD: WebPage + Breadcrumb + a small ImageGallery from this page #}
-  <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "CollectionPage",
-    "name": "{{ meta_title|escapejs }}",
-    "description": "{{ meta_desc|escapejs }}",
-    "url": "{{ request.build_absolute_uri|cut:'?' }}",
-    "breadcrumb": {
-      "@type": "BreadcrumbList",
-      "itemListElement": [
-        { "@type": "ListItem", "position": 1, "name": "Home", "item": "{{ request.build_absolute_uri|cut:request.get_full_path }}{% url 'home' %}" },
-        { "@type": "ListItem", "position": 2, "name": "Projects", "item": "{{ request.build_absolute_uri|cut:'?' }}" }
-      ]
-    },
-    "hasPart": {
-      "@type": "ImageGallery",
-      "name": "Project Images",
-      "associatedMedia": [
-        {% for p in page_obj.object_list|slice:":8" %}
-        { "@type": "ImageObject", "contentUrl": "{{ p.full_url }}", "caption": "{{ p.caption|default:'Project'|escapejs }}" }{% if not forloop.last %},{% endif %}
-        {% endfor %}
-      ]
-    }
-  }
-  </script>
 {% endblock %}
 
 {% block content %}
-<style>
-  :root{ --ink:#0B0E14; --teal:#18AFAB; --sand:#F6F3EE; }
-  .chip{font-size:.78rem;padding:.35rem .7rem;border-radius:999px;border:1px solid rgba(0,0,0,.08);background:#fff;transition:all .2s;display:inline-flex;align-items:center;gap:.4rem}
-  .chip:is(:hover,:focus){transform:translateY(-1px);box-shadow:0 8px 18px rgba(0,0,0,.08)}
-  .chip--active{background:var(--teal);color:#fff;border-color:transparent;box-shadow:0 8px 22px rgba(24,175,171,.25)}
-  .proj-card{border-radius:1rem;overflow:hidden;border:1px solid rgba(0,0,0,.06);background:#fff;transition:transform .25s,box-shadow .25s,border-color .25s}
-  .proj-card:hover{transform:translateY(-2px);box-shadow:0 18px 38px rgba(0,0,0,.16),0 0 0 1px rgba(24,175,171,.12) inset;border-color:rgba(24,175,171,.25)}
-  .tag{font-size:.7rem;padding:.2rem .5rem;border-radius:999px;background:#f3f4f6;color:#374151}
-  .grid-auto{display:grid;grid-template-columns:repeat(1,minmax(0,1fr));gap:1rem}
-  @media (min-width:640px){.grid-auto{grid-template-columns:repeat(2,minmax(0,1fr))}}
-  @media (min-width:1024px){.grid-auto{grid-template-columns:repeat(3,minmax(0,1fr))}}
-  @media (min-width:1280px){.grid-auto{grid-template-columns:repeat(4,minmax(0,1fr))}}
+<section id="projShow" class="relative bg-white text-[var(--ink)]">
+  <style>
+    :root{
+      --ink:#0B0E14; --teal:#18AFAB; --bone:#F6F3EE;
+      --nav: 80px;              /* ≈ navbar height */
+      --cardTopOffset: 24px;    /* spacing below navbar */
+    }
 
-  /* Lightbox */
-  .lb{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(10,12,18,.86);backdrop-filter:saturate(120%) blur(6px);z-index:70}
-  .lb.is-open{display:flex}
-  .lb-inner{position:relative;max-width:min(96vw,1400px);max-height:90vh;outline:none}
-  .lb-img{display:block;max-width:100%;max-height:90vh;width:auto;height:auto;object-fit:contain;border-radius:12px;box-shadow:0 24px 60px rgba(0,0,0,.5)}
-  .lb-top{position:absolute;top:.75rem;left:.75rem;right:.75rem;display:flex;align-items:center;justify-content:space-between;gap:.75rem}
-  .lb-btn{display:inline-flex;align-items:center;justify-content:center;width:38px;height:38px;border-radius:999px;border:1px solid rgba(255,255,255,.2);background:rgba(0,0,0,.35);color:#fff}
-  .lb-btn:hover{background:rgba(255,255,255,.12)}
-  .lb-num{color:#fff;font-weight:700;font-size:.8rem;opacity:.85}
-  .lb-cap{position:absolute;left:.75rem;right:.75rem;bottom:.75rem;color:#fff;background:linear-gradient(to top,rgba(0,0,0,.5),rgba(0,0,0,.1));padding:.6rem .75rem;border-radius:.75rem;font-size:.9rem}
-  .visually-hidden{position:absolute !important; height:1px; width:1px; overflow:hidden; clip:rect(1px,1px,1px,1px); white-space:nowrap;}
-  body.lb-lock{overflow:hidden}
-</style>
+    /* ===== HERO ===== */
+    #projShow .hero{ position:relative; height:92vh; color:#fff; overflow:hidden; }
+    #projShow .hero-media{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover; transform:scale(1.06); transition:transform 1.2s ease; }
+    #projShow .hero-ov{ position:absolute; inset:0; background:linear-gradient(180deg, rgba(0,0,0,.45), rgba(0,0,0,.25), rgba(0,0,0,.55)); }
+    #projShow .hero-inner{ position:relative; z-index:2; height:100%; display:flex; align-items:end; padding:0 1.5rem 3.5rem; }
+    #projShow .eyebrow{ letter-spacing:.42em; text-transform:uppercase; font-size:.72rem; color:var(--teal) }
 
-<section class="bg-white">
-  <div class="max-w-7xl mx-auto px-6 pt-14 md:pt-20">
-    <header class="mb-8 md:mb-10">
-      <p class="text-[10px] tracking-[.35em] uppercase text-[var(--teal)]">Projects</p>
-      <h1 class="mt-2 text-3xl md:text-4xl font-extrabold text-[var(--ink)]">
-        {% if current_service %}{{ current_service.title }}{% else %}Our Design &amp; Build Projects in Dubai{% endif %}
-      </h1>
-      <p class="mt-3 text-gray-600 max-w-3xl">
-        {% if current_service %}
-          Discover recent {{ current_service.title|lower }} projects—premium finishes, disciplined delivery and on-time handover across Dubai’s most prestigious locations.
-        {% else %}
-          Discover how Hammer Group delivers excellence across Dubai with bespoke landscaping, luxurious villas, refined interiors and reliable facility solutions—crafted details, premium materials, and a transparent weekly cadence.
-        {% endif %}
-      </p>
-    </header>
+    /* ===== LAYOUT ===== */
+    #projShow .frame{
+      position:relative; display:grid; grid-template-columns:minmax(0,1fr);
+      align-items:start; overflow:visible;
+    }
+    @media (min-width: 1024px){
+      #projShow .frame{ grid-template-columns: 14rem minmax(0,1fr) 4rem; column-gap: 0; }
+    }
 
-    {# Filter chips #}
-    <nav class="flex flex-wrap gap-2 mb-8" aria-label="Project filters">
-      <a href="{% url 'projects_index' %}"
-         class="chip {% if not current_service %}chip--active{% endif %}">All</a>
-      {% for s in services %}
-        <a href="{% url 'projects_by_service' s.slug %}"
-           class="chip {% if current_service and current_service.id == s.id %}chip--active{% endif %}">
-          {{ s.title }}
-        </a>
-      {% endfor %}
-    </nav>
-  </div>
+    /* Left rail (sticky) */
+    #projShow .rail-left{
+      position:sticky; top:calc(var(--nav) + var(--cardTopOffset));
+      align-self:start; padding:1rem 0; height:max-content; z-index:50; display:none;
+    }
+    @media (min-width: 1024px){ #projShow .rail-left{ display:block; } }
+    #projShow .filter{ display:flex; flex-direction:column; gap:.35rem; }
+    #projShow .filter a{
+      padding:.4rem 0; font-weight:600; color:#6b7280; text-decoration:none;
+      border-left:2px solid transparent; padding-left:.75rem; transition:color .2s, border-color .2s, transform .2s; white-space:nowrap;
+    }
+    #projShow .filter a:hover{ color:var(--ink); transform:translateX(2px) }
+    #projShow .filter a[aria-current="true"]{ color:var(--teal); border-color:var(--teal) }
 
-  <div class="max-w-7xl mx-auto px-6 pb-14 md:pb-20">
-    {% if page_obj.object_list %}
-      <div class="grid-auto" id="projGrid">
-        {% for p in page_obj.object_list %}
-          <article class="proj-card">
-            <button
-              class="block w-full text-left open-lb"
-              data-index="{{ forloop.counter0 }}"
-              data-src="{{ p.full_url }}"
-              data-alt="{{ p.caption|default:'Project image'|escape }}"
-              data-cap="{{ p.caption|default:'Project'|escape }}"
-              aria-label="Open image: {{ p.caption|default:'Project image'|escape }}"
-            >
-              <img
-                src="{{ p.thumb_url|default:p.full_url }}"
-                alt="{{ p.caption|default:'Project image' }}"
-                class="w-full h-60 sm:h-64 md:h-56 lg:h-60 xl:h-64 object-cover"
-                loading="lazy"
-                sizes="(min-width:1280px) 25vw, (min-width:1024px) 33vw, (min-width:640px) 50vw, 100vw"
-                referrerpolicy="no-referrer"
-              >
-            </button>
-            <div class="p-4">
-              <div class="flex items-center justify-between gap-3">
-                <h3 class="font-semibold text-[var(--ink)] truncate">
-                  {{ p.caption|default:"Project" }}
-                </h3>
-                <span class="tag">{{ p.service.title }}</span>
-              </div>
-            </div>
-          </article>
+    /* Right rail (sticky) */
+    #projShow .rail-right{
+      position:sticky; top:calc(var(--nav) + var(--cardTopOffset));
+      height:calc(100vh - var(--nav) - var(--cardTopOffset));
+      display:none; z-index:50;
+    }
+    @media (min-width: 1024px){ #projShow .rail-right{ display:flex; align-items:flex-end; justify-content:center; } }
+    #projShow .prg-wrap{ position:relative; width:2px; height:72vh; background:#e5e7eb; border-radius:999px; overflow:hidden; }
+    #projShow .prg{ position:absolute; left:0; bottom:0; width:100%; height:0; background:var(--teal); transition:height .2s linear; }
+    #projShow .dots{ position:absolute; inset:0; display:flex; flex-direction:column; justify-content:space-between; align-items:center; padding:4px 0; }
+    #projShow .dots button{
+      width:9px; height:9px; border-radius:999px; border:none; background:#cfd6df; opacity:.75; transition:all .2s; cursor:pointer;
+    }
+    #projShow .dots button[aria-current="true"]{ width:18px; height:18px; background:var(--teal); opacity:1; box-shadow:0 0 0 4px rgba(24,175,171,.15) }
+
+    /* ===== DECK (sticky cards, CRISP images) ===== */
+    #projShow .spreads{ position:relative; overflow:visible; }
+    #projShow .spacer-top{ height:10vh; }
+
+    #projShow .card{
+      --i: 0; --focus: 0; --lift: 0; --drift: 0; --z: 0px; --tilt: 0deg; --drop: 0px;
+      position: sticky;
+      top: calc(var(--nav) + var(--cardTopOffset));
+      scroll-margin-top: calc(var(--nav) + var(--cardTopOffset) + 8px);
+      width: min(92vw, 1200px);
+      aspect-ratio: 16 / 10;
+      height: auto;
+      margin: 0 auto;
+      overflow: visible;
+      display: grid; place-items: center; isolation:isolate;
+      z-index: var(--i);
+
+      /* no opacity fade — keep images crisp */
+      transform:
+        translateY(var(--drop))
+        translateY(calc(var(--lift) * -6vh))
+        translateY(calc(var(--drift) * 1px))
+        scale(calc(0.95 + (0.05 * var(--focus))));
+      transition: transform .35s cubic-bezier(.22,1,.36,1);
+      will-change: transform;
+    }
+
+    /* per-card 3D wrapper */
+    #projShow .card .card-3d{
+      position: relative; width: 100%; height: 100%;
+      perspective: 1100px; perspective-origin: 50% 35%; transform-style: preserve-3d;
+      border-radius: 22px; overflow: visible;
+      transform: translateZ(var(--z)) rotateX(var(--tilt));
+      transition: transform .35s cubic-bezier(.22,1,.36,1);
+    }
+
+    /* Whole card clickable (only when active) */
+    #projShow .card a.card-link{ position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: 22px;
+  overflow: hidden;
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;}
+    #projShow .card[data-active="true"] a.card-link{ pointer-events:auto; }
+
+    /* IMAGE — 100% opaque, no filters */
+    #projShow .card .media{
+      position:absolute; inset:0; width:100%; height:100%;
+      object-fit: cover; object-position: center;
+      border-radius:22px;
+      transform: translateY(calc((1 - var(--focus)) * 10px));
+      transition: transform .35s cubic-bezier(.22,1,.36,1);
+      box-shadow: 0 20px 36px rgba(0,0,0,.20), 0 2px 6px rgba(0,0,0,.14);
+      outline: 1px solid rgba(255,255,255,0.06);
+    }
+
+    /* Subtle top-edge shadow on past cards (tiny, just to sell overlap) */
+    #projShow .card::before{
+      content:""; position:absolute; inset:0; border-radius:22px;
+      background: linear-gradient(to top, rgba(0,0,0,0.12), rgba(0,0,0,0) 42%);
+      opacity: var(--pastShadow, 0); pointer-events: none;
+      transition: opacity .35s cubic-bezier(.22,1,.36,1);
+    }
+
+    /* Ultra-light bottom tint so white text stays legible — not dimming image */
+    #projShow .card .shade{
+      position:absolute; inset:0; border-radius:22px;
+      background:linear-gradient(180deg, rgba(0,0,0,0), rgba(0,0,0,.08) 70%, rgba(0,0,0,.12));
+    }
+
+    /* copy stays visible; tiny motion only */
+    #projShow .card .copy{
+      position:relative; z-index:6; text-align:left; color:#fff; padding:0 1.25rem; max-width:58rem;
+      opacity: 1;
+      text-shadow: 0 2px 10px rgba(0,0,0,.25);
+      transform: translateY(calc((1 - var(--focus)) * 10px));
+      transition: transform .35s cubic-bezier(.22,1,.36,1);
+    }
+    #projShow .tag{
+      display:inline-block; padding:.35rem .6rem; background:rgba(255,255,255,.15); border:1px solid rgba(255,255,255,.25); border-radius:999px; font-weight:700; font-size:.72rem; margin-bottom:.6rem;
+      backdrop-filter: blur(6px);
+    }
+    #projShow h2{ font-weight:800; line-height:1.06; font-size:clamp(1.6rem, 4.8vw, 3rem); }
+    #projShow .sub{ color:rgba(255,255,255,.95); margin-top:.6rem; }
+
+    /* big number */
+    #projShow .num{
+      position:absolute; top:1rem; right:1rem; z-index:6; color:#fff; font-weight:800;
+      opacity:.16; letter-spacing:.06em; font-size:clamp(2rem,8vw,6rem);
+      mix-blend-mode:overlay; pointer-events:none;
+    }
+
+    @media (prefers-reduced-motion: reduce){
+      #projShow .card, #projShow .card .card-3d, #projShow .card .media, #projShow .card .copy{ transform:none!important }
+      #projShow .card::before{ opacity:0!important }
+    }
+  </style>
+
+  <!-- HERO -->
+  <header class="hero">
+    <img class="hero-media" id="projHeroMedia"
+         src="{% static 'images/projects-hero.jpg' %}"
+         alt="Projects hero">
+    <div class="hero-ov"></div>
+    <div class="hero-inner max-w-7xl mx-auto">
+      <div>
+        <p class="eyebrow">Our Portfolio</p>
+        <h1 class="text-4xl md:text-6xl font-extrabold leading-tight">Signature <span class="text-[var(--teal)]">Projects</span></h1>
+        <p class="mt-3 max-w-2xl text-white/90">Flip through our work like a stack of glossy prints. Each scroll reveals the next story.</p>
+      </div>
+    </div>
+  </header>
+
+  <!-- BODY -->
+  <div class="frame max-w-[1800px] mx-auto">
+    <!-- Left rail -->
+    <aside class="rail-left px-6">
+      {% if services %}
+      <nav class="filter" aria-label="Filter by service">
+        <a href="#" data-filter="all" aria-current="true">All Projects</a>
+        {% for s in services %}
+          <a href="#" data-filter="{{ s.slug }}">{{ s.title }}</a>
         {% endfor %}
-      </div>
-
-      {# Pagination #}
-      {% if page_obj.paginator.num_pages > 1 %}
-        <div class="mt-8 flex items-center justify-center gap-2">
-          {% if page_obj.has_previous %}
-            <a class="chip" href="?page={{ page_obj.previous_page_number }}">Prev</a>
-          {% else %}
-            <span class="chip opacity-50 cursor-not-allowed">Prev</span>
-          {% endif %}
-
-          <span class="text-sm text-gray-600 px-2">
-            Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
-          </span>
-
-          {% if page_obj.has_next %}
-            <a class="chip" href="?page={{ page_obj.next_page_number }}">Next</a>
-          {% else %}
-            <span class="chip opacity-50 cursor-not-allowed">Next</span>
-          {% endif %}
-        </div>
+      </nav>
       {% endif %}
-    {% else %}
-      <div class="text-center py-16">
-        <p class="text-gray-600">No projects yet. Add some <code>ServiceProjectImage</code> entries to your services.</p>
-      </div>
+    </aside>
+
+    <!-- Deck -->
+    <main class="spreads">
+      <div class="spacer-top"></div>
+      {% for p in page_obj.object_list %}
+        <section id="spread-{{ forloop.counter }}" class="card"
+         data-service="{{ p.service.slug|default:'misc' }}" style="--i:{{ forloop.counter0 }}">
+  <div class="card-3d">
+    {% if p.service %}
+      <a class="card-link" href="{% url 'service_detail' p.service.slug %}"
+         aria-label="{{ p.service.title }} service page">
     {% endif %}
+
+        <img class="media"
+             src="{{ p.full_url }}"
+             alt="{{ p.caption|default:'Project' }}"
+             loading="lazy" decoding="async"
+             fetchpriority="{% if forloop.first %}high{% else %}auto{% endif %}"
+             sizes="(min-width:1280px) 1200px, 92vw">
+        <div class="shade" aria-hidden="true"></div>
+        <div class="num">{{ forloop.counter|stringformat:"02d" }}</div>
+        <div class="copy max-w-5xl mx-auto px-6 md:px-10">
+          {% if p.service %}<span class="tag">{{ p.service.title }}</span>{% endif %}
+          <h2>{{ p.caption|default:"Untitled Project" }}</h2>
+          {% if p.subcopy %}<p class="sub">{{ p.subcopy }}</p>{% endif %}
+        </div>
+
+    {% if p.service %}</a>{% endif %}
   </div>
 </section>
 
-{# Accessible, no-lib lightbox #}
-<div id="lightbox" class="lb" aria-modal="true" role="dialog" aria-label="Project image viewer">
-  <div class="lb-inner" tabindex="-1">
-    <div class="lb-top">
-      <span class="lb-num" id="lbNum">1 / 1</span>
-      <div class="flex items-center gap-2">
-        <button class="lb-btn" id="lbPrev" aria-label="Previous image"><i class="fa-solid fa-chevron-left"></i></button>
-        <button class="lb-btn" id="lbNext" aria-label="Next image"><i class="fa-solid fa-chevron-right"></i></button>
-        <button class="lb-btn" id="lbClose" aria-label="Close viewer"><i class="fa-solid fa-xmark"></i></button>
+      {% empty %}
+        <section class="card" style="--i:0">
+          <div class="card-3d">
+            <img class="media" src="https://picsum.photos/1600/1000?random=1" alt="Placeholder"
+                 loading="lazy" decoding="async" sizes="(min-width:1280px) 1200px, 92vw">
+            <div class="shade" aria-hidden="true"></div>
+            <div class="copy max-w-5xl mx-auto px-6 md:px-10">
+              <span class="tag">Projects</span>
+              <h2>Work coming soon</h2>
+              <p class="sub">We’re curating the showcase.</p>
+            </div>
+          </div>
+        </section>
+      {% endfor %}
+      <div class="spacer-top"></div>
+    </main>
+
+    <!-- Right rail -->
+    <aside class="rail-right pr-6">
+      <div class="prg-wrap">
+        <div class="prg" id="projPrg"></div>
+        <div class="dots" id="projDots" aria-label="Jump to spread">
+          {% for p in page_obj.object_list %}
+            <button type="button" aria-label="Go to {{ forloop.counter }}" aria-current="{% if forloop.first %}true{% else %}false{% endif %}"></button>
+          {% endfor %}
+        </div>
       </div>
-    </div>
-    <img id="lbImg" class="lb-img" alt="">
-    <div id="lbCap" class="lb-cap"></div>
+    </aside>
   </div>
-</div>
+</section>
 
-{% include "partials/contact.html" %}
 <script>
-(function(){
-  const grid   = document.getElementById('projGrid');
-  const lb     = document.getElementById('lightbox');
-  const lbImg  = document.getElementById('lbImg');
-  const lbCap  = document.getElementById('lbCap');
-  const lbNum  = document.getElementById('lbNum');
-  const btnPrev= document.getElementById('lbPrev');
-  const btnNext= document.getElementById('lbNext');
-  const btnClose=document.getElementById('lbClose');
-  const inner  = lb.querySelector('.lb-inner');
+(function () {
+  const root = document.getElementById('projShow');
+  if (!root) return;
+  const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  if(!grid || !lb) return;
-
-  // Build an array of items from buttons
-  const items = [...grid.querySelectorAll('.open-lb')].map((b, i) => ({
-    src: b.dataset.src,
-    alt: b.dataset.alt || 'Project image',
-    cap: b.dataset.cap || '',
-    btn: b,
-    idx: i
-  }));
-  let idx = 0;
-  let lastFocus = null;
-
-  function open(index){
-    idx = index;
-    lastFocus = document.activeElement;
-    update();
-    lb.classList.add('is-open');
-    document.body.classList.add('lb-lock');
-    // focus trap anchor
-    setTimeout(()=> inner.focus(), 0);
+  /* HERO parallax */
+  const heroImg = document.getElementById('projHeroMedia');
+  if (heroImg && !prefersReduced) {
+    window.addEventListener('scroll', () => {
+      const y = Math.min(80, window.scrollY * 0.08);
+      heroImg.style.transform = `translateY(${y}px) scale(1.08)`;
+    }, { passive: true });
   }
 
-  function close(){
-    lb.classList.remove('is-open');
-    document.body.classList.remove('lb-lock');
-    if(lastFocus) lastFocus.focus();
-  }
+  const cards     = [...root.querySelectorAll('.spreads .card')];
+  const dotsWrap  = root.querySelector('#projDots');
+  const prgBar    = root.querySelector('#projPrg');
+  const leftLinks = [...root.querySelectorAll('.rail-left .filter a[data-filter]')];
+  if (!cards.length) return;
 
-  function update(){
-    const it = items[idx];
-    lbImg.src = it.src;
-    lbImg.alt = it.alt;
-    lbCap.textContent = it.cap;
-    lbNum.textContent = (idx+1) + ' / ' + items.length;
-  }
-
-  function prev(){ idx = (idx - 1 + items.length) % items.length; update(); }
-  function next(){ idx = (idx + 1) % items.length; update(); }
-
-  // Open handlers
-  grid.addEventListener('click', (e)=>{
-    const b = e.target.closest('.open-lb');
-    if(!b) return;
-    e.preventDefault();
-    const i = parseInt(b.dataset.index || '0', 10);
-    open(i);
+  const firstByService = {};
+  cards.forEach(s => {
+    const slug = s.getAttribute('data-service') || 'misc';
+    if (!firstByService[slug]) firstByService[slug] = s;
   });
 
-  // Buttons
-  btnPrev.addEventListener('click', prev);
-  btnNext.addEventListener('click', next);
-  btnClose.addEventListener('click', close);
+  function ensureDots() {
+    if (!dotsWrap) return [];
+    const need = cards.length;
+    const have = dotsWrap.querySelectorAll('button').length;
+    if (have !== need) {
+      dotsWrap.innerHTML = '';
+      cards.forEach((_, i) => {
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.setAttribute('aria-label', `Go to ${i + 1}`);
+        if (i === 0) b.setAttribute('aria-current', 'true');
+        b.addEventListener('click', () => cards[i].scrollIntoView({ behavior: 'smooth', block: 'start' }));
+        dotsWrap.appendChild(b);
+      });
+    }
+    return [...dotsWrap.querySelectorAll('button')];
+  }
+  let dots = ensureDots();
 
-  // Dismiss on backdrop click (but not when clicking image/controls)
-  lb.addEventListener('click', (e)=>{ if(e.target === lb) close(); });
+  // cache flow positions (sticky-safe)
+  let cardTops = [];
+  function computeCardTops(){ cardTops = cards.map(c => c.offsetTop); }
+  computeCardTops();
 
-  // Keys
-  document.addEventListener('keydown', (e)=>{
-    if(!lb.classList.contains('is-open')) return;
-    if(e.key === 'Escape') close();
-    else if(e.key === 'ArrowLeft') prev();
-    else if(e.key === 'ArrowRight') next();
-  });
+  let ticking = false;
+  function measure() {
+    const mid = window.innerHeight / 2;
 
-  // Basic focus trap
-  lb.addEventListener('keydown', (e)=>{
-    if(e.key !== 'Tab') return;
-    const focusables = [btnPrev, btnNext, btnClose, inner];
-    const first = focusables[0], last = focusables[focusables.length - 1];
-    if(e.shiftKey && document.activeElement === first){ e.preventDefault(); last.focus(); }
-    else if(!e.shiftKey && document.activeElement === last){ e.preventDefault(); first.focus(); }
+    // Active by flow
+    const y = window.scrollY + 1;
+    let activeIndex = 0;
+    for (let i = 0; i < cardTops.length; i++) {
+      if (y >= cardTops[i]) activeIndex = i; else break;
+    }
+
+    // visual math (no opacity changes)
+    cards.forEach((card) => {
+      const r = card.getBoundingClientRect();
+      const center = r.top + r.height / 2;
+      const focus = Math.max(0, Math.min(1, 1 - Math.abs(center - mid) / mid));
+      const lift  = Math.max(0, Math.min(1, (mid - center) / (mid * 1.1)));
+      const drift = (1 - focus) * 14;
+      card.style.setProperty('--focus', focus.toFixed(4));
+      card.style.setProperty('--lift',  lift.toFixed(4));
+      card.style.setProperty('--drift', drift.toFixed(2));
+    });
+
+    // depth/stacking
+    cards.forEach((c, i) => {
+      const rel = i - activeIndex;
+      if (rel < 0) c.style.zIndex = 1 + i;
+      else if (rel === 0) c.style.zIndex = 999;
+      else c.style.zIndex = 100 + i;
+
+      const depth = Math.min(1, Math.abs(rel) / 3);
+      const z    = rel < 0 ? -80 * (0.7 + 0.3 * depth) : (rel > 0 ? -10 * depth : 0);
+      const tilt = rel < 0 ? 4 * depth : (rel > 0 ? -2 * depth : 0);
+      const drop = rel > 0 ? Math.min(6, 3 + 2 * depth) + 'vh' : '0px';
+
+      c.style.setProperty('--z', z + 'px');
+      c.style.setProperty('--tilt', tilt + 'deg');
+      c.style.setProperty('--drop', drop);
+
+      const pastShadow = rel < 0 ? Math.min(0.12, 0.06 + 0.10 * depth) : 0; // very subtle
+      c.style.setProperty('--pastShadow', pastShadow.toFixed(2));
+
+      c.toggleAttribute('data-active', rel === 0);
+    });
+
+    // dots & left rail
+    dots = ensureDots();
+    dots.forEach((b, i) => b.setAttribute('aria-current', i === activeIndex ? 'true' : 'false'));
+    const svc = cards[activeIndex].getAttribute('data-service') || 'misc';
+    leftLinks.forEach(a => a.setAttribute('aria-current', a.dataset.filter === svc ? 'true' : 'false'));
+
+    // progress
+    if (prgBar) {
+      const first = cards[0], last = cards[cards.length - 1];
+      const start = first.getBoundingClientRect().top + window.pageYOffset;
+      const end   = last.getBoundingClientRect().top + window.pageYOffset + last.offsetHeight;
+      const curr  = window.pageYOffset + window.innerHeight;
+      const pct   = Math.max(0, Math.min(1, (curr - start) / (end - start)));
+      prgBar.style.height = (pct * 100) + '%';
+    }
+  }
+
+  function onScroll(){
+    if (prefersReduced) return;
+    if (!ticking) { requestAnimationFrame(() => { measure(); ticking = false; }); ticking = true; }
+  }
+
+  window.addEventListener('scroll', onScroll, { passive: true });
+  window.addEventListener('resize', () => { computeCardTops(); onScroll(); });
+  computeCardTops(); measure();
+
+  // left-rail jumps
+  leftLinks.forEach(a => {
+    a.addEventListener('click', (e) => {
+      e.preventDefault();
+      const slug = a.dataset.filter;
+      if (slug === 'all') { cards[0].scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+      else {
+        const target = cards.find(c => (c.getAttribute('data-service') || 'misc') === slug);
+        if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    });
   });
 })();
 </script>

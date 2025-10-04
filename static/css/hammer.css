@@ -98,7 +98,7 @@
 /* ===================== BUTTONS ===================== */
 .btn-primary {
   background: var(--color-hammer-teal);
-  color: #0F1413; /* dark text for contrast on teal */
+  color: #fff; /* dark text for contrast on teal */
   padding: .75rem 1rem;
   border-radius: 9999px;
   font-weight: 700;

@@ -27,12 +27,15 @@ class Service(TimeStamped):
     insights_heading = models.CharField(max_length=200, blank=True, help_text="Heading for Insights block on this service page.")
     insights_subcopy = models.CharField(max_length=300, blank=True, help_text="Short description under the Insights heading.")
 
+    is_active = models.BooleanField(default=True, db_index=True)   
+    sort_order = models.PositiveIntegerField(default=0, db_index=True)  
+
     seo_meta_title = models.CharField(max_length=70, blank=True)
     seo_meta_description = models.CharField(max_length=160, blank=True)
     canonical_path = models.CharField(max_length=255, blank=True)
 
     class Meta:
-        ordering = ["title"]
+        ordering = ["sort_order", "title"]
 
     def __str__(self):
         return self.title

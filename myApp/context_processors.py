@@ -4,14 +4,15 @@ from .models import Service
 def nav_services(request):
     """
     Navigation data for header:
-    - nav_services: lightweight list of services
+    - nav_services: lightweight list of ACTIVE services, ordered by sort_order then title
     - nav_current_slug: current service slug (if on a detail route)
     - nav_detail_urlname: which URL name to use when linking to details
     """
     services_qs = (
         Service.objects
-        .only("id", "title", "slug", "eyebrow")
-        .order_by("title")
+        .filter(is_active=True)                 # only active
+        .only("id", "title", "slug", "eyebrow") # lightweight fields
+        .order_by("sort_order", "title")        # manual order first
     )
     services = list(services_qs)
 
