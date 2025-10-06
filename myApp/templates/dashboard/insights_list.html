@@ -89,9 +89,22 @@
             <button type="button" class="action-btn rounded-lg p-1.5 hover:bg-gray-100">
               <svg class="h-5 w-5 text-gray-500" viewBox="0 0 20 20" fill="currentColor"><circle cx="10" cy="3" r="1.5"/><circle cx="10" cy="10" r="1.5"/><circle cx="10" cy="17" r="1.5"/></svg>
             </button>
-            <div class="menu hidden absolute right-0 z-10 mt-1 w-36 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-lg">
+            <div class="menu hidden absolute right-0 z-10 mt-1 w-40 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-lg">
               <a href="{% url 'dashboard_insight_edit' i.id %}" class="block px-3 py-2 text-sm hover:bg-gray-50">Edit</a>
               <a href="{{ i.get_absolute_url }}" target="_blank" class="block px-3 py-2 text-sm hover:bg-gray-50">View</a>
+              {% if request.user.is_superuser or request.user.profile.is_admin %}
+                {% if i.is_active %}
+                  <form action="{% url 'dashboard_insight_toggle_active' i.id %}" method="post" onsubmit="return confirm('Deactivate this insight? It will be hidden from public views.');">
+                    {% csrf_token %}
+                    <button type="submit" class="w-full text-left px-3 py-2 text-sm text-amber-600 hover:bg-amber-50">Deactivate</button>
+                  </form>
+                {% else %}
+                  <form action="{% url 'dashboard_insight_toggle_active' i.id %}" method="post" onsubmit="return confirm('Activate this insight? It will be visible in public views.');">
+                    {% csrf_token %}
+                    <button type="submit" class="w-full text-left px-3 py-2 text-sm text-green-600 hover:bg-green-50">Activate</button>
+                  </form>
+                {% endif %}
+              {% endif %}
               <form action="{% url 'dashboard_insight_delete' i.id %}" method="post" onsubmit="return confirm('Delete this insight?');">
                 {% csrf_token %}
                 <button type="submit" class="w-full text-left px-3 py-2 text-sm text-red-600 hover:bg-red-50">Delete</button>
@@ -107,8 +120,16 @@
             {{ i.service.title }}
           </span>
         {% endif %}
+        {% if i.author %}
+          <span class="text-gray-500">by {{ i.author.username }}</span>
+        {% endif %}
         <span class="text-gray-400">•</span>
-        <span>{{ i.published_at|date:"Y-m-d H:i" }}</span>
+        <span>{{ i.created_at|date:"Y-m-d H:i" }}</span>
+        {% if not i.is_active %}
+          <span class="inline-flex items-center rounded-lg border border-red-200 bg-red-50 px-2 py-0.5 text-red-700">
+            Inactive
+          </span>
+        {% endif %}
       </div>
     </div>
   </article>
@@ -129,8 +150,9 @@
       <tr>
         <th class="px-4 py-3">Title</th>
         <th class="px-4 py-3">Service</th>
+        <th class="px-4 py-3">Author</th>
         <th class="px-4 py-3">Status</th>
-        <th class="px-4 py-3">Publish date</th>
+        <th class="px-4 py-3">Created</th>
         <th class="px-4 py-3"></th>
       </tr>
     </thead>
@@ -139,18 +161,35 @@
       <tr class="row" data-title="{{ i.title|lower }}" data-status="{% if i.published %}published{% else %}draft{% endif %}" data-service="{{ i.service.title|default_if_none:''|lower }}">
         <td class="px-4 py-3 font-medium text-gray-900">{{ i.title }}</td>
         <td class="px-4 py-3 text-gray-700">{{ i.service.title }}</td>
+        <td class="px-4 py-3 text-gray-700">{{ i.author.username|default:"Unknown" }}</td>
         <td class="px-4 py-3">
           {% if i.published %}
             <span class="rounded-full bg-green-600/10 px-2.5 py-1 text-xs font-medium text-green-700">Published</span>
           {% else %}
             <span class="rounded-full bg-amber-500/10 px-2.5 py-1 text-xs font-medium text-amber-700">Draft</span>
           {% endif %}
+          {% if not i.is_active %}
+            <span class="ml-2 rounded-full bg-red-600/10 px-2.5 py-1 text-xs font-medium text-red-700">Inactive</span>
+          {% endif %}
         </td>
-        <td class="px-4 py-3 text-gray-700">{{ i.published_at|date:"Y-m-d H:i" }}</td>
+        <td class="px-4 py-3 text-gray-700">{{ i.created_at|date:"Y-m-d H:i" }}</td>
         <td class="px-4 py-3">
           <div class="flex items-center gap-3">
             <a href="{% url 'dashboard_insight_edit' i.id %}" class="text-blue-700 hover:underline">Edit</a>
-            <form action="{% url 'dashboard_insight_delete' i.id %}" method="post" onsubmit="return confirm('Delete this insight?');">
+            {% if request.user.is_superuser or request.user.profile.is_admin %}
+              {% if i.is_active %}
+                <form action="{% url 'dashboard_insight_toggle_active' i.id %}" method="post" onsubmit="return confirm('Deactivate this insight? It will be hidden from public views.');" class="inline">
+                  {% csrf_token %}
+                  <button class="text-amber-700 hover:underline" type="submit">Deactivate</button>
+                </form>
+              {% else %}
+                <form action="{% url 'dashboard_insight_toggle_active' i.id %}" method="post" onsubmit="return confirm('Activate this insight? It will be visible in public views.');" class="inline">
+                  {% csrf_token %}
+                  <button class="text-green-700 hover:underline" type="submit">Activate</button>
+                </form>
+              {% endif %}
+            {% endif %}
+            <form action="{% url 'dashboard_insight_delete' i.id %}" method="post" onsubmit="return confirm('Delete this insight?');" class="inline">
               {% csrf_token %}
               <button class="text-red-700 hover:underline" type="submit">Delete</button>
             </form>

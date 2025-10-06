@@ -9,7 +9,15 @@
     <div class="lg:col-span-8">
       <p class="text-[11px] tracking-[.45em] uppercase text-[#18AFAB]">{{ insight.tag|default:"Insight" }}</p>
       <h1 class="text-3xl md:text-4xl font-extrabold mt-2">{{ insight.title }}</h1>
-      <p class="text-gray-500 mt-2">{{ insight.read_minutes }} min read • {{ insight.published_at|date:"M j, Y" }}</p>
+      <div class="flex items-center gap-4 mt-2 text-gray-500">
+        <span>{{ insight.read_minutes }} min read</span>
+        <span>•</span>
+        <span>{{ insight.published_at|date:"M j, Y" }}</span>
+        {% if insight.author %}
+          <span>•</span>
+          <span>by {{ insight.author.username }}</span>
+        {% endif %}
+      </div>
       {% if insight.cover_image_url %}
         <img src="{{ insight.cover_image_url }}" alt="{{ insight.title }}" class="w-full rounded-2xl shadow mt-6">
       {% endif %}

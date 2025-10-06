@@ -12,7 +12,7 @@ from .models import (
     ServiceCapability, ServiceProcessStep, ServiceMetric, ServiceFAQ,
     ServicePartnerBrand, ServiceTestimonial,
     CaseStudy, TeamMember,
-    MediaAlbum, MediaAsset,
+    MediaAlbum, MediaAsset, InsightAuditLog, UserProfile,
 )
 from .utils.cloudinary_utils import smart_compress_to_bytes, upload_to_cloudinary, TARGET_BYTES
 
@@ -149,10 +149,31 @@ class ServiceAdmin(admin.ModelAdmin):
 
 @admin.register(Insight)
 class InsightAdmin(admin.ModelAdmin):
-    list_display = ("title", "service", "tag", "read_minutes", "published", "published_at")
-    list_filter = ("published", "service", "tag")
-    search_fields = ("title", "excerpt", "body")
+    list_display = ("title", "service", "author", "tag", "read_minutes", "published", "is_active", "published_at", "created_at")
+    list_filter = ("published", "is_active", "service", "tag", "author")
+    search_fields = ("title", "excerpt", "body", "author__username", "author__email")
     prepopulated_fields = {"slug": ("title",)}
+    list_editable = ("is_active", "published")
+    readonly_fields = ("created_at", "updated_at")
+    
+    fieldsets = (
+        ("Basic Information", {
+            "fields": ("title", "slug", "service", "author", "tag", "excerpt")
+        }),
+        ("Content", {
+            "fields": ("cover_image_url", "body", "blocks", "read_minutes")
+        }),
+        ("Publication", {
+            "fields": ("published", "is_active", "published_at")
+        }),
+        ("Timestamps", {
+            "fields": ("created_at", "updated_at"),
+            "classes": ("collapse",)
+        }),
+    )
+    
+    def get_queryset(self, request):
+        return super().get_queryset(request).select_related("service", "author")
 
 
 @admin.register(CaseStudy)
@@ -169,6 +190,48 @@ class TeamMemberAdmin(admin.ModelAdmin):
     list_filter   = ("is_featured", "is_active")
     search_fields = ("name", "role", "email")
     ordering      = ("sort_order", "name")
+
+
+@admin.register(InsightAuditLog)
+class InsightAuditLogAdmin(admin.ModelAdmin):
+    list_display = ("action", "insight_title", "actor_username", "timestamp", "ip_address")
+    list_filter = ("action", "timestamp", "actor")
+    search_fields = ("insight_title", "insight_slug", "actor_username", "actor_email", "ip_address")
+    readonly_fields = ("action", "insight_id", "insight_slug", "insight_title", "actor", "actor_username", "actor_email", "ip_address", "timestamp", "metadata")
+    ordering = ("-timestamp",)
+    
+    def has_add_permission(self, request):
+        return False  # Audit logs should only be created by the system
+    
+    def has_change_permission(self, request, obj=None):
+        return False  # Audit logs should be immutable
+    
+    def has_delete_permission(self, request, obj=None):
+        return request.user.is_superuser  # Only superusers can delete audit logs
+
+
+@admin.register(UserProfile)
+class UserProfileAdmin(admin.ModelAdmin):
+    list_display = ("user", "role", "created_at")
+    list_filter = ("role", "created_at")
+    search_fields = ("user__username", "user__email", "user__first_name", "user__last_name")
+    list_editable = ("role",)
+    ordering = ("user__username",)
+    
+    fieldsets = (
+        ("User Information", {
+            "fields": ("user", "role")
+        }),
+        ("Timestamps", {
+            "fields": ("created_at", "updated_at"),
+            "classes": ("collapse",)
+        }),
+    )
+    
+    readonly_fields = ("created_at", "updated_at")
+    
+    def get_queryset(self, request):
+        return super().get_queryset(request).select_related("user")
 
 
 # -------------------------------------------------------------------

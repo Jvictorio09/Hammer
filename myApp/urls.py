@@ -53,10 +53,16 @@ urlpatterns = [
     path("dashboard/insights/new/", views.dashboard_insight_create, name="dashboard_insight_create"),
     path("dashboard/insights/<int:pk>/edit/", views.dashboard_insight_edit, name="dashboard_insight_edit"),
     path("dashboard/insights/<int:pk>/delete/", views.dashboard_insight_delete, name="dashboard_insight_delete"),
+    path("dashboard/insights/<int:pk>/toggle-active/", views.dashboard_insight_toggle_active, name="dashboard_insight_toggle_active"),
     path("dashboard/insights/import/", views.dashboard_insight_import_html, name="dashboard_insight_import"),
     # Editor.js uploader
     path("u/editor-image/", views.editor_image_upload, name="editor_image_upload"),
     # Gallery API
     path("dashboard/gallery/api/images/", views.gallery_api_images, name="gallery_api_images"),
     path("dashboard/gallery/api/upload/", views.gallery_api_upload, name="gallery_api_upload"),
+    # Users (Admin only)
+    path("dashboard/users/", views.dashboard_users_list, name="dashboard_users_list"),
+    path("dashboard/users/new/", views.dashboard_user_create, name="dashboard_user_create"),
+    path("dashboard/users/<int:pk>/edit/", views.dashboard_user_edit, name="dashboard_user_edit"),
+    path("dashboard/users/<int:pk>/delete/", views.dashboard_user_delete, name="dashboard_user_delete"),
 ]

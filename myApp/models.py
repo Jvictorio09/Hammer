@@ -212,6 +212,8 @@ class Insight(TimeStamped):
     read_minutes = models.PositiveSmallIntegerField(default=4)
     published = models.BooleanField(default=True)
     published_at = models.DateTimeField(null=True, blank=True)
+    is_active = models.BooleanField(default=True, db_index=True, help_text="Inactive insights are not shown in public views")
+    author = models.ForeignKey('auth.User', on_delete=models.SET_NULL, null=True, blank=True, related_name='authored_insights')
 
     class Meta:
         ordering = ["-published_at", "-created_at"]
@@ -228,6 +230,67 @@ class Insight(TimeStamped):
 class ContentVersion(TimeStamped):
     insight = models.ForeignKey(Insight, related_name="versions", on_delete=models.CASCADE)
     data = models.JSONField(default=dict)
+
+
+class InsightAuditLog(models.Model):
+    """Audit trail for insight deletions and other actions"""
+    ACTION_CHOICES = [
+        ('delete', 'Delete'),
+        ('create', 'Create'),
+        ('update', 'Update'),
+        ('activate', 'Activate'),
+        ('deactivate', 'Deactivate'),
+    ]
+    
+    action = models.CharField(max_length=20, choices=ACTION_CHOICES)
+    insight_id = models.PositiveIntegerField(help_text="ID of the insight (may be deleted)")
+    insight_slug = models.SlugField(max_length=220, blank=True, help_text="Slug of the insight")
+    insight_title = models.CharField(max_length=200, help_text="Title of the insight")
+    actor = models.ForeignKey('auth.User', on_delete=models.SET_NULL, null=True, blank=True, related_name='audit_actions')
+    actor_username = models.CharField(max_length=150, blank=True, help_text="Username at time of action")
+    actor_email = models.EmailField(blank=True, help_text="Email at time of action")
+    ip_address = models.GenericIPAddressField(null=True, blank=True, help_text="IP address of the actor")
+    timestamp = models.DateTimeField(auto_now_add=True)
+    metadata = models.JSONField(default=dict, blank=True, help_text="Additional context data")
+    
+    class Meta:
+        ordering = ['-timestamp']
+        indexes = [
+            models.Index(fields=['action', 'timestamp']),
+            models.Index(fields=['actor', 'timestamp']),
+            models.Index(fields=['timestamp']),
+        ]
+    
+    def __str__(self):
+        return f"{self.action} {self.insight_title} by {self.actor_username or 'Unknown'} at {self.timestamp}"
+
+
+class UserProfile(models.Model):
+    """Extended user profile with role information"""
+    ROLE_CHOICES = [
+        ('admin', 'Admin'),
+        ('blog_author', 'Blog Author'),
+        ('user', 'Regular User'),
+    ]
+    
+    user = models.OneToOneField('auth.User', on_delete=models.CASCADE, related_name='profile')
+    role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='user')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        ordering = ['user__username']
+    
+    def __str__(self):
+        return f"{self.user.username} ({self.get_role_display()})"
+    
+    @property
+    def is_blog_author(self):
+        return self.role == 'blog_author'
+    
+    @property
+    def is_admin(self):
+        return self.role == 'admin' or self.user.is_superuser
 
 
 # myApp/models.py (append near your other models)

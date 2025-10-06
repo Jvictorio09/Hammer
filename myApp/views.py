@@ -23,6 +23,10 @@ from django.db.models import Prefetch
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
 from django.http import JsonResponse, HttpResponseBadRequest
+from django.core.exceptions import PermissionDenied
+from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth import get_user_model
+from functools import wraps
 from django.core.files.storage import default_storage
 from bs4 import BeautifulSoup
 import uuid
@@ -41,12 +45,58 @@ from .models import (
     Insight,
     ContentVersion,
     MediaAsset,
+    InsightAuditLog,
 )
 from .forms import ServiceForm, InsightForm, ServiceCapabilityFormSet, ServiceEditorialImageFormSet, ServiceProjectImageFormSet, CaseStudyFormSet
 
 # -----------------------------
 # Utility Functions
 # -----------------------------
+
+def get_client_ip(request):
+    """Get the client IP address from request"""
+    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+    if x_forwarded_for:
+        ip = x_forwarded_for.split(',')[0]
+    else:
+        ip = request.META.get('REMOTE_ADDR')
+    return ip
+
+
+def blog_author_required(view_func):
+    """Decorator to ensure user is a blog author or admin"""
+    @wraps(view_func)
+    def wrapper(request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return redirect('login')
+        
+        # Check if user is admin or blog author
+        if hasattr(request.user, 'profile'):
+            if not (request.user.profile.is_admin or request.user.profile.is_blog_author):
+                raise PermissionDenied("You don't have permission to access this page.")
+        elif not request.user.is_superuser:
+            raise PermissionDenied("You don't have permission to access this page.")
+        
+        return view_func(request, *args, **kwargs)
+    return wrapper
+
+
+def admin_required(view_func):
+    """Decorator to ensure user is an admin"""
+    @wraps(view_func)
+    def wrapper(request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return redirect('login')
+        
+        # Check if user is admin
+        if hasattr(request.user, 'profile'):
+            if not request.user.profile.is_admin:
+                raise PermissionDenied("You don't have permission to access this page.")
+        elif not request.user.is_superuser:
+            raise PermissionDenied("You don't have permission to access this page.")
+        
+        return view_func(request, *args, **kwargs)
+    return wrapper
 
 def html_to_editorjs_blocks(html_content):
     """
@@ -250,9 +300,10 @@ def service_detail(request, slug):
             # 👇 give insights a to_attr so we can read the prefetched list directly
             Prefetch(
                 "insights",
-                queryset=Insight.objects.filter(published=True, published_at__lte=timezone.now())
+                queryset=Insight.objects.filter(published=True, is_active=True, published_at__lte=timezone.now())
+                    .select_related("author")
                     .only("id","service_id","title","slug","tag","excerpt",
-                          "cover_image_url","read_minutes","published_at")
+                          "cover_image_url","read_minutes","published_at","author","created_at")
                     .order_by("-published_at","-created_at"),
                 to_attr="prefetched_insights",
             ),
@@ -284,12 +335,13 @@ def service_detail(request, slug):
 # -----------------------------
 def insight_detail(request, slug):
     insight = get_object_or_404(
-        Insight.objects.select_related("service"),
-        slug=slug, published=True
+        Insight.objects.select_related("service", "author"),
+        slug=slug, published=True, is_active=True
     )
     related = (
         Insight.objects
-        .filter(service=insight.service, published=True)
+        .filter(service=insight.service, published=True, is_active=True)
+        .select_related("author")
         .exclude(id=insight.id)
         .order_by("-published_at", "-created_at")[:4]
     )
@@ -666,6 +718,9 @@ def team_detail(request, slug):
 
 @login_required
 def dashboard_home(request):
+    # Redirect Blog Authors directly to insights since they can't access other sections
+    if hasattr(request.user, 'profile') and request.user.profile.is_blog_author and not request.user.profile.is_admin:
+        return redirect('dashboard_insights_list')
     return render(request, "dashboard/home.html")
 
 
@@ -758,13 +813,13 @@ def dashboard_service_delete(request, pk: int):
 
 
 # ---- Insights CRUD ----
-@login_required
+@blog_author_required
 def dashboard_insights_list(request):
-    insights = Insight.objects.select_related("service").order_by("-published_at", "-created_at")
+    insights = Insight.objects.select_related("service", "author").order_by("-published_at", "-created_at")
     return render(request, "dashboard/insights_list.html", {"insights": insights})
 
 
-@login_required
+@blog_author_required
 def dashboard_insight_create(request):
     if request.method == "POST":
         form = InsightForm(request.POST, request.FILES)
@@ -778,7 +833,7 @@ def dashboard_insight_create(request):
                 pass  # Keep empty blocks if JSON is invalid
             
             # Set author and published_at
-            insight.author = request.user if request.user.is_authenticated else None
+            insight.author = request.user
             if insight.published and not insight.published_at:
                 insight.published_at = timezone.now()
             
@@ -817,7 +872,7 @@ def dashboard_insight_create(request):
     })
 
 
-@login_required
+@blog_author_required
 def dashboard_insight_edit(request, pk: int):
     insight = get_object_or_404(Insight, pk=pk)
     
@@ -907,16 +962,68 @@ def editor_image_upload(request):
     return JsonResponse({"url": secure_url, "web_url": web_url})
 
 
-@login_required
+@blog_author_required
 def dashboard_insight_delete(request, pk: int):
     insight = get_object_or_404(Insight, pk=pk)
     if request.method == "POST":
+        # Create audit log before deletion
+        InsightAuditLog.objects.create(
+            action='delete',
+            insight_id=insight.id,
+            insight_slug=insight.slug,
+            insight_title=insight.title,
+            actor=request.user,
+            actor_username=request.user.username,
+            actor_email=request.user.email,
+            ip_address=get_client_ip(request),
+            metadata={
+                'service_title': insight.service.title,
+                'service_slug': insight.service.slug,
+            }
+        )
+        
         insight.delete()
+        messages.success(request, f"Insight '{insight.title}' has been deleted. Audit log created.")
         return redirect("dashboard_insights_list")
     return render(request, "dashboard/confirm_delete.html", {"object": insight, "type": "Insight"})
 
 
-@login_required
+@admin_required
+@require_POST
+def dashboard_insight_toggle_active(request, pk: int):
+    """Toggle insight active status (admin only)"""
+    insight = get_object_or_404(Insight, pk=pk)
+    
+    # Toggle the active status
+    old_status = insight.is_active
+    insight.is_active = not insight.is_active
+    insight.save()
+    
+    # Create audit log
+    action = 'activate' if insight.is_active else 'deactivate'
+    InsightAuditLog.objects.create(
+        action=action,
+        insight_id=insight.id,
+        insight_slug=insight.slug,
+        insight_title=insight.title,
+        actor=request.user,
+        actor_username=request.user.username,
+        actor_email=request.user.email,
+        ip_address=get_client_ip(request),
+        metadata={
+            'service_title': insight.service.title,
+            'service_slug': insight.service.slug,
+            'previous_status': old_status,
+            'new_status': insight.is_active,
+        }
+    )
+    
+    status_text = "activated" if insight.is_active else "deactivated"
+    messages.success(request, f"Insight '{insight.title}' has been {status_text}. Audit log created.")
+    return redirect("dashboard_insights_list")
+
+
+@blog_author_required
 def dashboard_insight_import_html(request):
     """
     Import function to convert HTML body content to Editor.js blocks format.
@@ -1147,3 +1254,82 @@ def gallery_api_upload(request):
             'success': False,
             'error': str(e)
         })
+
+
+# -------------------------------------------------------------------------------------- 
+# User Management (Admin only)
+# -------------------------------------------------------------------------------------- 
+
+@admin_required
+def dashboard_users_list(request):
+    """List all users with their roles"""
+    users = get_user_model().objects.select_related('profile').all().order_by('-date_joined')
+    return render(request, "dashboard/users_list.html", {"users": users})
+
+
+@admin_required
+def dashboard_user_create(request):
+    """Create a new user with role assignment"""
+    if request.method == "POST":
+        form = UserCreationForm(request.POST)
+        role = request.POST.get('role', 'user')
+        
+        if form.is_valid():
+            user = form.save()
+            # Update the user's profile role
+            if hasattr(user, 'profile'):
+                user.profile.role = role
+                user.profile.save()
+            
+            messages.success(request, f"User '{user.username}' created successfully with role '{role}'.")
+            return redirect("dashboard_users_list")
+    else:
+        form = UserCreationForm()
+    
+    return render(request, "dashboard/user_form.html", {
+        "form": form,
+        "mode": "create"
+    })
+
+
+@admin_required
+def dashboard_user_edit(request, pk: int):
+    """Edit user role and basic info"""
+    user = get_object_or_404(get_user_model(), pk=pk)
+    
+    if request.method == "POST":
+        # Update user profile role
+        if hasattr(user, 'profile'):
+            new_role = request.POST.get('role', 'user')
+            user.profile.role = new_role
+            user.profile.save()
+            
+            messages.success(request, f"User '{user.username}' role updated to '{new_role}'.")
+            return redirect("dashboard_users_list")
+    
+    return render(request, "dashboard/user_form.html", {
+        "user": user,
+        "mode": "edit"
+    })
+
+
+@admin_required
+def dashboard_user_delete(request, pk: int):
+    """Delete a user (admin only)"""
+    user = get_object_or_404(get_user_model(), pk=pk)
+    
+    # Prevent deleting superusers
+    if user.is_superuser:
+        messages.error(request, "Cannot delete superuser accounts.")
+        return redirect("dashboard_users_list")
+    
+    if request.method == "POST":
+        username = user.username
+        user.delete()
+        messages.success(request, f"User '{username}' has been deleted.")
+        return redirect("dashboard_users_list")
+    
+    return render(request, "dashboard/confirm_delete.html", {
+        "object": user, 
+        "type": "User"
+    })
