@@ -1,4 +1,4 @@
-<!-- Projects -->
+{# templates/sections/projects_section.html #}
 <section id="projects" class="py-20 bg-gray-50 relative overflow-hidden">
   <div class="max-w-7xl mx-auto px-6">
     <!-- Heading -->
@@ -10,21 +10,20 @@
       </p>
     </div>
 
-    <!-- Quick filters -->
+    <!-- Quick filters (labels from Services) -->
     <div class="flex flex-wrap items-center justify-center gap-3 mb-12 fade-up delay-100">
-      <button class="filter-btn active">All</button>
-      <button class="filter-btn">Villas</button>
-      <button class="filter-btn">Interiors</button>
-      <button class="filter-btn">Landscape</button>
-      <button class="filter-btn">Facility</button>
+      {% for label in project_filters %}
+        <button class="filter-btn {% if forloop.first %}active{% endif %}">{{ label }}</button>
+      {% endfor %}
     </div>
 
     <!-- Featured case study -->
+    {% if featured_cs %}
     <article class="grid lg:grid-cols-5 gap-6 items-stretch mb-14 fade-up delay-200">
       <!-- Image -->
       <div class="lg:col-span-3 relative rounded-2xl overflow-hidden shadow-lg group">
         <div class="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105"
-             style="background-image:url('https://picsum.photos/1600/1100?random=701')"></div>
+             style="background-image:url('{{ featured_cs.hero_image_url }}')"></div>
         <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent"></div>
       </div>
       <!-- Text -->
@@ -32,45 +31,50 @@
         <div class="flex items-center gap-2 text-xs uppercase tracking-[.2em] text-[#18AFAB]">
           <span class="h-1.5 w-1.5 rounded-full bg-[#18AFAB]"></span> Featured Case Study
         </div>
-        <h3 class="text-2xl font-bold mt-2">Private Villa • Emirates Hills</h3>
-        <p class="text-gray-600 mt-3">
-          Full design & build: architecture, interior fit-out, bespoke joinery and native/low-water landscape with pool and lighting.
-        </p>
+        <h3 class="text-2xl font-bold mt-2">{{ featured_cs.title }}</h3>
+        {% if featured_cs.summary %}
+          <p class="text-gray-600 mt-3">{{ featured_cs.summary }}</p>
+        {% endif %}
 
         <dl class="mt-6 grid grid-cols-2 gap-4 text-sm">
-          <div><dt class="text-gray-500">Scope</dt><dd class="font-semibold">Design + Build</dd></div>
-          <div><dt class="text-gray-500">Size</dt><dd class="font-semibold">12,500 sq ft</dd></div>
-          <div><dt class="text-gray-500">Timeline</dt><dd class="font-semibold">10 months</dd></div>
-          <div><dt class="text-gray-500">Status</dt><dd class="font-semibold">Completed</dd></div>
+          {% if featured_cs.scope %}<div><dt class="text-gray-500">Scope</dt><dd class="font-semibold">{{ featured_cs.scope }}</dd></div>{% endif %}
+          {% if featured_cs.size_label %}<div><dt class="text-gray-500">Size</dt><dd class="font-semibold">{{ featured_cs.size_label }}</dd></div>{% endif %}
+          {% if featured_cs.timeline_label %}<div><dt class="text-gray-500">Timeline</dt><dd class="font-semibold">{{ featured_cs.timeline_label }}</dd></div>{% endif %}
+          {% if featured_cs.status_label %}<div><dt class="text-gray-500">Status</dt><dd class="font-semibold">{{ featured_cs.status_label }}</dd></div>{% endif %}
         </dl>
 
+        {% if featured_cs.tags_list %}
         <div class="mt-6 flex flex-wrap gap-2">
-          <span class="tag">Architecture</span>
-          <span class="tag">Interior Fit-Out</span>
-          <span class="tag">Joinery</span>
-          <span class="tag">Landscape</span>
+          {% for tag in featured_cs.tags_list %}
+            <span class="tag">{{ tag }}</span>
+          {% endfor %}
         </div>
+        {% endif %}
 
         <div class="mt-7">
-          <a href="#" class="btn-primary">
+          <a href="{{ featured_cs.cta_url|default:featured_cs.service.get_absolute_url }}" class="btn-primary">
             View Case Study <i class="fa-solid fa-arrow-right-long"></i>
           </a>
         </div>
       </div>
     </article>
+    {% else %}
+      <p class="text-center text-slate-500 fade-up">No featured case study yet. Add one in Admin → Services → Case studies.</p>
+    {% endif %}
 
     <!-- Footer CTA with shimmer -->
     <div class="text-center mt-14 fade-up delay-500">
-      <a href="#" class="btn-primary shimmer-btn">
-        View All Projects <i class="fa-solid fa-arrow-right-long"></i>
-      </a>
+      <a href="{% if featured_cs and featured_cs.service.slug %}{% url 'service_detail' slug=featured_cs.service.slug %}{% else %}{% url 'projects_index' %}{% endif %}"
+   class="btn-primary shimmer-btn">
+  View All Projects <i class="fa-solid fa-arrow-right-long"></i>
+</a>
+
     </div>
   </div>
 </section>
 
 <!-- Supporting styles -->
 <style>
-/* Filter buttons styled as pill buttons */
 .filter-btn {
   display:inline-flex; align-items:center; justify-content:center;
   padding:0.625rem 1.25rem; border-radius:9999px;
@@ -78,53 +82,26 @@
   font-size:0.875rem; font-weight:600;
   background:#fff; transition:all .3s ease;
 }
-.filter-btn:hover,
-.filter-btn.active {
-  background:#18AFAB; color:#fff; box-shadow:0 2px 6px rgba(0,0,0,.15);
-}
+.filter-btn:hover, .filter-btn.active { background:#18AFAB; color:#fff; box-shadow:0 2px 6px rgba(0,0,0,.15); }
 
-.tag {
-  padding:0.25rem 0.75rem; border-radius:9999px;
-  background:#f3f4f6; font-size:0.75rem; font-weight:600;
-}
+.tag { padding:0.25rem 0.75rem; border-radius:9999px; background:#f3f4f6; font-size:0.75rem; font-weight:600; }
 
-/* Base CTA button */
 .btn-primary {
-  display:inline-flex; align-items:center; justify-content:center;
-  gap:.5rem;
-  padding:.75rem 1.5rem; border-radius:9999px;
-  font-weight:600; text-decoration:none;
-  background:#18AFAB; color:#fff;
-  box-shadow:0 10px 20px rgba(0,0,0,.15);
-  position:relative; overflow:hidden;
-  transition:transform .2s ease, box-shadow .2s ease;
+  display:inline-flex; align-items:center; justify-content:center; gap:.5rem;
+  padding:.75rem 1.5rem; border-radius:9999px; font-weight:600; text-decoration:none;
+  background:#18AFAB; color:#fff; box-shadow:0 10px 20px rgba(0,0,0,.15);
+  position:relative; overflow:hidden; transition:transform .2s ease, box-shadow .2s ease;
 }
-.btn-primary:hover {
-  transform:translateY(-2px) scale(1.02);
-  box-shadow:0 16px 28px rgba(0,0,0,.25);
-}
+.btn-primary:hover { transform:translateY(-2px) scale(1.02); box-shadow:0 16px 28px rgba(0,0,0,.25); }
 
-/* Shimmer effect overlay */
 .shimmer-btn::before {
-  content:"";
-  position:absolute; top:0; left:-150%;
-  width:50%; height:100%;
-  background:linear-gradient(120deg, rgba(255,255,255,.6) 0%, rgba(255,255,255,0) 60%);
-  transform:skewX(-20deg);
+  content:""; position:absolute; top:0; left:-150%; width:50%; height:100%;
+  background:linear-gradient(120deg, rgba(255,255,255,.6) 0%, rgba(255,255,255,0) 60%); transform:skewX(-20deg);
 }
-.shimmer-btn:hover::before {
-  animation:shimmer-slide 1.5s ease-out;
-}
-@keyframes shimmer-slide {
-  0%   { left:-150%; }
-  100% { left:150%; }
-}
+.shimmer-btn:hover::before { animation:shimmer-slide 1.5s ease-out; }
+@keyframes shimmer-slide { 0%{left:-150%;} 100%{left:150%;} }
 
-/* Animations */
-.fade-up, .fade-right {
-  opacity:0; transform:translateY(20px);
-  transition:all .7s cubic-bezier(.22,1,.36,1);
-}
+.fade-up, .fade-right { opacity:0; transform:translateY(20px); transition:all .7s cubic-bezier(.22,1,.36,1); }
 .fade-right { transform:translateX(40px); }
 .is-visible { opacity:1; transform:translate(0,0); }
 </style>
@@ -133,10 +110,7 @@
 <script>
 (function(){
   const els = document.querySelectorAll('.fade-up, .fade-right');
-  if(!('IntersectionObserver' in window)){
-    els.forEach(e=>e.classList.add('is-visible'));
-    return;
-  }
+  if(!('IntersectionObserver' in window)){ els.forEach(e=>e.classList.add('is-visible')); return; }
   const io = new IntersectionObserver((entries, obs)=>{
     entries.forEach(e=>{
       if(e.isIntersecting){

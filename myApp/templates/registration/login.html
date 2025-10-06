@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Login | Hammer{% endblock %}
+{% block content %}
+<div class="max-w-md mx-auto px-4 py-16">
+  <h1 class="text-2xl font-semibold mb-6">Sign in</h1>
+  <form method="post" class="space-y-4">
+    {% csrf_token %}
+    {{ form.non_field_errors }}
+    <div>
+      <label class="block text-sm font-medium mb-1" for="id_username">Username</label>
+      {{ form.username }}
+      {% for err in form.username.errors %}<p class="text-red-600 text-sm">{{ err }}</p>{% endfor %}
+    </div>
+    <div>
+      <label class="block text-sm font-medium mb-1" for="id_password">Password</label>
+      {{ form.password }}
+      {% for err in form.password.errors %}<p class="text-red-600 text-sm">{{ err }}</p>{% endfor %}
+    </div>
+    <button class="bg-slate-900 text-white px-4 py-2 rounded-md" type="submit">Login</button>
+  </form>
+</div>
+{% endblock %}
+

@@ -3,6 +3,7 @@ from django.urls import path, reverse_lazy
 from django.views.generic.base import RedirectView
 from . import views
 
+
 urlpatterns = [
     # Home
     path("", views.home, name="home"),
@@ -36,4 +37,26 @@ urlpatterns = [
 
     path("about/", views.about, name="about"),
     path("contact/", views.contact, name="contact"),
+
+    path("about/", views.about, name="about"),
+    path("team/<slug:slug>/", views.team_detail, name="team_detail"),
+
+    # Dashboard (login required at view level)
+    path("dashboard/", views.dashboard_home, name="dashboard_home"),
+    # Services
+    path("dashboard/services/", views.dashboard_services_list, name="dashboard_services_list"),
+    path("dashboard/services/new/", views.dashboard_service_create, name="dashboard_service_create"),
+    path("dashboard/services/<int:pk>/edit/", views.dashboard_service_edit, name="dashboard_service_edit"),
+    path("dashboard/services/<int:pk>/delete/", views.dashboard_service_delete, name="dashboard_service_delete"),
+    # Insights
+    path("dashboard/insights/", views.dashboard_insights_list, name="dashboard_insights_list"),
+    path("dashboard/insights/new/", views.dashboard_insight_create, name="dashboard_insight_create"),
+    path("dashboard/insights/<int:pk>/edit/", views.dashboard_insight_edit, name="dashboard_insight_edit"),
+    path("dashboard/insights/<int:pk>/delete/", views.dashboard_insight_delete, name="dashboard_insight_delete"),
+    path("dashboard/insights/import/", views.dashboard_insight_import_html, name="dashboard_insight_import"),
+    # Editor.js uploader
+    path("u/editor-image/", views.editor_image_upload, name="editor_image_upload"),
+    # Gallery API
+    path("dashboard/gallery/api/images/", views.gallery_api_images, name="gallery_api_images"),
+    path("dashboard/gallery/api/upload/", views.gallery_api_upload, name="gallery_api_upload"),
 ]

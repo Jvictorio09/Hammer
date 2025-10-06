@@ -1,0 +1,225 @@
+{% extends "dashboard/base.html" %}
+{% block page_title %}Insights{% endblock %}
+
+{% block content %}
+<!-- Header -->
+<div class="mb-6 flex items-center justify-between">
+  <div>
+    <div class="text-xs uppercase tracking-widest text-gray-500">Content</div>
+    <h1 class="text-2xl font-semibold text-gray-900">Insights</h1>
+  </div>
+  <div class="flex items-center gap-2">
+    <a href="{% url 'dashboard_insight_import' %}"
+       class="inline-flex items-center gap-2 rounded-xl border border-gray-300 px-4 py-2 text-gray-700 hover:bg-gray-50 transition">
+      <!-- import icon -->
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10"/></svg>
+      Import HTML
+    </a>
+    <a href="{% url 'dashboard_insight_create' %}"
+       class="inline-flex items-center gap-2 rounded-xl bg-gray-900 px-4 py-2 text-white hover:bg-black transition">
+      <!-- plus icon -->
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 4v16m8-8H4"/></svg>
+      New Insight
+    </a>
+  </div>
+</div>
+
+<!-- Toolbar -->
+<div class="mb-4 rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
+  <div class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+    <div class="flex items-center gap-2">
+      <!-- search -->
+      <div class="relative">
+        <input id="searchInput" type="search" placeholder="Search insights…"
+               class="w-64 rounded-xl border border-gray-300 pl-9 pr-3 py-2 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900/10 focus:border-gray-400 transition">
+        <svg class="pointer-events-none absolute left-2.5 top-2.5 h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.6" d="m21 21-4.35-4.35M10 18a8 8 0 1 1 0-16 8 8 0 0 1 0 16Z"/></svg>
+      </div>
+
+      <!-- status filter -->
+      <select id="statusFilter"
+              class="rounded-xl border border-gray-300 px-3 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-900/10 focus:border-gray-400 transition">
+        <option value="all">All statuses</option>
+        <option value="published">Published</option>
+        <option value="draft">Draft</option>
+      </select>
+    </div>
+
+    <!-- view toggle (cards/table) -->
+    <div class="flex items-center gap-1">
+      <button id="viewCardsBtn" type="button"
+              class="viewbtn px-3 py-1.5 text-sm rounded-lg border border-gray-300 bg-gray-900 text-white">Cards</button>
+      <button id="viewTableBtn" type="button"
+              class="viewbtn px-3 py-1.5 text-sm rounded-lg border border-gray-300">Table</button>
+    </div>
+  </div>
+</div>
+
+<!-- Cards view -->
+<div id="cardsView" class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+  {% for i in insights %}
+  <article
+    class="insight-card group overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition hover:shadow-md"
+    data-title="{{ i.title|lower }}" data-status="{% if i.published %}published{% else %}draft{% endif %}"
+    data-service="{{ i.service.title|default_if_none:''|lower }}">
+    <!-- cover -->
+    <div class="relative aspect-[16/9] bg-gray-100">
+      {% if i.cover_image_url %}
+        <img src="{{ i.cover_image_url }}" alt="" class="h-full w-full object-cover transition group-hover:scale-[1.02]">
+      {% else %}
+        <div class="absolute inset-0 grid place-items-center text-gray-400 text-sm">No cover</div>
+      {% endif %}
+      {% if i.published %}
+        <span class="absolute left-3 top-3 inline-flex items-center gap-1 rounded-full bg-green-600/90 px-2.5 py-1 text-xs font-medium text-white">
+          <span class="h-1.5 w-1.5 rounded-full bg-white"></span> Published
+        </span>
+      {% else %}
+        <span class="absolute left-3 top-3 inline-flex items-center gap-1 rounded-full bg-amber-500/90 px-2.5 py-1 text-xs font-medium text-white">
+          <span class="h-1.5 w-1.5 rounded-full bg-white"></span> Draft
+        </span>
+      {% endif %}
+    </div>
+
+    <!-- body -->
+    <div class="p-4">
+      <div class="flex items-start justify-between gap-3">
+        <h3 class="line-clamp-2 text-base font-semibold text-gray-900">{{ i.title }}</h3>
+        <div class="shrink-0">
+          <!-- actions menu -->
+          <div class="relative">
+            <button type="button" class="action-btn rounded-lg p-1.5 hover:bg-gray-100">
+              <svg class="h-5 w-5 text-gray-500" viewBox="0 0 20 20" fill="currentColor"><circle cx="10" cy="3" r="1.5"/><circle cx="10" cy="10" r="1.5"/><circle cx="10" cy="17" r="1.5"/></svg>
+            </button>
+            <div class="menu hidden absolute right-0 z-10 mt-1 w-36 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-lg">
+              <a href="{% url 'dashboard_insight_edit' i.id %}" class="block px-3 py-2 text-sm hover:bg-gray-50">Edit</a>
+              <a href="{{ i.get_absolute_url }}" target="_blank" class="block px-3 py-2 text-sm hover:bg-gray-50">View</a>
+              <form action="{% url 'dashboard_insight_delete' i.id %}" method="post" onsubmit="return confirm('Delete this insight?');">
+                {% csrf_token %}
+                <button type="submit" class="w-full text-left px-3 py-2 text-sm text-red-600 hover:bg-red-50">Delete</button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-2 flex flex-wrap items-center gap-2 text-sm text-gray-600">
+        {% if i.service %}
+          <span class="inline-flex items-center rounded-lg border border-gray-200 bg-gray-50 px-2 py-0.5 text-gray-700">
+            {{ i.service.title }}
+          </span>
+        {% endif %}
+        <span class="text-gray-400">•</span>
+        <span>{{ i.published_at|date:"Y-m-d H:i" }}</span>
+      </div>
+    </div>
+  </article>
+  {% empty %}
+  <div class="col-span-full">
+    <div class="rounded-2xl border border-dashed border-gray-300 bg-white py-16 text-center">
+      <p class="text-gray-600">No insights yet.</p>
+      <a href="{% url 'dashboard_insight_create' %}" class="mt-3 inline-flex rounded-xl bg-gray-900 px-4 py-2 text-white hover:bg-black">Create your first insight</a>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+<!-- Table view (compact) -->
+<div id="tableView" class="hidden overflow-x-auto rounded-2xl border border-gray-200 bg-white shadow-sm">
+  <table class="min-w-full text-sm">
+    <thead class="text-left text-gray-600">
+      <tr>
+        <th class="px-4 py-3">Title</th>
+        <th class="px-4 py-3">Service</th>
+        <th class="px-4 py-3">Status</th>
+        <th class="px-4 py-3">Publish date</th>
+        <th class="px-4 py-3"></th>
+      </tr>
+    </thead>
+    <tbody class="divide-y divide-gray-100">
+      {% for i in insights %}
+      <tr class="row" data-title="{{ i.title|lower }}" data-status="{% if i.published %}published{% else %}draft{% endif %}" data-service="{{ i.service.title|default_if_none:''|lower }}">
+        <td class="px-4 py-3 font-medium text-gray-900">{{ i.title }}</td>
+        <td class="px-4 py-3 text-gray-700">{{ i.service.title }}</td>
+        <td class="px-4 py-3">
+          {% if i.published %}
+            <span class="rounded-full bg-green-600/10 px-2.5 py-1 text-xs font-medium text-green-700">Published</span>
+          {% else %}
+            <span class="rounded-full bg-amber-500/10 px-2.5 py-1 text-xs font-medium text-amber-700">Draft</span>
+          {% endif %}
+        </td>
+        <td class="px-4 py-3 text-gray-700">{{ i.published_at|date:"Y-m-d H:i" }}</td>
+        <td class="px-4 py-3">
+          <div class="flex items-center gap-3">
+            <a href="{% url 'dashboard_insight_edit' i.id %}" class="text-blue-700 hover:underline">Edit</a>
+            <form action="{% url 'dashboard_insight_delete' i.id %}" method="post" onsubmit="return confirm('Delete this insight?');">
+              {% csrf_token %}
+              <button class="text-red-700 hover:underline" type="submit">Delete</button>
+            </form>
+          </div>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<!-- Tiny script: search/filter/view + actions menu -->
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const search = document.getElementById('searchInput');
+  const status = document.getElementById('statusFilter');
+
+  const cards = Array.from(document.querySelectorAll('.insight-card'));
+  const rows  = Array.from(document.querySelectorAll('#tableView .row'));
+
+  function match(el, q, stat){
+    const t = (el.dataset.title || '');
+    const s = (el.dataset.status || '');
+    const okQ = !q || t.includes(q);
+    const okS = (stat === 'all') || (s === stat);
+    return okQ && okS;
+  }
+  function apply(){
+    const q = (search.value || '').trim().toLowerCase();
+    const st = status.value;
+    cards.forEach(c => c.classList.toggle('hidden', !match(c, q, st)));
+    rows.forEach(r  => r.classList.toggle('hidden', !match(r, q, st)));
+  }
+  search.addEventListener('input', apply);
+  status.addEventListener('change', apply);
+  apply();
+
+  // View toggle
+  const cardsView = document.getElementById('cardsView');
+  const tableView = document.getElementById('tableView');
+  const btnCards  = document.getElementById('viewCardsBtn');
+  const btnTable  = document.getElementById('viewTableBtn');
+  function setView(v){
+    const isCards = v === 'cards';
+    cardsView.classList.toggle('hidden', !isCards);
+    tableView.classList.toggle('hidden', isCards);
+    btnCards.classList.toggle('bg-gray-900', isCards);
+    btnCards.classList.toggle('text-white', isCards);
+    btnTable.classList.toggle('bg-gray-900', !isCards);
+    btnTable.classList.toggle('text-white', !isCards);
+    localStorage.setItem('insightsView', v);
+  }
+  setView(localStorage.getItem('insightsView') || 'cards');
+  btnCards.addEventListener('click', () => setView('cards'));
+  btnTable.addEventListener('click', () => setView('table'));
+
+  // Simple actions dropdown for cards
+  document.querySelectorAll('.action-btn').forEach(btn=>{
+    const menu = btn.parentElement.querySelector('.menu');
+    btn.addEventListener('click', (e)=>{ e.stopPropagation(); menu.classList.toggle('hidden'); });
+    document.addEventListener('click', ()=> menu.classList.add('hidden'));
+  });
+
+  // Keyboard: focus search with "/"
+  document.addEventListener('keydown', (e)=>{
+    if (e.key === '/' && document.activeElement.tagName !== 'INPUT' && document.activeElement.tagName !== 'TEXTAREA') {
+      e.preventDefault(); search.focus();
+    }
+  });
+});
+</script>
+{% endblock %}

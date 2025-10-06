@@ -1,28 +1,175 @@
-
-<!-- Partners -->
-<section class="py-16 border-y border-black/5 bg-white">
-  <div class="max-w-7xl mx-auto px-6">
-    <div class="flex items-center justify-between mb-8">
-      <h3 class="text-lg font-semibold">Trusted by leading brands & developers</h3>
-      <div class="h-px flex-1 mx-6 bg-black/10"></div>
-      <a href="#projects" class="text-sm font-semibold hover:text-[#18AFAB]">View Projects →</a>
+<!-- Partners (stable width/height, seamless marquee) -->
+<section class="partners-section">
+  <div class="partners-container">
+    <div class="partners-head">
+      <h3>Trusted by leading brands &amp; developers</h3>
+      <div class="partners-divider"></div>
+      <a href="{% url 'projects_index' %}" class="partners-link">View Projects →</a>
     </div>
 
-    <!-- marquee -->
-    <div class="relative overflow-hidden">
-      <div class="marquee flex items-center gap-12 opacity-70">
-        <!-- duplicate set for seamless loop -->
-        {% for _ in "12"|make_list %}
-          <div class="logo-pill grayscale hover:grayscale-0 transition">EMAAR</div>
-          <div class="logo-pill grayscale hover:grayscale-0 transition">WATSONS</div>
-          <div class="logo-pill grayscale hover:grayscale-0 transition">CISCO</div>
-          <div class="logo-pill grayscale hover:grayscale-0 transition">DUBAI HILLS</div>
-          <div class="logo-pill grayscale hover:grayscale-0 transition">TOYS R US</div>
-          <div class="logo-pill grayscale hover:grayscale-0 transition">BURJ</div>
-          <div class="logo-pill grayscale hover:grayscale-0 transition">EMIRATES HILLS</div>
-          <div class="logo-pill grayscale hover:grayscale-0 transition">NAKHEEL</div>
-        {% endfor %}
+    <!-- Marquee (single track with duplicated set) -->
+    <div class="partners-marquee" aria-label="Partner logos marquee">
+      <div class="partners-track">
+        <!-- Set #1 -->
+        <span class="logo-cell"><img src="https://res.cloudinary.com/dstlxtvar/image/upload/v1759735368/ETISALAT_m7lbre.png" alt="Etisalat" loading="lazy"></span>
+        <span class="logo-cell"><img src="https://res.cloudinary.com/dstlxtvar/image/upload/v1759735368/JUMEIRAH_GOLF_ESTATES_oqssei.png" alt="Jumeirah Golf Estates" loading="lazy"></span>
+        <span class="logo-cell"><img src="https://res.cloudinary.com/dstlxtvar/image/upload/v1759735368/DUBAI_PROPERTIES_vytwn6.png" alt="Dubai Properties" loading="lazy"></span>
+        <span class="logo-cell"><img src="https://res.cloudinary.com/dstlxtvar/image/upload/v1759735368/DUBAI_MUNICIPALITY_wl80rc.png" alt="Dubai Municipality" loading="lazy"></span>
+        <span class="logo-cell"><img src="https://res.cloudinary.com/dstlxtvar/image/upload/v1759735368/DUBAI_HOLDINGS_gaj4mj.png" alt="Dubai Holdings" loading="lazy"></span>
+        <span class="logo-cell"><img src="https://res.cloudinary.com/dstlxtvar/image/upload/v1759735368/DUBAI_HILLS_wskbo3.png" alt="Dubai Hills" loading="lazy"></span>
+        <span class="logo-cell"><img src="https://res.cloudinary.com/dstlxtvar/image/upload/v1759735367/TECOM_GROUP_pedwql.png" alt="TECOM Group" loading="lazy"></span>
+        <span class="logo-cell"><img src="https://res.cloudinary.com/dstlxtvar/image/upload/v1759735367/DAMAC_vmbuiw.png" alt="DAMAC" loading="lazy"></span>
+        <span class="logo-cell"><img src="https://res.cloudinary.com/dstlxtvar/image/upload/v1759735367/DAMAC_HILLS_mr57ti.png" alt="DAMAC Hills" loading="lazy"></span>
+        <span class="logo-cell"><img src="https://res.cloudinary.com/dstlxtvar/image/upload/v1759735368/EMAAR_oxdsdu.svg" alt="EMAAR" loading="lazy"></span>
+        <span class="logo-cell"><img src="https://res.cloudinary.com/dstlxtvar/image/upload/v1759735366/MERAAS_y2rrba.svg" alt="Meraas" loading="lazy"></span>
+        <span class="logo-cell"><img src="https://res.cloudinary.com/dstlxtvar/image/upload/v1759735366/NAKHEEL_gcikbo.svg" alt="Nakheel" loading="lazy"></span>
+        <span class="logo-cell"><img src="https://res.cloudinary.com/dstlxtvar/image/upload/v1759735366/CONCORDIA_DMCC_xdddg2.png" alt="Concordia DMCC" loading="lazy"></span>
+        <span class="logo-cell"><img src="https://res.cloudinary.com/dstlxtvar/image/upload/v1759735366/MICROSOFT_om7jd3.png" alt="Microsoft" loading="lazy"></span>
+        <span class="logo-cell"><img src="https://res.cloudinary.com/dstlxtvar/image/upload/v1759735367/AL_MEYDAN_mw8jbb.png" alt="Al Meydan" loading="lazy"></span>
+        <span class="logo-cell"><img src="https://res.cloudinary.com/dstlxtvar/image/upload/v1759735367/AL_ANSARI_nhomza.jpg" alt="Al Ansari" loading="lazy"></span>
+        <span class="logo-cell"><img src="https://res.cloudinary.com/dstlxtvar/image/upload/v1759735369/MAJID_AL_FUTTAIM_lr0vf6.jpg" alt="Majid Al Futtaim" loading="lazy"></span>
+
+        <!-- Set #2 (duplicate for seamless loop) -->
+        <span class="logo-cell" aria-hidden="true"><img src="https://res.cloudinary.com/dstlxtvar/image/upload/v1759735368/ETISALAT_m7lbre.png" alt="" loading="lazy"></span>
+        <span class="logo-cell" aria-hidden="true"><img src="https://res.cloudinary.com/dstlxtvar/image/upload/v1759735368/JUMEIRAH_GOLF_ESTATES_oqssei.png" alt="" loading="lazy"></span>
+        <span class="logo-cell" aria-hidden="true"><img src="https://res.cloudinary.com/dstlxtvar/image/upload/v1759735368/DUBAI_PROPERTIES_vytwn6.png" alt="" loading="lazy"></span>
+        <span class="logo-cell" aria-hidden="true"><img src="https://res.cloudinary.com/dstlxtvar/image/upload/v1759735368/DUBAI_MUNICIPALITY_wl80rc.png" alt="" loading="lazy"></span>
+        <span class="logo-cell" aria-hidden="true"><img src="https://res.cloudinary.com/dstlxtvar/image/upload/v1759735368/DUBAI_HOLDINGS_gaj4mj.png" alt="" loading="lazy"></span>
+        <span class="logo-cell" aria-hidden="true"><img src="https://res.cloudinary.com/dstlxtvar/image/upload/v1759735368/DUBAI_HILLS_wskbo3.png" alt="" loading="lazy"></span>
+        <span class="logo-cell" aria-hidden="true"><img src="https://res.cloudinary.com/dstlxtvar/image/upload/v1759735367/TECOM_GROUP_pedwql.png" alt="" loading="lazy"></span>
+        <span class="logo-cell" aria-hidden="true"><img src="https://res.cloudinary.com/dstlxtvar/image/upload/v1759735367/DAMAC_vmbuiw.png" alt="" loading="lazy"></span>
+        <span class="logo-cell" aria-hidden="true"><img src="https://res.cloudinary.com/dstlxtvar/image/upload/v1759735367/DAMAC_HILLS_mr57ti.png" alt="" loading="lazy"></span>
+        <span class="logo-cell" aria-hidden="true"><img src="https://res.cloudinary.com/dstlxtvar/image/upload/v1759735368/EMAAR_oxdsdu.svg" alt="" loading="lazy"></span>
+        <span class="logo-cell" aria-hidden="true"><img src="https://res.cloudinary.com/dstlxtvar/image/upload/v1759735366/MERAAS_y2rrba.svg" alt="" loading="lazy"></span>
+        <span class="logo-cell" aria-hidden="true"><img src="https://res.cloudinary.com/dstlxtvar/image/upload/v1759735366/NAKHEEL_gcikbo.svg" alt="" loading="lazy"></span>
+        <span class="logo-cell" aria-hidden="true"><img src="https://res.cloudinary.com/dstlxtvar/image/upload/v1759735366/CONCORDIA_DMCC_xdddg2.png" alt="" loading="lazy"></span>
+        <span class="logo-cell" aria-hidden="true"><img src="https://res.cloudinary.com/dstlxtvar/image/upload/v1759735366/MICROSOFT_om7jd3.png" alt="" loading="lazy"></span>
+        <span class="logo-cell" aria-hidden="true"><img src="https://res.cloudinary.com/dstlxtvar/image/upload/v1759735367/AL_MEYDAN_mw8jbb.png" alt="" loading="lazy"></span>
+        <span class="logo-cell" aria-hidden="true"><img src="https://res.cloudinary.com/dstlxtvar/image/upload/v1759735367/AL_ANSARI_nhomza.jpg" alt="" loading="lazy"></span>
+        <span class="logo-cell" aria-hidden="true"><img src="https://res.cloudinary.com/dstlxtvar/image/upload/v1759735369/MAJID_AL_FUTTAIM_lr0vf6.jpg" alt="" loading="lazy"></span>
       </div>
     </div>
   </div>
 </section>
+
+<style>
+/* ======= Controls you can tweak in one place ======= */
+:root{
+  --partners-maxw: 100%;       /* inner container width (~1152px). Set to 100% for full-bleed */
+  --partners-pad-x: 1.5rem;     /* left/right padding inside container */
+  --partners-pad-y: 4rem;       /* section top/bottom padding */
+  --partners-row-gap: 2rem;
+
+  --logo-height: 2.75rem;       /* visual logo height */
+  --logo-cell: 8rem;            /* fixed slot width => constant spacing */
+  --marquee-speed: 38s;         /* slower = smoother */
+}
+
+/* ======= Section & header ======= */
+.partners-section{
+  background: #fff;
+  border-top: 1px solid rgba(0,0,0,.05);
+  border-bottom: 1px solid rgba(0,0,0,.05);
+  padding: var(--partners-pad-y) 0;
+}
+.partners-container{
+  max-width: var(--partners-maxw);
+  margin: 0 auto;
+  padding: 0 var(--partners-pad-x);
+}
+.partners-head{
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: var(--partners-row-gap);
+}
+.partners-head h3{
+  font-weight: 600;
+  font-size: 1.125rem;
+}
+.partners-divider{
+  height: 1px;
+  background: rgba(0,0,0,.1);
+}
+.partners-link{
+  font-weight: 600;
+  font-size: .9rem;
+  text-decoration: none;
+}
+.partners-link:hover{ color: #18AFAB; }
+
+/* ======= Marquee (stable size) ======= */
+.partners-marquee{
+  overflow: hidden;     /* masks any overflow so width never “jumps” */
+  position: relative;
+  /* Optional fixed height to lock section height even before images load */
+  min-height: calc(var(--logo-height) + 1rem);
+}
+
+/* Single track that contains two identical sets back-to-back */
+.partners-track{
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
+  width: max-content;   /* content defines track width; container masks it */
+  animation: partners-marquee var(--marquee-speed) linear infinite;
+  will-change: transform;
+}
+
+/* Fixed-width cells: identical spacing for every logo */
+.logo-cell{
+  width: var(--logo-cell);
+  height: var(--logo-height);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 var(--logo-cell);
+}
+
+/* Logos sit inside the cell, no layout shift */
+.logo-cell img{
+  display: block;         /* remove baseline gap */
+  max-height: 100%;
+  max-width: 100%;
+  object-fit: contain;
+  filter: grayscale(1);
+  transition: filter .25s ease, transform .25s ease, opacity .25s ease;
+}
+.logo-cell:hover img{
+  filter: grayscale(0);
+  transform: translateY(-2px);
+  opacity: .95;
+}
+
+/* Pause on hover (nice affordance) */
+.partners-marquee:hover .partners-track{
+  animation-play-state: paused;
+}
+
+/* Respect reduced motion */
+@media (prefers-reduced-motion: reduce){
+  .partners-track{ animation: none; }
+}
+
+/* The magic: move a duplicated set left by 50% for a perfect loop */
+@keyframes partners-marquee{
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+/* ======= Responsive tweaks ======= */
+@media (max-width: 1024px){
+  :root{
+    --logo-height: 2.5rem;
+    --logo-cell: 7rem;
+  }
+}
+@media (max-width: 640px){
+  :root{
+    --logo-height: 2.25rem;
+    --logo-cell: 6rem;
+    --partners-pad-y: 3rem;
+  }
+}
+</style>

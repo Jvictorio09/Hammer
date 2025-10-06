@@ -1,0 +1,117 @@
+{% extends "admin/base_site.html" %}
+{% load static %}
+
+{% block content %}
+  <div id="content-main">
+    <h1>{{ title }}</h1>
+    <p class="help">{{ help_text }}</p>
+
+    <form method="post" enctype="multipart/form-data" novalidate>
+      {% csrf_token %}
+      <fieldset class="module aligned">
+        <div class="form-row">
+          {{ form.album.errors }}
+          <label>{{ form.album.label }}</label>
+          {{ form.album }}
+          <p class="help">{{ form.album.help_text }}</p>
+        </div>
+        <div class="form-row">
+          {{ form.extra_tags.errors }}
+          <label>{{ form.extra_tags.label }}</label>
+          {{ form.extra_tags }}
+          <p class="help">{{ form.extra_tags.help_text }}</p>
+        </div>
+        <div class="form-row">
+          <label>Files</label>
+          <div id="dropzone" style="padding:20px;border:2px dashed #9e9e9e;border-radius:8px;text-align:center;background:#fafafa;cursor:pointer;">
+            <strong>Drag & drop files here</strong>
+            <div style="font-size:12px;color:#666;margin-top:6px;">or click to select</div>
+          </div>
+          <div style="margin-top:8px;">
+            <input id="file-input" type="file" name="files" multiple accept="image/png,image/jpeg,image/webp,image/gif">
+          </div>
+          <ul id="file-list" style="margin:8px 0 0 0;padding-left:18px;font-size:13px;color:#333;"></ul>
+          <p class="help">Select PNG, JPG/JPEG, WEBP or GIF. Each >10MB will be compressed automatically.</p>
+        </div>
+      </fieldset>
+
+      <div class="submit-row">
+        <input type="submit" value="Upload" class="default">
+        <a class="button" href="{% url 'admin:myApp_mediaasset_changelist' %}">Cancel</a>
+      </div>
+    </form>
+  </div>
+  <script>
+    (function() {
+      var dz = document.getElementById('dropzone');
+      var input = document.querySelector('input[type="file"][multiple]');
+      var list = document.getElementById('file-list');
+      var form = dz && dz.closest('form');
+      var droppedFiles = [];
+
+      if (!dz || !input || !form) return;
+
+      function showFiles(files) {
+        list.innerHTML = '';
+        Array.prototype.forEach.call(files, function(f) {
+          var li = document.createElement('li');
+          li.textContent = f.name + ' (' + Math.round(f.size/1024) + ' KB)';
+          list.appendChild(li);
+        });
+      }
+
+      dz.addEventListener('click', function() { input.click(); });
+
+      dz.addEventListener('dragover', function(e) {
+        e.preventDefault();
+        dz.style.borderColor = '#3b82f6';
+        dz.style.background = '#eef5ff';
+      });
+      dz.addEventListener('dragleave', function() {
+        dz.style.borderColor = '#9e9e9e';
+        dz.style.background = '#fafafa';
+      });
+      dz.addEventListener('drop', function(e) {
+        e.preventDefault();
+        dz.style.borderColor = '#9e9e9e';
+        dz.style.background = '#fafafa';
+        var dt = e.dataTransfer;
+        if (!dt || !dt.files || !dt.files.length) return;
+        droppedFiles = Array.prototype.slice.call(dt.files);
+        showFiles(droppedFiles);
+      });
+
+      input.addEventListener('change', function() { showFiles(input.files); droppedFiles = []; });
+
+      form.addEventListener('submit', function(e) {
+        if (droppedFiles.length === 0) return; // normal form submit with input files
+        e.preventDefault();
+        var fd = new FormData();
+        // CSRF
+        var csrf = form.querySelector('input[name="csrfmiddlewaretoken"]');
+        if (csrf) fd.append('csrfmiddlewaretoken', csrf.value);
+        // Other fields
+        var album = form.querySelector('[name="album"]');
+        var extra = form.querySelector('[name="extra_tags"]');
+        if (album) fd.append('album', album.value);
+        if (extra) fd.append('extra_tags', extra.value || '');
+        // Files
+        droppedFiles.forEach(function(f) { fd.append('files', f, f.name); });
+
+        fetch(window.location.href, {
+          method: 'POST',
+          body: fd,
+          credentials: 'same-origin'
+        }).then(function(resp) {
+          if (resp.redirected) {
+            window.location.assign(resp.url);
+          } else {
+            return resp.text().then(function(html) { document.open(); document.write(html); document.close(); });
+          }
+        }).catch(function(err) {
+          alert('Upload failed: ' + err);
+        });
+      });
+    })();
+  </script>
+{% endblock %}

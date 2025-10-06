@@ -1,5 +1,7 @@
 {% extends "base.html" %}
 {% load static %}
+{% load textutils %}
+
 
 {% block title %}About Hammer | Design & Build in Dubai{% endblock %}
 
@@ -346,7 +348,6 @@
 
 <section id="svcShowcase" class="section relative">
   <style>
-    /* ===== Theme tokens ===== */
     #svcShowcase{
       --ink:#0B0E14; --muted:#6b7280; --ring:#EAEDF0; --bg:#fff; --teal:#18AFAB;
       --card:#ffffff; --shadow:0 20px 50px rgba(8,15,35,.08);
@@ -361,17 +362,12 @@
     }
     #svcShowcase h2{margin:.7rem 0 .35rem;font-size:clamp(2rem,3.6vw,2.8rem);font-weight:900;color:var(--ink)}
     #svcShowcase .sub{color:#445060;max-width:64ch;margin:0 auto}
-
-    /* ===== Layout ===== */
     #svcShowcase .grid{display:grid;gap:2.2rem;align-items:start}
     @media (min-width:1100px){#svcShowcase .grid{grid-template-columns:1.05fr 1fr}}
-
-    /* ===== Left: sticky image panel with gradient ring ===== */
     #svcShowcase .panel{
       position:sticky;top:104px;border-radius:var(--radius);overflow:hidden;background:#f7f9fb;
-      box-shadow:var(--shadow);isolation:isolate; /* for mask-border */
+      box-shadow:var(--shadow);isolation:isolate;
     }
-    /* gradient outline */
     #svcShowcase .panel::before{
       content:"";position:absolute;inset:0;border-radius:inherit;padding:1px;
       background:linear-gradient(135deg,#e9eef3,rgba(24,175,171,.25));
@@ -386,8 +382,6 @@
     #svcShowcase .fade-in{opacity:1;transform:scale(1)}
     #svcShowcase .fade-out{opacity:0;transform:scale(1.02)}
     #svcShowcase .imgFallback{position:absolute;inset:0;display:grid;place-items:center;color:#9aa7b5}
-
-    /* ===== Right: list/accordion (glass cards) ===== */
     #svcShowcase .stack{border-radius:var(--radius);background:var(--bg);box-shadow:var(--shadow);overflow:hidden}
     #svcShowcase .row{background:var(--card);position:relative}
     #svcShowcase .row + .row{border-top:1px solid var(--ring)}
@@ -406,23 +400,19 @@
       color:#5a6572;transition:background .2s,color .2s,transform .25s;
     }
     #svcShowcase .row[aria-expanded="true"] .toggle{color:#0f1720}
-    /* plus-to-x animation using 2 lines */
     #svcShowcase .plus{position:relative;width:14px;height:14px}
     #svcShowcase .plus::before,#svcShowcase .plus::after{
-      content:"";position:absolute;left:50%;top:50%;width:2px;height:100%;background:currentColor;border-radius:2px;transform:translate(-50%,-50%) rotate(0deg);transition:transform .25s ease
+      content:"";position:absolute;left:50%;top:50%;width:2px;height:100%;background:currentColor;border-radius:2px;
+      transform:translate(-50%,-50%) rotate(0deg);transition:transform .25s ease
     }
     #svcShowcase .plus::after{transform:translate(-50%,-50%) rotate(90deg)}
     #svcShowcase .row[aria-expanded="true"] .plus::after{transform:translate(-50%,-50%) rotate(0deg)}
-
-    /* content area */
     #svcShowcase .panel-body{
       max-height:0;overflow:hidden;transition:max-height .32s ease,opacity .2s ease;
       opacity:.0;padding:0 1.25rem 0 4.45rem;
     }
     #svcShowcase .row[aria-expanded="true"] .panel-body{opacity:1;padding:0 1.25rem 1.1rem 4.45rem}
     #svcShowcase .desc{color:#3b4552;line-height:1.65}
-
-    /* CTA appears only when open */
     #svcShowcase .cta{
       display:inline-flex;align-items:center;gap:.5rem;margin-top:.65rem;
       padding:.7rem 1rem;border-radius:12px;border:1px solid var(--ring);
@@ -441,7 +431,7 @@
     </header>
 
     <div class="grid">
-      <!-- Left: sticky image -->
+      <!-- Left sticky image -->
       <aside class="panel">
         <div class="panel-inner">
           {% with first=services_db|first %}
@@ -456,9 +446,10 @@
         </div>
       </aside>
 
-      <!-- Right: sophisticated accordion -->
+      <!-- Right accordion -->
       <div class="stack" id="svcAcc">
         {% for s in services_db %}
+          {% firstof s.hero_subcopy s.pinned_body_1 s.pinned_body_2 "We’ll tailor this service to your budget, timeline and taste." as svc_desc %}
           <div class="row"
                data-img="{{ s.first_media_url|default:'' }}"
                data-title="{{ s.title|escape }}"
@@ -470,12 +461,12 @@
               </span>
               <span class="toggle"><span class="plus"></span></span>
             </button>
+
             <div id="svc-pane-{{ forloop.counter }}" class="panel-body"
                  style="{% if forloop.first %}max-height:420px{% endif %}">
-              <p class="desc">
-                {% firstof s.hero_subcopy s.pinned_body_1 s.pinned_body_2
-                         "We’ll tailor this service to your budget, timeline and taste." %}
-              </p>
+              {% if svc_desc %}
+                <p class="desc">{{ svc_desc|striptags|truncatechars:260 }}</p>
+              {% endif %}
               <a class="cta" href="{% url 'service_detail' s.slug %}">
                 Explore service →
               </a>
@@ -496,7 +487,6 @@
     const imgB = document.getElementById('svcImgB');
     if (!acc || !rows.length || !imgA) return;
 
-    // Preload images
     rows.forEach(r => { const s=r.dataset.img; if(s){ const i=new Image(); i.src=s; } });
 
     function setMaxHeight(body, expand){
@@ -514,31 +504,22 @@
     rows.forEach(row=>{
       const btn=row.querySelector('.btn');
       const body=row.querySelector('.panel-body');
-
       btn.addEventListener('click',()=>{
         const isOpen=row.getAttribute('aria-expanded')==='true';
-
-        // close others
         rows.forEach(r=>{
           if(r!==row){
             r.setAttribute('aria-expanded','false');
             setMaxHeight(r.querySelector('.panel-body'), false);
           }
         });
-
-        // toggle current
         row.setAttribute('aria-expanded', String(!isOpen));
         setMaxHeight(body, !isOpen);
-
-        // swap image when opening
         if(!isOpen){
-          const src=row.dataset.img, alt=row.dataset.title||'';
-          if(src) swapImage(src, alt);
+          const src=row.dataset.img, alt=row.dataset.title||''; if(src) swapImage(src, alt);
         }
       });
     });
 
-    // keep height on resize
     window.addEventListener('resize',()=>{
       rows.forEach(r=>{
         if(r.getAttribute('aria-expanded')==='true'){
@@ -688,6 +669,7 @@
 </section>
 
 <!-- TEAM (Carousel, "Meet Our Experts" style) -->
+<!-- TEAM (Carousel, "Meet Our Experts" style) -->
 <section class="section bg-white">
   <div class="container">
     <header class="text-center mb-10">
@@ -700,167 +682,175 @@
     </header>
 
     <style>
-      .carousel-wrap {
-        position: relative;
-        display: flex;
-        align-items: center;
-      }
+      .carousel-wrap { position: relative; display: flex; align-items: center; }
       .carousel {
-        display: flex;
-        gap: 1.5rem;
-        overflow-x: auto;
-        scroll-snap-type: x mandatory;
-        padding: .5rem 0;
-        width: 100%;
-        scrollbar-width: none;
+        display: flex; gap: 1.25rem;
+        overflow-x: auto; padding: .5rem 0; width: 100%;
+        scroll-snap-type: x mandatory; scrollbar-width: none;
+        -webkit-overflow-scrolling: touch;
       }
       .carousel::-webkit-scrollbar { display: none; }
 
-      .slide {
-        flex: 0 0 80%;
-        max-width: 80%;
-        scroll-snap-align: center;
-      }
+      .slide { flex: 0 0 80%; max-width: 80%; scroll-snap-align: center; }
       @media (min-width: 768px) { .slide { flex-basis: 40%; max-width: 40%; } }
-      @media (min-width: 1024px) { .slide { flex-basis: 25%; max-width: 25%; } }
+      @media (min-width: 1024px){ .slide { flex-basis: 25%; max-width: 25%; } }
 
-      .team-card {
-        display: flex; flex-direction: column; height: 100%;
+      .team-card { display: flex; flex-direction: column; height: 100%; }
+      .team-photo-wrap {
+        position: relative; border-radius: 1rem; overflow: hidden;
+        aspect-ratio: 4 / 5; background: #f5f5f5;
       }
       .team-photo {
-        width: 100%; height: 340px; object-fit: cover;
-        border-radius: 1rem;
+        width: 100%; height: 100%; object-fit: cover; display: block;
         transition: transform .25s cubic-bezier(.22,1,.36,1), box-shadow .25s;
       }
-      .team-card:hover .team-photo {
-        transform: translateY(-4px);
-        box-shadow: 0 12px 32px rgba(0,0,0,.12);
-      }
-      .team-meta {
-        margin-top: .85rem;
-        text-align: center;
-      }
-      .team-name {
-        font-weight: 700; font-size: 1.125rem; color: #111;
-      }
-      .team-role {
-        margin-top: .25rem; color: #667085; font-size: .95rem;
-      }
+      .team-card:hover .team-photo { transform: translateY(-4px); box-shadow: 0 12px 32px rgba(0,0,0,.12); }
+      .team-meta { margin-top: .85rem; text-align: center; }
+      .team-name { font-weight: 700; font-size: 1.05rem; color: #111; line-height: 1.25; }
+      .team-role { margin-top: .25rem; color: #667085; font-size: .95rem; }
 
       #expertsCarousel { scroll-snap-type: none !important; }
+      .team-link { text-decoration: none; color: inherit; }
+      .team-link:focus-visible { outline: 2px solid #111; outline-offset: 4px; border-radius: 12px; }
     </style>
 
     <div class="carousel-wrap">
       <div class="carousel" id="expertsCarousel" aria-label="Experts carousel" tabindex="0">
         {% for p in leaders %}
         <article class="slide team-card">
-          <img class="team-photo" src="{{ p.photo }}" alt="{{ p.name }}" loading="lazy" referrerpolicy="no-referrer">
-          <div class="team-meta">
-            <h3 class="team-name">{{ p.name }}</h3>
-            <p class="team-role">{{ p.role }}</p>
-          </div>
+          {% if p.url %}
+            <a class="team-link" href="{{ p.url }}" aria-label="{{ p.name }} profile">
+          {% else %}
+            <div class="team-link" aria-label="{{ p.name }}">
+          {% endif %}
+
+            <div class="team-photo-wrap">
+              {% if p.photo_card %}
+                <img
+                  class="team-photo"
+                  src="{{ p.photo_card }}"
+                  alt="{{ p.name }}"
+                  loading="lazy"
+                  referrerpolicy="no-referrer"
+                  width="800" height="1000"
+                  sizes="(max-width: 640px) 80vw, (max-width: 1024px) 40vw, 25vw"
+                  onerror="this.onerror=null;this.src='https://picsum.photos/800/1000?grayscale&blur=0';">
+              {% elif p.photo %}
+                <img
+                  class="team-photo"
+                  src="{{ p.photo }}"
+                  alt="{{ p.name }}"
+                  loading="lazy"
+                  referrerpolicy="no-referrer"
+                  width="800" height="1000"
+                  sizes="(max-width: 640px) 80vw, (max-width: 1024px) 40vw, 25vw"
+                  onerror="this.onerror=null;this.src='https://picsum.photos/800/1000?grayscale&blur=0';">
+              {% else %}
+                <img
+                  class="team-photo"
+                  src="https://picsum.photos/800/1000?grayscale&blur=0"
+                  alt="{{ p.name }}"
+                  loading="lazy"
+                  width="800" height="1000">
+              {% endif %}
+            </div>
+
+            <div class="team-meta">
+              <h3 class="team-name">{{ p.name }}</h3>
+              <p class="team-role">{{ p.role }}</p>
+            </div>
+
+          {% if p.url %}</a>{% else %}</div>{% endif %}
         </article>
         {% empty %}
-        {% for i in "1,2,3,4,5"|cut:"," %}
-        <article class="slide team-card">
-          <img class="team-photo" src="https://picsum.photos/800/1000?random={{ forloop.counter }}" alt="Expert">
-          <div class="team-meta">
-            <h3 class="team-name">Expert {{ forloop.counter }}</h3>
-            <p class="team-role">Specialist</p>
-          </div>
-        </article>
-        {% endfor %}
+          {% for i in "1,2,3,4,5"|cut:"," %}
+          <article class="slide team-card">
+            <div class="team-photo-wrap">
+              <img class="team-photo" src="https://picsum.photos/800/1000?random={{ forloop.counter }}" alt="Expert">
+            </div>
+            <div class="team-meta">
+              <h3 class="team-name">Expert {{ forloop.counter }}</h3>
+              <p class="team-role">Specialist</p>
+            </div>
+          </article>
+          {% endfor %}
         {% endfor %}
       </div>
     </div>
 
-  <script>
-(function(){
-  const rail = document.getElementById('expertsCarousel');
-  if(!rail) return;
+    <script>
+    (function(){
+      const rail = document.getElementById('expertsCarousel');
+      if(!rail) return;
 
-  // --- Settings ---
-  let speed = 0.6;     // px per frame; bump to 0.9/1.2 for faster
-  let rafId = null;
-  let baseWidth = 0;   // width of original content (before clones)
+      let speed = 0.6, rafId = null, baseWidth = 0, isTouching = false;
 
-  // Make wheel scroll horizontal
-  rail.addEventListener('wheel', (e)=>{
-    if(Math.abs(e.deltaY) > Math.abs(e.deltaX)){
-      rail.scrollLeft += e.deltaY * 0.85;
-      e.preventDefault();
-    }
-  }, {passive:false});
+      rail.addEventListener('wheel', (e)=>{
+        if(Math.abs(e.deltaY) > Math.abs(e.deltaX)){
+          rail.scrollLeft += e.deltaY * 0.85;
+          e.preventDefault();
+        }
+      }, {passive:false});
 
-  // Build seamless track: clone children until scrollWidth >= 2x viewport
-  function buildClones(){
-    stop();
-    // remove any previous clones
-    [...rail.querySelectorAll('[data-clone="1"]')].forEach(n => n.remove());
+      rail.addEventListener('touchstart', ()=>{ isTouching = true; stop(); }, {passive:true});
+      rail.addEventListener('touchend',   ()=>{ isTouching = false; start(); }, {passive:true});
+      rail.addEventListener('pointerdown', ()=>{ isTouching = true; stop(); });
+      rail.addEventListener('pointerup',   ()=>{ isTouching = false; start(); });
 
-    const slides = [...rail.children];
-    if(slides.length === 0) return;
+      function buildClones(){
+        stop();
+        [...rail.querySelectorAll('[data-clone="1"]')].forEach(n => n.remove());
 
-    // measure original content width
-    rail.scrollLeft = 0;
-    baseWidth = slides.reduce((w, el) => w + el.getBoundingClientRect().width, 0)
-               + parseFloat(getComputedStyle(rail).columnGap || getComputedStyle(rail).gap || 0) * (slides.length - 1);
+        const slides = [...rail.children];
+        if(slides.length === 0) return;
 
-    // Clone until we have at least 2x viewport (so wrap is invisible)
-    const needWidth = Math.max(rail.clientWidth * 2.2, baseWidth * 2); // safety factor
-    let acc = baseWidth;
-    while(acc < needWidth){
-      slides.forEach(s => {
-        const c = s.cloneNode(true);
-        c.setAttribute('data-clone','1');
-        rail.appendChild(c);
-      });
-      acc += baseWidth;
-    }
-    start(); // resume
-  }
+        rail.scrollLeft = 0;
+        const styles = getComputedStyle(rail);
+        const gap = parseFloat(styles.columnGap || styles.gap || 0);
+        baseWidth = slides.reduce((w, el) => w + el.getBoundingClientRect().width, 0) + gap * (slides.length - 1);
 
-  function step(){
-    rail.scrollLeft += speed;
+        const needWidth = Math.max(rail.clientWidth * 2.2, baseWidth * 2);
+        let acc = baseWidth;
+        while(acc < needWidth){
+          slides.forEach(s => {
+            const c = s.cloneNode(true);
+            c.setAttribute('data-clone','1');
+            c.querySelectorAll('[id]').forEach(el => el.removeAttribute('id'));
+            rail.appendChild(c);
+          });
+          acc += baseWidth;
+        }
+        start();
+      }
 
-    // wrap seamlessly: when we pass the base content width, jump back by baseWidth
-    if(rail.scrollLeft >= baseWidth){
-      rail.scrollLeft -= baseWidth; // instant, but invisible because content is duplicated
-    }
-    rafId = requestAnimationFrame(step);
-  }
+      function step(){
+        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+        if (isTouching) return;
+        rail.scrollLeft += speed;
+        if(rail.scrollLeft >= baseWidth){
+          rail.scrollLeft -= baseWidth;
+        }
+        rafId = requestAnimationFrame(step);
+      }
+      function start(){ if(!rafId) rafId = requestAnimationFrame(step); }
+      function stop(){ cancelAnimationFrame(rafId); rafId = null; }
 
-  function start(){
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-    if(!rafId) rafId = requestAnimationFrame(step);
-  }
-  function stop(){
-    cancelAnimationFrame(rafId);
-    rafId = null;
-  }
+      rail.addEventListener('mouseenter', stop);
+      rail.addEventListener('mouseleave', start);
+      rail.addEventListener('focusin', stop);
+      rail.addEventListener('focusout', start);
 
-  // Pause on hover / focus, resume on leave/blur
-  rail.addEventListener('mouseenter', stop);
-  rail.addEventListener('mouseleave', start);
-  rail.addEventListener('focusin', stop);
-  rail.addEventListener('focusout', start);
+      let t; window.addEventListener('resize', () => { clearTimeout(t); t = setTimeout(buildClones, 150); });
 
-  // Rebuild on resize (debounced)
-  let t; 
-  window.addEventListener('resize', () => { clearTimeout(t); t = setTimeout(buildClones, 150); });
+      buildClones();
 
-  // Init
-  buildClones();
-
-  // Optional: expose speed control via data-speed (e.g., data-speed="0.8")
-  const ds = parseFloat(rail.dataset.speed || '');
-  if(!Number.isNaN(ds)) speed = ds;
-})();
-</script>
-
-
+      const ds = parseFloat(rail.dataset.speed || '');
+      if(!Number.isNaN(ds)) speed = ds;
+    })();
+    </script>
   </div>
 </section>
+
 
 <!-- ========================= TIMELINE ========================= -->
 <section class="relative bg-gray-50 text-gray-900 overflow-hidden py-16">

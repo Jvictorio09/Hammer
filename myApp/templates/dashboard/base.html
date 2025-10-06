@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}Dashboard | Hammer{% endblock %}</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet"/>
+  <style>
+    .fade-enter { opacity: 0; transform: translateY(4px); }
+    .fade-enter-active { transition: opacity .25s ease, transform .25s ease; opacity: 1; transform: translateY(0); }
+  </style>
+</head>
+<body class="bg-gradient-to-br from-slate-50 via-white to-slate-100 text-slate-900 min-h-dvh">
+  <!-- Dashboard top bar (independent from website) -->
+  <header class="bg-white/70 backdrop-blur border-b border-slate-200/60">
+    <div class="mx-auto max-w-7xl px-4 py-3 flex items-center gap-4">
+      <div class="flex items-center gap-2">
+        <span class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-600 text-white shadow-sm">
+          <i class="fa-solid fa-hammer"></i>
+        </span>
+        <h1 class="text-lg md:text-xl font-semibold tracking-tight">Hammer Client Dashboard</h1>
+      </div>
+      <span class="ml-auto text-sm text-slate-500 hidden md:block">{% if request.user.is_authenticated %}Welcome, <strong>{{ request.user.first_name|default:request.user.username }}</strong>{% endif %}</span>
+    </div>
+  </header>
+  <div class="mx-auto max-w-7xl px-4 py-6">
+    <div class="grid grid-cols-1 lg:grid-cols-[1fr_280px] gap-6">
+      <!-- Main content (centered column) -->
+      <main>
+        <div id="contentShell" class="fade-enter">
+          <div class="bg-white rounded-xl shadow-sm ring-1 ring-slate-100 p-5 md:p-6">
+            {% if request.user.is_authenticated %}
+              <div class="mb-4 flex items-center justify-between">
+                <h1 class="text-xl md:text-2xl font-semibold">{% block page_title %}Dashboard{% endblock %}</h1>
+                <span class="text-sm text-slate-500">Signed in as <strong>{{ request.user.username }}</strong></span>
+              </div>
+            {% else %}
+              <h1 class="text-xl md:text-2xl font-semibold mb-4">{% block page_title_guest %}Dashboard{% endblock %}</h1>
+            {% endif %}
+            <div class="mt-2">
+              {% block content %}{% endblock %}
+            </div>
+          </div>
+        </div>
+      </main>
+
+      <!-- Right aside menu -->
+      <aside class="lg:col-start-2">
+        <div class="bg-white rounded-xl shadow-sm ring-1 ring-slate-100 p-4 md:p-5 sticky top-4">
+          <div class="text-xs uppercase tracking-wide text-slate-500 mb-2">Navigation</div>
+          <nav class="space-y-1">
+            <a href="{% url 'dashboard_home' %}"
+               class="group flex items-center justify-between rounded-lg px-3 py-2 border border-transparent hover:border-slate-200 transition {% if request.resolver_match.url_name == 'dashboard_home' %}bg-indigo-50 text-indigo-900 font-semibold{% else %}text-slate-700 hover:bg-slate-50{% endif %}">
+              <span class="flex items-center gap-2"><i class="fa-regular fa-grid-2"></i> Overview</span>
+              <i class="fa-solid fa-chevron-right text-xs opacity-60 group-hover:translate-x-0.5 transition"></i>
+            </a>
+            <a href="{% url 'dashboard_services_list' %}"
+               class="group flex items-center justify-between rounded-lg px-3 py-2 border border-transparent hover:border-slate-200 transition {% if request.resolver_match.url_name == 'dashboard_services_list' %}bg-indigo-50 text-indigo-900 font-semibold{% else %}text-slate-700 hover:bg-slate-50{% endif %}">
+              <span class="flex items-center gap-2"><i class="fa-solid fa-briefcase"></i> Services</span>
+              <i class="fa-solid fa-chevron-right text-xs opacity-60 group-hover:translate-x-0.5 transition"></i>
+            </a>
+            <a href="{% url 'dashboard_insights_list' %}"
+               class="group flex items-center justify-between rounded-lg px-3 py-2 border border-transparent hover:border-slate-200 transition {% if request.resolver_match.url_name == 'dashboard_insights_list' %}bg-indigo-50 text-indigo-900 font-semibold{% else %}text-slate-700 hover:bg-slate-50{% endif %}">
+              <span class="flex items-center gap-2"><i class="fa-regular fa-file-lines"></i> Insights</span>
+              <i class="fa-solid fa-chevron-right text-xs opacity-60 group-hover:translate-x-0.5 transition"></i>
+            </a>
+          </nav>
+          <div class="my-4 h-px bg-slate-100"></div>
+          <div class="space-y-1">
+            {% if request.user.is_authenticated %}
+              <a href="/accounts/logout/" class="inline-flex items-center gap-2 text-slate-600 hover:text-slate-900 px-3 py-2 rounded-lg hover:bg-slate-50"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
+            {% else %}
+              <a href="/accounts/login/" class="inline-flex items-center gap-2 text-slate-600 hover:text-slate-900 px-3 py-2 rounded-lg hover:bg-slate-50"><i class="fa-solid fa-right-to-bracket"></i> Login</a>
+            {% endif %}
+          </div>
+          <div class="mt-6 text-xs text-slate-400">Fast, simple content management</div>
+        </div>
+      </aside>
+    </div>
+  </div>
+
+  <script>
+    // Simple fade-on-load
+    document.addEventListener('DOMContentLoaded', function(){
+      const el = document.getElementById('contentShell');
+      if (el) requestAnimationFrame(() => el.classList.add('fade-enter-active'));
+      // Add Tailwind styles to basic form controls for consistency
+      document.querySelectorAll('main input:not([type=checkbox]):not([type=radio]), main select, main textarea').forEach(function(ctrl){
+        ctrl.classList.add('w-full','rounded-lg','border','border-slate-300','px-3','py-2','text-sm','focus:outline-none','focus:ring-2','focus:ring-indigo-200','focus:border-indigo-400');
+      });
+      document.querySelectorAll('main input[type=checkbox], main input[type=radio]').forEach(function(ctrl){
+        ctrl.classList.add('h-4','w-4','text-indigo-600','border-slate-300','rounded');
+      });
+    });
+  </script>
+</body>
+</html>
+

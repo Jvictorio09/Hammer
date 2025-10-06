@@ -1,0 +1,825 @@
+{% extends "dashboard/base.html" %}
+{% load editorjs %}
+{% block page_title %}{% if mode == 'edit' %}Edit Insight{% else %}New Insight{% endif %}{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-b from-[#f6f7f9] to-white py-12">
+  <div class="mx-auto max-w-6xl px-4">
+
+    <!-- Header strip -->
+    <div class="mb-6 flex items-center justify-between">
+      <div>
+        <div class="text-xs uppercase tracking-[0.16em] text-gray-500">Insight</div>
+        <h1 class="mt-1 text-2xl font-semibold text-gray-900">
+          {{ insight|default:"New" }} {% if mode == 'edit' %}· Editing{% else %}· Draft{% endif %}
+        </h1>
+      </div>
+      <div class="hidden md:flex items-center gap-2">
+        <span id="autosaveInfo" class="text-sm text-gray-500">Draft • not saved</span>
+        <button id="previewBtn" type="button"
+          class="px-3 py-2 rounded-xl border border-gray-300 text-gray-800 hover:bg-gray-50 transition">Preview</button>
+        <button form="insightForm" type="submit"
+          class="px-4 py-2 rounded-xl bg-gray-900 text-white hover:bg-black transition">Save</button>
+      </div>
+    </div>
+
+    <div class="grid gap-6 lg:grid-cols-[1fr,320px]">
+      <!-- Main card -->
+      <div class="rounded-2xl border border-gray-200 bg-white shadow-sm">
+        <form method="post" enctype="multipart/form-data" id="insightForm" class="p-6 space-y-8">
+          {% csrf_token %}
+
+          <!-- Service -->
+          <div class="space-y-2">
+            <label class="text-sm font-medium text-gray-800">Service</label>
+            <div class="group relative">
+              {{ form.service }}
+            </div>
+            <p class="text-xs text-gray-500">Select which service this insight relates to.</p>
+          </div>
+
+          <!-- Title -->
+          <div class="space-y-2">
+            <label class="text-sm font-medium text-gray-800">Title</label>
+            <div class="group relative">
+              {{ form.title }}
+            </div>
+            <p class="text-xs text-gray-500">Aim for a crisp, specific headline.</p>
+          </div>
+
+          <!-- Cover -->
+          <div class="space-y-2">
+            <label class="text-sm font-medium text-gray-800">Cover image</label>
+            <div class="flex items-center gap-3">
+              <div class="flex-1">
+                {{ form.cover_image_url }}
+              </div>
+              <button type="button" id="galleryBtn" class="px-3 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-lg hover:bg-gray-200 transition">
+                📷 Gallery
+              </button>
+            </div>
+            <p class="text-xs text-gray-500">Paste URL or select from gallery.</p>
+            
+            <!-- Cover Preview -->
+            <div class="mt-3">
+              <div class="text-xs font-medium text-gray-700 mb-2">Cover Preview</div>
+              <div class="relative aspect-video overflow-hidden rounded-xl border border-gray-200 bg-gray-50 max-w-md">
+                <img id="coverPreview" class="h-full w-full object-cover opacity-0 transition-opacity" alt="Cover preview" />
+                <div id="coverEmpty" class="absolute inset-0 grid place-items-center text-gray-400 text-xs">No image selected</div>
+              </div>
+              <div id="coverPreviewMeta" class="mt-2 text-[11px] text-gray-500 truncate"></div>
+            </div>
+          </div>
+
+          <!-- Hidden JSON -->
+          <input type="hidden" name="blocks" id="blocksField" value="">
+          <div id="blocksData" data-blocks='{{ blocks_json|default:"{}"|safe }}' style="display: none;"></div>
+
+          <!-- Editor host -->
+          <div class="rounded-2xl border border-gray-200 bg-white shadow-sm p-5">
+            <div id="editorHost" class="prose max-w-none"></div>
+          </div>
+          
+          <!-- Custom CSS for Editor.js block separation -->
+          <style>
+            /* Make Editor.js blocks more visually distinct */
+            .codex-editor__redactor {
+              padding-bottom: 0 !important;
+            }
+            
+            /* Add spacing between blocks */
+            .ce-block {
+              margin-bottom: 1.5rem !important;
+              border-left: 3px solid transparent;
+              padding-left: 0.5rem;
+              transition: all 0.2s ease;
+            }
+            
+            /* Different colors for different block types */
+            .ce-block[data-type="header"] {
+              border-left-color: #3b82f6;
+              background: rgba(59, 130, 246, 0.05);
+              border-radius: 0.5rem;
+              padding: 1rem;
+            }
+            
+            .ce-block[data-type="paragraph"] {
+              border-left-color: #10b981;
+            }
+            
+            .ce-block[data-type="quote"] {
+              border-left-color: #f59e0b;
+              background: rgba(245, 158, 11, 0.05);
+              border-radius: 0.5rem;
+              padding: 1rem;
+            }
+            
+            .ce-block[data-type="list"] {
+              border-left-color: #8b5cf6;
+              background: rgba(139, 92, 246, 0.05);
+              border-radius: 0.5rem;
+              padding: 1rem;
+            }
+            
+            /* Hover effects */
+            .ce-block:hover {
+              border-left-color: #6366f1;
+              background: rgba(99, 102, 241, 0.05);
+            }
+            
+            /* Block type indicators */
+            .ce-block::before {
+              content: attr(data-type);
+              position: absolute;
+              top: -0.5rem;
+              right: 0.5rem;
+              font-size: 0.75rem;
+              color: #6b7280;
+              background: white;
+              padding: 0.25rem 0.5rem;
+              border-radius: 0.25rem;
+              border: 1px solid #e5e7eb;
+              opacity: 0;
+              transition: opacity 0.2s ease;
+            }
+            
+            .ce-block:hover::before {
+              opacity: 1;
+            }
+            
+            /* Header styling */
+            .ce-header {
+              font-weight: 600;
+              margin-bottom: 0.5rem;
+            }
+            
+            /* Paragraph styling */
+            .ce-paragraph {
+              line-height: 1.6;
+            }
+            
+            /* Quote styling */
+            .ce-quote {
+              font-style: italic;
+              border-left: 4px solid #f59e0b;
+              padding-left: 1rem;
+            }
+          </style>
+
+          <!-- Status -->
+          <div class="grid md:grid-cols-2 gap-4">
+            <div class="space-y-2">
+              <label class="text-sm font-medium text-gray-800">Status</label>
+              {{ form.published }}
+            </div>
+          </div>
+
+          <!-- Mobile actions -->
+          <div class="md:hidden flex items-center justify-end gap-2 pt-2">
+            <span id="autosaveInfo_mobile" class="text-sm text-gray-500">Draft • not saved</span>
+            <button id="previewBtn_mobile" type="button"
+              class="px-3 py-2 rounded-xl border border-gray-300 text-gray-800 hover:bg-gray-50 transition">Preview</button>
+            <button type="submit" class="px-4 py-2 rounded-xl bg-gray-900 text-white hover:bg-black transition">Save</button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Right rail -->
+      <aside class="rounded-2xl border border-gray-200 bg-white shadow-sm p-6 h-fit space-y-5">
+        <h2 class="font-medium text-gray-900">Templates</h2>
+        <div class="grid gap-2">
+          <button type="button" data-template="blog"
+            class="tpl-btn px-3 py-2 rounded-xl border border-gray-300 text-gray-800 hover:bg-gray-50 transition">Insert Blog</button>
+          <button type="button" data-template="service"
+            class="tpl-btn px-3 py-2 rounded-xl border border-gray-300 text-gray-800 hover:bg-gray-50 transition">Insert Service</button>
+          <button type="button" data-template="case"
+            class="tpl-btn px-3 py-2 rounded-xl border border-gray-300 text-gray-800 hover:bg-gray-50 transition">Insert Case Study</button>
+        </div>
+        <div class="pt-4 border-t border-gray-200">
+          <ul class="space-y-1 text-sm text-gray-600">
+            <li><kbd class="px-1.5 py-0.5 rounded border border-gray-300 text-gray-700">/</kbd> block menu</li>
+            <li><kbd class="px-1.5 py-0.5 rounded border border-gray-300 text-gray-700">⌘/Ctrl</kbd> +
+              <kbd class="px-1.5 py-0.5 rounded border border-gray-300 text-gray-700">S</kbd> save</li>
+          </ul>
+        </div>
+      </aside>
+    </div>
+  </div>
+</div>
+
+<!-- Preview Modal (kept light) -->
+<div id="previewModal" class="fixed inset-0 z-[100] hidden">
+  <div class="absolute inset-0 bg-black/40 backdrop-blur-[2px]"></div>
+  <div class="relative mx-auto max-w-4xl mt-16 mb-10 bg-white rounded-2xl shadow-2xl">
+    <div class="flex items-center justify-between px-5 py-4 border-b border-gray-200">
+      <h3 class="font-semibold text-gray-900">Preview</h3>
+      <button id="closePreview" class="p-2 rounded-lg hover:bg-gray-100" aria-label="Close preview">✕</button>
+    </div>
+    <div class="p-6">
+      <div id="previewPanel" class="prose max-w-none">{{ form.instance.blocks|render_editorjs }}</div>
+    </div>
+  </div>
+</div>
+
+<!-- Editor.js + tools -->
+<script src="https://cdn.jsdelivr.net/npm/@editorjs/editorjs@2.28.2"></script>
+<script src="https://cdn.jsdelivr.net/npm/@editorjs/header@2.7.0"></script>
+<script src="https://cdn.jsdelivr.net/npm/@editorjs/list@1.8.0"></script>
+<script src="https://cdn.jsdelivr.net/npm/@editorjs/checklist@1.5.0"></script>
+<script src="https://cdn.jsdelivr.net/npm/@editorjs/quote@2.5.0"></script>
+<script src="https://cdn.jsdelivr.net/npm/@editorjs/code@2.8.0"></script>
+<script src="https://cdn.jsdelivr.net/npm/@editorjs/table@2.2.2"></script>
+<script src="https://cdn.jsdelivr.net/npm/@editorjs/delimiter@1.3.0"></script>
+<script src="https://cdn.jsdelivr.net/npm/@editorjs/raw@2.4.0"></script>
+<script src="https://cdn.jsdelivr.net/npm/@editorjs/image@2.8.1"></script>
+<script src="https://cdn.jsdelivr.net/npm/@editorjs/embed@2.5.3"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // Tailwind polish for default Django widgets (light UI)
+  (function polishInputs(){
+    const inputs = document.querySelectorAll('input[type="text"], input[type="url"], textarea, select');
+    inputs.forEach(el=>{
+      el.classList.add(
+        'w-full','rounded-xl','bg-white','border','border-gray-300','px-3','py-2',
+        'text-gray-900','placeholder-gray-400','focus:outline-none','focus:ring-2',
+        'focus:ring-gray-900/10','focus:border-gray-400','transition'
+      );
+    });
+    const checkbox = document.querySelector('input[type="checkbox"][name="published"]');
+    if (checkbox) checkbox.classList.add('accent-gray-900');
+  })();
+
+  // CSRF from cookie
+  function getCookie(name){
+    const m = document.cookie.match(new RegExp('(^| )'+name+'=([^;]+)'));
+    return m ? decodeURIComponent(m[2]) : null;
+  }
+  const CSRF = getCookie('csrftoken');
+
+  // Function to enhance block visualization
+  function enhanceBlockVisualization() {
+    const blocks = document.querySelectorAll('.ce-block');
+    console.log('Enhancing visualization for', blocks.length, 'blocks');
+    
+    blocks.forEach((block, index) => {
+      // Add block index
+      block.setAttribute('data-block-index', index);
+      
+      // Add block type to data attribute for CSS targeting
+      const blockType = block.querySelector('[data-type]')?.getAttribute('data-type') || 'unknown';
+      block.setAttribute('data-type', blockType);
+      
+      // Add visual separator between blocks
+      if (index > 0) {
+        const separator = document.createElement('div');
+        separator.className = 'block-separator';
+        separator.style.cssText = `
+          height: 1px;
+          background: linear-gradient(90deg, transparent, #e5e7eb, transparent);
+          margin: 1rem 0;
+          position: relative;
+        `;
+        block.parentNode.insertBefore(separator, block);
+      }
+      
+      // Add block number indicator
+      const indicator = document.createElement('div');
+      indicator.className = 'block-indicator';
+      indicator.textContent = `Block ${index + 1}`;
+      indicator.style.cssText = `
+        position: absolute;
+        left: -2rem;
+        top: 0.5rem;
+        font-size: 0.75rem;
+        color: #6b7280;
+        background: white;
+        padding: 0.25rem 0.5rem;
+        border-radius: 0.25rem;
+        border: 1px solid #e5e7eb;
+        opacity: 0;
+        transition: opacity 0.2s ease;
+        z-index: 10;
+      `;
+      block.style.position = 'relative';
+      block.appendChild(indicator);
+      
+      // Show indicator on hover
+      block.addEventListener('mouseenter', () => {
+        indicator.style.opacity = '1';
+      });
+      
+      block.addEventListener('mouseleave', () => {
+        indicator.style.opacity = '0';
+      });
+    });
+  }
+
+  // Blocks initial (safe) - load existing blocks data
+  const initial = (() => {
+    const tag = document.getElementById('blocksData');
+    const raw = (tag ? tag.getAttribute('data-blocks') : '') || '{}';
+    console.log('Raw blocks data length:', raw.length);
+    console.log('Raw blocks data preview:', raw.substring(0, 200) + '...');
+    
+    try { 
+      const parsed = JSON.parse(raw);
+      console.log('Successfully parsed JSON');
+      console.log('Parsed blocks count:', parsed.blocks ? parsed.blocks.length : 0);
+      
+      // If we have valid blocks, use them
+      if (parsed && parsed.blocks && Array.isArray(parsed.blocks) && parsed.blocks.length > 0) {
+        console.log('Using existing blocks:', parsed.blocks.length, 'blocks');
+        return parsed;
+      }
+      
+      console.log('No valid blocks found, using empty data');
+      return {};
+    } catch(e){ 
+      console.log('JSON parse error:', e);
+      console.log('Raw data that failed to parse:', raw.substring(0, 500));
+      return {}; 
+    }
+  })();
+
+  let editor;
+  try {
+    editor = new EditorJS({
+      holder: "editorHost",
+      placeholder: "Start typing or press '/' for blocks…",
+      data: initial,
+      autofocus: false,
+      tools: {
+        header: Header, list: List, quote: Quote, code: CodeTool, table: Table, delimiter: Delimiter, raw: RawTool,
+        image: {
+          class: ImageTool,
+          config: {
+            uploader: {
+              async uploadByFile(file) {
+                try {
+                  const form = new FormData(); form.append('file', file);
+                  const res = await fetch("{% url 'editor_image_upload' %}", {
+                    method: "POST",
+                    body: form,
+                    headers: { "X-CSRFToken": CSRF || "" }
+                  });
+                  const data = await res.json();
+                  return { success: 1, file: { url: data.url } };
+                } catch (e) { return { success: 0, error: 'Upload failed' }; }
+              }
+            }
+          }
+        }
+      },
+      onChange: debounce(async () => {
+        try {
+          const out = await editor.save();
+          document.getElementById('blocksField').value = JSON.stringify(out);
+          setSaved();
+        } catch (_) {}
+      }, 600)
+    });
+
+    editor.isReady.then(()=>{
+      console.log('Editor is ready, initial data:', initial);
+      console.log('Initial blocks length:', initial?.blocks?.length);
+      console.log('Initial data type:', typeof initial);
+      console.log('Initial data keys:', Object.keys(initial || {}));
+      
+      if (initial && initial.blocks && Array.isArray(initial.blocks) && initial.blocks.length > 0) {
+        console.log('Rendering existing blocks:', initial.blocks.length, 'blocks');
+        console.log('First block:', initial.blocks[0]);
+        // Render existing blocks
+        editor.render(initial);
+        
+        // Add visual enhancements after rendering
+        setTimeout(() => {
+          enhanceBlockVisualization();
+        }, 100);
+      } else {
+        console.log('No existing blocks, rendering default content');
+        // Render default empty block for new insights
+        editor.render({
+          time: Date.now(),
+          blocks: [{
+            id: crypto.randomUUID?.() || ('id_'+Math.random().toString(36).slice(2)),
+            type: 'paragraph',
+            data: { text: 'Start writing your content here…' }
+          }],
+          version: '2.28.2'
+        });
+      }
+    });
+
+  } catch (e) {
+    document.getElementById('editorHost').innerHTML = '<p class="text-red-500">Editor failed: ' + e.message + '</p>';
+    return;
+  }
+
+  // Save before submit
+  document.getElementById('insightForm').addEventListener('submit', async function() {
+    try {
+      const out = await editor.save();
+      document.getElementById('blocksField').value = JSON.stringify(out);
+    } catch(_) {}
+  });
+
+  // Preview
+  const previewBtn = document.getElementById('previewBtn');
+  const previewBtnMobile = document.getElementById('previewBtn_mobile');
+  const previewModal = document.getElementById('previewModal');
+  const closePreview = document.getElementById('closePreview');
+
+  function openPreview(){ previewModal.classList.remove('hidden'); }
+  function closePrev(){ previewModal.classList.add('hidden'); }
+
+  ;[previewBtn, previewBtnMobile].forEach(btn=>{
+    if(!btn) return;
+    btn.addEventListener('click', async ()=>{
+      try { const out = await editor.save(); document.getElementById('blocksField').value = JSON.stringify(out); setSaved(); } catch(_){}
+      openPreview();
+    });
+  });
+  if (closePreview) closePreview.addEventListener('click', closePrev);
+  previewModal?.addEventListener('click', (e)=>{ if(e.target === previewModal) closePrev(); });
+
+  // Slash menu (unchanged)
+  let menu;
+  const commands = [
+    {label:"Heading", insert:{type:"header", data:{level:2, text:"Heading"}}},
+    {label:"Paragraph", insert:{type:"paragraph", data:{text:""}}},
+    {label:"List", insert:{type:"list", data:{style:"unordered", items:["Item"]}}},
+    {label:"Quote", insert:{type:"quote", data:{text:"Quote", caption:"—"}}},
+    {label:"Image", insert:{type:"image", data:{url:"", caption:""}}},
+    {label:"Divider", insert:{type:"delimiter", data:{}}}
+  ];
+  document.addEventListener('keydown', async (e)=>{
+    // Save shortcut
+    if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 's') {
+      e.preventDefault();
+      try { const out = await editor.save(); document.getElementById('blocksField').value = JSON.stringify(out); setSaved(); } catch(_){}
+      return;
+    }
+    // Slash menu
+    if(e.key === '/'){
+      if(!menu){
+        menu = document.createElement('div');
+        menu.className = 'absolute z-50 bg-white border border-gray-200 rounded-xl shadow-lg p-2 text-sm';
+        commands.forEach(c=>{
+          const item = document.createElement('button');
+          item.className = 'block text-left w-full px-3 py-2 rounded-lg hover:bg-gray-50';
+          item.textContent = c.label;
+          item.onclick = async ()=>{
+            const data = await editor.save();
+            data.blocks.push(c.insert);
+            await editor.render(data);
+            menu.remove(); menu=null;
+          };
+          menu.appendChild(item);
+        });
+        document.body.appendChild(menu);
+        const rect = document.getSelection().anchorNode?.parentElement?.getBoundingClientRect();
+        menu.style.left = ((rect?.left || 100)) + 'px';
+        menu.style.top = ((rect?.bottom || 100) + 6) + 'px';
+      } else { menu.remove(); menu=null; }
+    }
+  });
+
+  // Templates (unchanged)
+  const templates = {
+    blog: { blocks: [
+      { type:"header", data:{ text:"Post Title", level:2 }},
+      { type:"quote", data:{ text:"Subtitle or short dek.", caption:"— Author" }},
+      { type:"delimiter", data:{} },
+      { type:"raw", data:{ html:"<p>Write your story here…</p>" }},
+    ]},
+    service: { blocks: [
+      { type:"header", data:{ text:"Service Name", level:2 }},
+      { type:"list", data:{ style:"unordered", items:["Feature 1","Feature 2","Feature 3"] }},
+      { type:"delimiter", data:{} },
+      { type:"raw", data:{ html:"<p>Service description…</p>" }},
+    ]},
+    case: { blocks: [
+      { type:"header", data:{ text:"Case Study Title", level:2 }},
+      { type:"header", data:{ text:"Problem", level:3 }},
+      { type:"raw", data:{ html:"<p>Problem description…</p>" }},
+      { type:"header", data:{ text:"Solution", level:3 }},
+      { type:"raw", data:{ html:"<p>Solution description…</p>" }},
+      { type:"delimiter", data:{} },
+    ]}
+  };
+  document.querySelectorAll('.tpl-btn').forEach(btn=>{
+    btn.addEventListener('click', async (e)=>{
+      const key = e.currentTarget.dataset.template;
+      if(!confirm(`Insert ${e.currentTarget.textContent.replace('Insert ','')}?`)) return;
+      await editor.isReady;
+      const current = await editor.save();
+      const merged = { ...current, blocks: [...(current.blocks||[]), ...templates[key].blocks] };
+      await editor.render(merged);
+      blink(e.currentTarget);
+    });
+  });
+
+  // helpers
+  function debounce(fn, ms){ let t; return (...a)=>{ clearTimeout(t); t=setTimeout(()=>fn(...a), ms)}}
+  function setSaved(){
+    const el1 = document.getElementById('autosaveInfo');
+    const el2 = document.getElementById('autosaveInfo_mobile');
+    [el1, el2].forEach(el=>{ if(el){ el.textContent = 'Draft • saved just now'; }});
+  }
+  function blink(btn){
+    const orig = btn.textContent;
+    btn.textContent = '✓ Inserted'; btn.classList.add('bg-gray-50');
+    setTimeout(()=>{ btn.textContent = orig; btn.classList.remove('bg-gray-50'); }, 1200);
+  }
+
+  // Cover image preview functionality
+  const coverImageInput = document.querySelector('input[name="cover_image_url"]');
+  const coverPreview = document.getElementById('coverPreview');
+  const coverEmpty = document.getElementById('coverEmpty');
+  const coverMeta = document.getElementById('coverPreviewMeta');
+  
+  function looksLikeImage(url){ 
+    if (!url || !url.trim()) return false;
+    const cleanUrl = url.trim();
+    return /^https?:\/\//i.test(cleanUrl);
+  }
+  
+  function updateCoverPreview(){
+    const v = (coverImageInput?.value||'').trim();
+    console.log('Cover input value:', v);
+    if (v && looksLikeImage(v)) {
+      coverPreview.src = v;
+      coverPreview.onload = ()=>{ 
+        console.log('Cover image loaded successfully');
+        coverPreview.classList.remove('opacity-0'); 
+        coverEmpty.style.display='none'; 
+      };
+      coverPreview.onerror = ()=>{ 
+        console.log('Cover image failed to load');
+        coverPreview.classList.add('opacity-0'); 
+        coverEmpty.style.display='grid'; 
+      };
+      if (coverMeta) coverMeta.textContent = v;
+    } else {
+      coverPreview.removeAttribute('src'); 
+      coverPreview.classList.add('opacity-0'); 
+      coverEmpty.style.display='grid';
+      if (coverMeta) coverMeta.textContent = '';
+    }
+  }
+  
+  if (coverImageInput && coverPreview) { 
+    console.log('Setting up cover preview');
+    updateCoverPreview(); 
+    coverImageInput.addEventListener('input', updateCoverPreview); 
+  } else {
+    console.log('Cover preview setup failed - missing elements');
+  }
+
+  // Gallery modal functionality
+  const galleryBtn = document.getElementById('galleryBtn');
+  const galleryModal = document.getElementById('galleryModal');
+  const closeGallery = document.getElementById('closeGallery');
+  const galleryGrid = document.getElementById('galleryGrid');
+  
+  // Tab functionality
+  const galleryTab = document.getElementById('galleryTab');
+  const uploadTab = document.getElementById('uploadTab');
+  const galleryTabContent = document.getElementById('galleryTabContent');
+  const uploadTabContent = document.getElementById('uploadTabContent');
+  
+  // Upload functionality
+  const imageUpload = document.getElementById('imageUpload');
+  const uploadProgress = document.getElementById('uploadProgress');
+  const uploadBar = document.getElementById('uploadBar');
+  const uploadStatus = document.getElementById('uploadStatus');
+  const uploadedImages = document.getElementById('uploadedImages');
+
+  function openGallery() {
+    galleryModal.classList.remove('hidden');
+    // Switch to gallery tab by default
+    switchToGalleryTab();
+    loadGalleryImages();
+  }
+
+  function closeGalleryModal() {
+    galleryModal.classList.add('hidden');
+  }
+  
+  function switchToGalleryTab() {
+    galleryTab.classList.add('border-gray-900', 'bg-gray-50', 'text-gray-900');
+    galleryTab.classList.remove('text-gray-500');
+    uploadTab.classList.remove('border-gray-900', 'bg-gray-50', 'text-gray-900');
+    uploadTab.classList.add('text-gray-500');
+    galleryTabContent.classList.remove('hidden');
+    uploadTabContent.classList.add('hidden');
+  }
+  
+  function switchToUploadTab() {
+    uploadTab.classList.add('border-gray-900', 'bg-gray-50', 'text-gray-900');
+    uploadTab.classList.remove('text-gray-500');
+    galleryTab.classList.remove('border-gray-900', 'bg-gray-50', 'text-gray-900');
+    galleryTab.classList.add('text-gray-500');
+    uploadTabContent.classList.remove('hidden');
+    galleryTabContent.classList.add('hidden');
+  }
+
+  function loadGalleryImages() {
+    // Fetch images from the server
+    fetch('/dashboard/gallery/api/images/')
+      .then(response => response.json())
+      .then(data => {
+        galleryGrid.innerHTML = '';
+        data.images.forEach(image => {
+          const imgElement = document.createElement('div');
+          imgElement.className = 'relative group cursor-pointer rounded-lg overflow-hidden border border-gray-200 hover:border-gray-400 transition';
+          imgElement.innerHTML = `
+            <img src="${image.thumb_url || image.web_url || image.secure_url}" 
+                 alt="${image.title}" 
+                 class="w-full h-32 object-cover">
+            <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition">
+              <div class="absolute bottom-2 left-2 right-2 text-white text-xs opacity-0 group-hover:opacity-100 transition">
+                ${image.title}
+              </div>
+            </div>
+          `;
+          imgElement.addEventListener('click', () => {
+            coverImageInput.value = image.web_url || image.secure_url;
+            // Trigger preview update
+            coverImageInput.dispatchEvent(new Event('input', { bubbles: true }));
+            closeGalleryModal();
+          });
+          galleryGrid.appendChild(imgElement);
+        });
+      })
+      .catch(error => {
+        console.error('Error loading gallery images:', error);
+        galleryGrid.innerHTML = '<p class="text-gray-500 text-center py-8">Error loading images</p>';
+      });
+  }
+
+  // File upload functionality
+  function handleFileUpload(files) {
+    if (!files || files.length === 0) return;
+    
+    uploadProgress.classList.remove('hidden');
+    uploadStatus.textContent = 'Processing images...';
+    uploadBar.style.width = '20%';
+    
+    const formData = new FormData();
+    Array.from(files).forEach(file => {
+      formData.append('files', file);
+    });
+    
+    fetch('/dashboard/gallery/api/upload/', {
+      method: 'POST',
+      body: formData,
+      headers: {
+        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+      }
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        uploadBar.style.width = '100%';
+        uploadStatus.textContent = `Upload complete! ${data.images.length} image(s) processed.`;
+        
+        // Add uploaded images to the gallery
+        data.images.forEach(image => {
+          const imgElement = document.createElement('div');
+          imgElement.className = 'relative group cursor-pointer rounded-lg overflow-hidden border border-gray-200 hover:border-gray-400 transition';
+          imgElement.innerHTML = `
+            <img src="${image.thumb_url || image.web_url || image.secure_url}" 
+                 alt="${image.title}" 
+                 class="w-full h-24 object-cover">
+            <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition">
+              <div class="absolute bottom-1 left-1 right-1 text-white text-xs opacity-0 group-hover:opacity-100 transition">
+                ${image.title}
+              </div>
+            </div>
+          `;
+          imgElement.addEventListener('click', () => {
+            coverImageInput.value = image.web_url || image.secure_url;
+            coverImageInput.dispatchEvent(new Event('input', { bubbles: true }));
+            closeGalleryModal();
+          });
+          uploadedImages.appendChild(imgElement);
+        });
+        
+        // Switch to gallery tab to show the new images
+        setTimeout(() => {
+          switchToGalleryTab();
+          loadGalleryImages(); // Refresh the gallery
+        }, 1000);
+        
+      } else {
+        uploadStatus.textContent = 'Upload failed: ' + (data.error || 'Unknown error');
+      }
+    })
+    .catch(error => {
+      console.error('Upload error:', error);
+      uploadStatus.textContent = 'Upload failed: ' + error.message;
+    });
+  }
+
+  // Event listeners
+  if (galleryBtn && galleryModal) {
+    galleryBtn.addEventListener('click', openGallery);
+    closeGallery.addEventListener('click', closeGalleryModal);
+    
+    // Tab switching
+    galleryTab.addEventListener('click', switchToGalleryTab);
+    uploadTab.addEventListener('click', switchToUploadTab);
+    
+    // File upload
+    imageUpload.addEventListener('change', (e) => {
+      handleFileUpload(e.target.files);
+    });
+    
+    // Drag and drop
+    const uploadArea = uploadTabContent.querySelector('.border-dashed');
+    uploadArea.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      uploadArea.classList.add('border-gray-400', 'bg-gray-50');
+    });
+    
+    uploadArea.addEventListener('dragleave', (e) => {
+      e.preventDefault();
+      uploadArea.classList.remove('border-gray-400', 'bg-gray-50');
+    });
+    
+    uploadArea.addEventListener('drop', (e) => {
+      e.preventDefault();
+      uploadArea.classList.remove('border-gray-400', 'bg-gray-50');
+      handleFileUpload(e.dataTransfer.files);
+    });
+  }
+});
+</script>
+
+<!-- Gallery Modal -->
+<div id="galleryModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden">
+  <div class="flex items-center justify-center min-h-screen p-4">
+    <div class="bg-white rounded-2xl shadow-xl max-w-4xl w-full max-h-[80vh] overflow-hidden">
+      <div class="flex items-center justify-between p-6 border-b border-gray-200">
+        <h3 class="text-lg font-semibold text-gray-900">Image Gallery</h3>
+        <button id="closeGallery" class="text-gray-400 hover:text-gray-600">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
+        </button>
+      </div>
+      
+      <!-- Tab Navigation -->
+      <div class="flex border-b border-gray-200">
+        <button id="galleryTab" class="flex-1 px-6 py-3 text-sm font-medium text-gray-900 border-b-2 border-gray-900 bg-gray-50">
+          📷 Gallery
+        </button>
+        <button id="uploadTab" class="flex-1 px-6 py-3 text-sm font-medium text-gray-500 border-b-2 border-transparent hover:text-gray-700 hover:bg-gray-50">
+          ⬆️ Upload
+        </button>
+      </div>
+      
+      <!-- Tab Content -->
+      <div class="p-6 overflow-y-auto max-h-[60vh]">
+        <!-- Gallery Tab -->
+        <div id="galleryTabContent" class="tab-content">
+          <div id="galleryGrid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            <!-- Images will be loaded here -->
+          </div>
+        </div>
+        
+        <!-- Upload Tab -->
+        <div id="uploadTabContent" class="tab-content hidden">
+          <div class="max-w-md mx-auto">
+            <div class="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-gray-400 transition">
+              <input type="file" id="imageUpload" accept="image/*" class="hidden" multiple>
+              <label for="imageUpload" class="cursor-pointer">
+                <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
+                  <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+                <div class="mt-4">
+                  <p class="text-sm font-medium text-gray-900">Upload Images</p>
+                  <p class="text-xs text-gray-500">Click to select files or drag and drop</p>
+                </div>
+              </label>
+            </div>
+            
+            <div id="uploadProgress" class="mt-4 hidden">
+              <div class="bg-gray-200 rounded-full h-2">
+                <div id="uploadBar" class="bg-blue-600 h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
+              </div>
+              <p id="uploadStatus" class="text-sm text-gray-600 mt-2">Uploading...</p>
+            </div>
+            
+            <div id="uploadedImages" class="mt-4 grid grid-cols-2 gap-2">
+              <!-- Newly uploaded images will appear here -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,185 @@
+{% extends "dashboard/base.html" %}
+{% block page_title %}Services{% endblock %}
+
+{% block content %}
+<!-- Header -->
+<div class="mb-6 flex items-center justify-between">
+  <div>
+    <div class="text-xs uppercase tracking-widest text-gray-500">Offerings</div>
+    <h1 class="text-2xl font-semibold text-gray-900">Services</h1>
+  </div>
+  <a href="{% url 'dashboard_service_create' %}"
+     class="inline-flex items-center gap-2 rounded-xl bg-gray-900 px-4 py-2 text-white hover:bg-black transition">
+    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 4v16m8-8H4"/></svg>
+    New Service
+  </a>
+</div>
+
+<!-- Toolbar -->
+<div class="mb-4 rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
+  <div class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+    <div class="flex items-center gap-2">
+      <div class="relative">
+        <input id="searchInput" type="search" placeholder="Search services…"
+               class="w-64 rounded-xl border border-gray-300 pl-9 pr-3 py-2 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900/10 focus:border-gray-400 transition">
+        <svg class="pointer-events-none absolute left-2.5 top-2.5 h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.6" d="m21 21-4.35-4.35M10 18a8 8 0 1 1 0-16 8 8 0 0 1 0 16Z"/></svg>
+      </div>
+      <select id="statusFilter"
+              class="rounded-xl border border-gray-300 px-3 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-900/10 focus:border-gray-400 transition">
+        <option value="all">All statuses</option>
+        <option value="active">Active</option>
+        <option value="inactive">Inactive</option>
+      </select>
+    </div>
+    <div class="flex items-center gap-1">
+      <button id="viewCardsBtn" type="button"
+              class="viewbtn px-3 py-1.5 text-sm rounded-lg border border-gray-300 bg-gray-900 text-white">Cards</button>
+      <button id="viewTableBtn" type="button"
+              class="viewbtn px-3 py-1.5 text-sm rounded-lg border border-gray-300">Table</button>
+    </div>
+  </div>
+</div>
+
+<!-- Cards view -->
+<div id="cardsView" class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+  {% for s in services %}
+  <article class="service-card group overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm hover:shadow-md transition"
+           data-title="{{ s.title|lower }}" data-status="{% if s.is_active %}active{% else %}inactive{% endif %}">
+    <div class="relative aspect-[16/9] bg-gray-100">
+      {% if s.hero_media_url %}
+        <img src="{{ s.hero_media_url }}" alt="" class="h-full w-full object-cover transition group-hover:scale-[1.02]">
+      {% else %}
+        <div class="absolute inset-0 grid place-items-center text-gray-400 text-sm">No image</div>
+      {% endif %}
+      {% if s.is_active %}
+        <span class="absolute left-3 top-3 inline-flex items-center gap-1 rounded-full bg-green-600/90 px-2.5 py-1 text-xs font-medium text-white">
+          <span class="h-1.5 w-1.5 rounded-full bg-white"></span> Active
+        </span>
+      {% else %}
+        <span class="absolute left-3 top-3 inline-flex items-center gap-1 rounded-full bg-gray-500/80 px-2.5 py-1 text-xs font-medium text-white">
+          <span class="h-1.5 w-1.5 rounded-full bg-white"></span> Inactive
+        </span>
+      {% endif %}
+    </div>
+
+    <div class="p-4">
+      <div class="flex items-start justify-between gap-3">
+        <h3 class="line-clamp-2 text-base font-semibold text-gray-900">{{ s.title }}</h3>
+        <div class="relative">
+          <button type="button" class="action-btn rounded-lg p-1.5 hover:bg-gray-100">
+            <svg class="h-5 w-5 text-gray-500" viewBox="0 0 20 20" fill="currentColor"><circle cx="10" cy="3" r="1.5"/><circle cx="10" cy="10" r="1.5"/><circle cx="10" cy="17" r="1.5"/></svg>
+          </button>
+          <div class="menu hidden absolute right-0 z-10 mt-1 w-36 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-lg">
+            <a href="{% url 'dashboard_service_edit' s.id %}" class="block px-3 py-2 text-sm hover:bg-gray-50">Edit</a>
+            <form action="{% url 'dashboard_service_delete' s.id %}" method="post" onsubmit="return confirm('Delete this service?');">
+              {% csrf_token %}
+              <button type="submit" class="w-full text-left px-3 py-2 text-sm text-red-600 hover:bg-red-50">Delete</button>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-2 flex items-center gap-2 text-sm text-gray-600">
+        <span class="inline-flex items-center rounded-lg border border-gray-200 bg-gray-50 px-2 py-0.5 text-gray-700">{{ s.slug }}</span>
+      </div>
+    </div>
+  </article>
+  {% empty %}
+  <div class="col-span-full">
+    <div class="rounded-2xl border border-dashed border-gray-300 bg-white py-16 text-center">
+      <p class="text-gray-600">No services yet.</p>
+      <a href="{% url 'dashboard_service_create' %}" class="mt-3 inline-flex rounded-xl bg-gray-900 px-4 py-2 text-white hover:bg-black">Create your first service</a>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+<!-- Table view -->
+<div id="tableView" class="hidden overflow-x-auto rounded-2xl border border-gray-200 bg-white shadow-sm">
+  <table class="min-w-full text-sm">
+    <thead class="text-left text-gray-600">
+      <tr>
+        <th class="px-4 py-3">Title</th>
+        <th class="px-4 py-3">Slug</th>
+        <th class="px-4 py-3">Status</th>
+        <th class="px-4 py-3"></th>
+      </tr>
+    </thead>
+    <tbody class="divide-y divide-gray-100">
+      {% for s in services %}
+      <tr class="row" data-title="{{ s.title|lower }}" data-status="{% if s.is_active %}active{% else %}inactive{% endif %}">
+        <td class="px-4 py-3 font-medium text-gray-900">{{ s.title }}</td>
+        <td class="px-4 py-3 text-gray-700">{{ s.slug }}</td>
+        <td class="px-4 py-3">
+          {% if s.is_active %}
+            <span class="rounded-full bg-green-600/10 px-2.5 py-1 text-xs font-medium text-green-700">Active</span>
+          {% else %}
+            <span class="rounded-full bg-gray-500/10 px-2.5 py-1 text-xs font-medium text-gray-700">Inactive</span>
+          {% endif %}
+        </td>
+        <td class="px-4 py-3">
+          <div class="flex items-center gap-3">
+            <a href="{% url 'dashboard_service_edit' s.id %}" class="text-blue-700 hover:underline">Edit</a>
+            <form action="{% url 'dashboard_service_delete' s.id %}" method="post" onsubmit="return confirm('Delete this service?');">
+              {% csrf_token %}
+              <button class="text-red-700 hover:underline" type="submit">Delete</button>
+            </form>
+          </div>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<!-- Controls -->
+<script>
+document.addEventListener('DOMContentLoaded', ()=>{
+  const search = document.getElementById('searchInput');
+  const status = document.getElementById('statusFilter');
+  const cards  = Array.from(document.querySelectorAll('.service-card'));
+  const rows   = Array.from(document.querySelectorAll('#tableView .row'));
+
+  function match(el,q,s){
+    const t=(el.dataset.title||'');
+    const st=(el.dataset.status||'');
+    return (!q||t.includes(q)) && (s==='all'||s===st);
+  }
+  function apply(){
+    const q=(search.value||'').trim().toLowerCase();
+    const st=status.value;
+    cards.forEach(c=>c.classList.toggle('hidden',!match(c,q,st)));
+    rows.forEach(r=>r.classList.toggle('hidden',!match(r,q,st)));
+  }
+  search.addEventListener('input',apply);
+  status.addEventListener('change',apply);
+  apply();
+
+  // View toggle
+  const cardsView=document.getElementById('cardsView');
+  const tableView=document.getElementById('tableView');
+  const btnCards=document.getElementById('viewCardsBtn');
+  const btnTable=document.getElementById('viewTableBtn');
+  function setView(v){
+    const isCards=(v==='cards');
+    cardsView.classList.toggle('hidden',!isCards);
+    tableView.classList.toggle('hidden',isCards);
+    btnCards.classList.toggle('bg-gray-900',isCards);
+    btnCards.classList.toggle('text-white',isCards);
+    btnTable.classList.toggle('bg-gray-900',!isCards);
+    btnTable.classList.toggle('text-white',!isCards);
+    localStorage.setItem('servicesView',v);
+  }
+  setView(localStorage.getItem('servicesView')||'cards');
+  btnCards.addEventListener('click',()=>setView('cards'));
+  btnTable.addEventListener('click',()=>setView('table'));
+
+  // Dropdown actions
+  document.querySelectorAll('.action-btn').forEach(btn=>{
+    const menu=btn.parentElement.querySelector('.menu');
+    btn.addEventListener('click',e=>{e.stopPropagation();menu.classList.toggle('hidden');});
+    document.addEventListener('click',()=>menu.classList.add('hidden'));
+  });
+});
+</script>
+{% endblock %}

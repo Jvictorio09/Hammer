@@ -1,4 +1,6 @@
-<!-- Services (Editorial • Alternating with scroll animations) -->
+{# templates/sections/services_section.html #}
+{% load static %}
+
 <section id="services" class="py-10 md:py-20">
   <div class="max-w-7xl mx-auto px-4 md:px-6">
     <div class="text-center mb-8 md:mb-14">
@@ -9,129 +11,80 @@
       </p>
     </div>
 
-    <!-- Service Articles -->
+    {# Service Articles #}
     <div class="space-y-10 md:space-y-20">
-      <!-- 1) Landscape -->
-      <article class="grid md:grid-cols-2 gap-5 md:gap-8 items-stretch fade-up">
-        <div class="rounded-xl md:rounded-2xl overflow-hidden shadow-md md:shadow-lg relative group">
-          <div class="absolute inset-0 bg-cover bg-center transition-transform duration-700 md:group-hover:scale-105"
-               style="background-image:url('https://picsum.photos/1200/900?random=301')"></div>
-          <div class="absolute inset-0 bg-gradient-to-tr from-black/50 via-black/15 to-transparent md:from-black/60 md:via-black/20"></div>
-          <!-- Mobile height cap -->
-          <div class="block md:hidden" style="padding-top:56%"></div>
-        </div>
-        <div class="rounded-xl md:rounded-2xl border border-black/5 p-5 md:p-8 lg:p-10 bg-white shadow-sm flex flex-col justify-center">
-          <p class="text-[10px] tracking-[.3em] uppercase text-[#18AFAB] mb-1.5 md:mb-2">Landscape</p>
-          <h3 class="text-xl md:text-2xl font-bold leading-snug">Landscape Design & Outdoor Living</h3>
-          <p class="text-gray-600 mt-2.5 md:mt-3 text-sm md:text-base">
-            Bespoke gardens, pools, pergolas, and lighting—crafted to elevate daily life and property value.
-            Efficient irrigation and native planting for long-term sustainability.
-          </p>
-          <ul class="mt-4 md:mt-5 grid grid-cols-2 gap-2 text-sm">
-            <li class="flex items-center gap-2"><i class="fa-solid fa-seedling text-[#18AFAB]"></i> Native/Low-water planting</li>
-            <li class="flex items-center gap-2"><i class="fa-solid fa-water-ladder text-[#18AFAB]"></i> Pools & water features</li>
-            <li class="flex items-center gap-2"><i class="fa-solid fa-umbrella-beach text-[#18AFAB]"></i> Pergolas & decks</li>
-            <li class="flex items-center gap-2"><i class="fa-solid fa-lightbulb text-[#18AFAB]"></i> Architectural lighting</li>
-          </ul>
-          <div class="mt-4 md:mt-6">
-            <a href="#projects" class="inline-flex items-center gap-2 font-semibold text-[#18AFAB] hover:opacity-90">
-              See Landscaping Projects <i class="fa-solid fa-arrow-right-long"></i>
-            </a>
-          </div>
-        </div>
-      </article>
+      {% for s in services %}
+        {% with is_even=forloop.counter|divisibleby:2 %}
+        <article class="grid md:grid-cols-2 gap-5 md:gap-8 items-stretch {% if is_even %}fade-left{% else %}fade-up{% endif %}">
+          
+          {# IMAGE SIDE (alternates) #}
+          {% if not is_even %}
+            <div class="rounded-xl md:rounded-2xl overflow-hidden shadow-md md:shadow-lg relative group">
+              {% if s.primary_image_url %}
+                <div class="absolute inset-0 bg-cover bg-center transition-transform duration-700 md:group-hover:scale-105"
+                     style="background-image:url('{{ s.primary_image_url }}')"></div>
+              {% else %}
+                <div class="absolute inset-0 bg-gradient-to-tr from-slate-900 via-slate-700 to-slate-500"></div>
+              {% endif %}
+              <div class="absolute inset-0 bg-gradient-to-tr from-black/50 via-black/15 to-transparent md:from-black/60 md:via-black/20"></div>
+              <div class="block md:hidden" style="padding-top:56%"></div>
+            </div>
+          {% endif %}
 
-      <!-- 2) Interior -->
-      <article class="grid md:grid-cols-2 gap-5 md:gap-8 items-stretch fade-left">
-        <div class="rounded-xl md:rounded-2xl border border-black/5 p-5 md:p-8 lg:p-10 bg-white shadow-sm flex flex-col justify-center order-1 md:order-1">
-          <p class="text-[10px] tracking-[.3em] uppercase text-[#18AFAB] mb-1.5 md:mb-2">Interior</p>
-          <h3 class="text-xl md:text-2xl font-bold leading-snug">Luxury Interior Design & Fit-Out</h3>
-          <p class="text-gray-600 mt-2.5 md:mt-3 text-sm md:text-base">
-            From concept to completion—bespoke joinery, premium finishes, and furniture.
-            Our in-house team delivers precision fit-outs aligned to your lifestyle.
-          </p>
-          <ul class="mt-4 md:mt-5 grid grid-cols-2 gap-2 text-sm">
-            <li class="flex items-center gap-2"><i class="fa-solid fa-ruler-combined text-[#18AFAB]"></i> Bespoke joinery</li>
-            <li class="flex items-center gap-2"><i class="fa-solid fa-couch text-[#18AFAB]"></i> Furniture & styling</li>
-            <li class="flex items-center gap-2"><i class="fa-solid fa-screwdriver-wrench text-[#18AFAB]"></i> Precision fit-out</li>
-            <li class="flex items-center gap-2"><i class="fa-solid fa-shield-halved text-[#18AFAB]"></i> Premium materials</li>
-          </ul>
-          <div class="mt-4 md:mt-6">
-            <a href="#projects" class="inline-flex items-center gap-2 font-semibold text-[#18AFAB] hover:opacity-90">
-              View Interiors Portfolio <i class="fa-solid fa-arrow-right-long"></i>
-            </a>
-          </div>
-        </div>
-        <div class="rounded-xl md:rounded-2xl overflow-hidden shadow-md md:shadow-lg relative group order-2 md:order-2">
-          <div class="absolute inset-0 bg-cover bg-center transition-transform duration-700 md:group-hover:scale-105"
-               style="background-image:url('https://picsum.photos/1200/900?random=302')"></div>
-          <div class="absolute inset-0 bg-gradient-to-tl from-black/50 via-black/15 to-transparent md:from-black/60 md:via-black/20"></div>
-          <div class="block md:hidden" style="padding-top:56%"></div>
-        </div>
-      </article>
+          {# CONTENT SIDE #}
+          <div class="rounded-xl md:rounded-2xl border border-black/5 p-5 md:p-8 lg:p-10 bg-white shadow-sm flex flex-col justify-center {% if is_even %}order-1 md:order-1{% endif %}">
+            <p class="text-[10px] tracking-[.3em] uppercase text-[#18AFAB] mb-1.5 md:mb-2">
+              {{ s.eyebrow|default:s.title }}
+            </p>
+            <h3 class="text-xl md:text-2xl font-bold leading-snug">
+              {{ s.hero_headline|default:s.title }}
+            </h3>
+            {% if s.hero_subcopy %}
+              <p class="text-gray-600 mt-2.5 md:mt-3 text-sm md:text-base">
+                {{ s.hero_subcopy }}
+              </p>
+            {% endif %}
 
-      <!-- 3) Villas -->
-      <article class="grid md:grid-cols-2 gap-5 md:gap-8 items-stretch fade-up">
-        <div class="rounded-xl md:rounded-2xl overflow-hidden shadow-md md:shadow-lg relative group">
-          <div class="absolute inset-0 bg-cover bg-center transition-transform duration-700 md:group-hover:scale-105"
-               style="background-image:url('https://picsum.photos/1200/900?random=303')"></div>
-          <div class="absolute inset-0 bg-gradient-to-tr from-black/50 via-black/15 to-transparent md:from-black/60 md:via-black/20"></div>
-          <div class="block md:hidden" style="padding-top:56%"></div>
-        </div>
-        <div class="rounded-xl md:rounded-2xl border border-black/5 p-5 md:p-8 lg:p-10 bg-white shadow-sm flex flex-col justify-center">
-          <p class="text-[10px] tracking-[.3em] uppercase text-[#18AFAB] mb-1.5 md:mb-2">Villas</p>
-          <h3 class="text-xl md:text-2xl font-bold leading-snug">Custom Villa Design & Construction</h3>
-          <p class="text-gray-600 mt-2.5 md:mt-3 text-sm md:text-base">
-            Turnkey villas that harmonize architecture, interiors, and landscape.
-            Fixed milestones, transparent reporting, and a single point of accountability.
-          </p>
-          <ul class="mt-4 md:mt-5 grid grid-cols-2 gap-2 text-sm">
-            <li class="flex items-center gap-2"><i class="fa-solid fa-drafting-compass text-[#18AFAB]"></i> Architecture & permits</li>
-            <li class="flex items-center gap-2"><i class="fa-solid fa-diagram-project text-[#18AFAB]"></i> Program & cost control</li>
-            <li class="flex items-center gap-2"><i class="fa-solid fa-helmet-safety text-[#18AFAB]"></i> Site management</li>
-            <li class="flex items-center gap-2"><i class="fa-solid fa-leaf text-[#18AFAB]"></i> Landscape integration</li>
-          </ul>
-          <div class="mt-4 md:mt-6">
-            <a href="#projects" class="inline-flex items-center gap-2 font-semibold text-[#18AFAB] hover:opacity-90">
-              Explore Villa Builds <i class="fa-solid fa-arrow-right-long"></i>
-            </a>
-          </div>
-        </div>
-      </article>
+            <ul class="mt-4 md:mt-5 grid grid-cols-2 gap-2 text-sm">
+              {% for icon,label in s.feature_icons %}
+                <li class="flex items-center gap-2">
+                  <i class="{{ icon }} text-[#18AFAB]"></i> {{ label }}
+                </li>
+              {% empty %}
+                <li class="col-span-2 text-slate-500">Add features in Admin → Features</li>
+              {% endfor %}
+            </ul>
 
-      <!-- 4) Facility -->
-      <article class="grid md:grid-cols-2 gap-5 md:gap-8 items-stretch fade-right">
-        <div class="rounded-xl md:rounded-2xl border border-black/5 p-5 md:p-8 lg:p-10 bg-white shadow-sm flex flex-col justify-center order-1 md:order-1">
-          <p class="text-[10px] tracking-[.3em] uppercase text-[#18AFAB] mb-1.5 md:mb-2">Facility</p>
-          <h3 class="text-xl md:text-2xl font-bold leading-snug">Facility Management & Aftercare</h3>
-          <p class="text-gray-600 mt-2.5 md:mt-3 text-sm md:text-base">
-            Post-handover care for villas & commercial spaces—HVAC, MEP, lighting, pools, and grounds.
-            Discreet, reliable, and preventative by design.
-          </p>
-          <ul class="mt-4 md:mt-5 grid grid-cols-2 gap-2 text-sm">
-            <li class="flex items-center gap-2"><i class="fa-solid fa-snowflake text-[#18AFAB]"></i> HVAC & MEP</li>
-            <li class="flex items-center gap-2"><i class="fa-solid fa-screwdriver text-[#18AFAB]"></i> Preventive maintenance</li>
-            <li class="flex items-center gap-2"><i class="fa-solid fa-droplet text-[#18AFAB]"></i> Pools & water treatment</li>
-            <li class="flex items-center gap-2"><i class="fa-solid fa-bolt text-[#18AFAB]"></i> Lighting & controls</li>
-          </ul>
-          <div class="mt-4 md:mt-6">
-            <a href="#projects" class="inline-flex items-center gap-2 font-semibold text-[#18AFAB] hover:opacity-90">
-              See FM Case Studies <i class="fa-solid fa-arrow-right-long"></i>
-            </a>
+            <div class="mt-4 md:mt-6">
+              <a href="{{ s.get_absolute_url }}" class="inline-flex items-center gap-2 font-semibold text-[#18AFAB] hover:opacity-90">
+                View {{ s.title }} Projects <i class="fa-solid fa-arrow-right-long"></i>
+              </a>
+            </div>
           </div>
-        </div>
-        <div class="rounded-xl md:rounded-2xl overflow-hidden shadow-md md:shadow-lg relative group order-2 md:order-2">
-          <div class="absolute inset-0 bg-cover bg-center transition-transform duration-700 md:group-hover:scale-105"
-               style="background-image:url('https://picsum.photos/1200/900?random=304')"></div>
-          <div class="absolute inset-0 bg-gradient-to-tl from-black/50 via-black/15 to-transparent md:from-black/60 md:via-black/20"></div>
-          <div class="block md:hidden" style="padding-top:56%"></div>
-        </div>
-      </article>
+
+          {# IMAGE SIDE (when even, image on right) #}
+          {% if is_even %}
+            <div class="rounded-xl md:rounded-2xl overflow-hidden shadow-md md:shadow-lg relative group order-2 md:order-2">
+              {% if s.primary_image_url %}
+                <div class="absolute inset-0 bg-cover bg-center transition-transform duration-700 md:group-hover:scale-105"
+                     style="background-image:url('{{ s.primary_image_url }}')"></div>
+              {% else %}
+                <div class="absolute inset-0 bg-gradient-to-tl from-slate-900 via-slate-700 to-slate-500"></div>
+              {% endif %}
+              <div class="absolute inset-0 bg-gradient-to-tl from-black/50 via-black/15 to-transparent md:from-black/60 md:via-black/20"></div>
+              <div class="block md:hidden" style="padding-top:56%"></div>
+            </div>
+          {% endif %}
+        </article>
+        {% endwith %}
+      {% empty %}
+        <p class="text-slate-500">No services yet—add some in Admin.</p>
+      {% endfor %}
     </div>
   </div>
 </section>
 
-<!-- Scroll Animations -->
+{# Scroll Animations #}
 <style>
 .fade-up, .fade-left, .fade-right {
   opacity: 0;

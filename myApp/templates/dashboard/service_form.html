@@ -1,0 +1,1085 @@
+{% extends "dashboard/base.html" %}
+{% load form_extras %}
+
+<style>
+.gallery-preview {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.gallery-item {
+  position: relative;
+  cursor: pointer;
+  border-radius: 0.5rem;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  opacity: 0.7;
+}
+
+.gallery-item.active {
+  opacity: 1;
+  transform: scale(1.05);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+}
+
+.gallery-item img {
+  width: 100%;
+  height: 150px;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.gallery-item:hover img {
+  transform: scale(1.05);
+}
+
+.gallery-item .cap {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(transparent, rgba(0, 0, 0, 0.8));
+  color: white;
+  padding: 1rem 0.5rem 0.5rem;
+  font-size: 0.875rem;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.gallery-item:hover .cap,
+.gallery-item.active .cap {
+  opacity: 1;
+}
+
+@media (max-width: 768px) {
+  .gallery-preview {
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 0.5rem;
+  }
+  
+  .gallery-item img {
+    height: 120px;
+  }
+}
+</style>
+
+{% block page_title %}{% if mode == 'edit' %}Edit Service{% else %}New Service{% endif %}{% endblock %}
+
+{% block content %}
+<form method="post" class="min-h-screen">
+  {% csrf_token %}
+
+  <!-- Header -->
+  <div class="mb-4 flex items-center justify-between">
+    <h1 class="text-xl font-semibold text-gray-900">{% if mode == 'edit' %}Edit{% else %}New{% endif %} Service</h1>
+    <div class="hidden md:flex gap-2">
+      <a href="{% url 'dashboard_services_list' %}" class="px-3 py-2 rounded-lg border border-gray-300 hover:bg-gray-50">Cancel</a>
+      <button type="submit" class="px-4 py-2 rounded-lg bg-gray-900 text-white hover:bg-black">Save</button>
+    </div>
+  </div>
+
+  <!-- Tab bar -->
+  <div id="tablist" role="tablist" class="sticky top-0 z-10 -mx-4 px-4 bg-white/90 backdrop-blur border-b">
+    <div class="mx-auto max-w-6xl">
+      <div class="flex gap-1 overflow-x-auto py-2">
+        {% for t in "Basics,Hero,Content,Stats & SEO,Images,Projects & Case Studies,Capabilities,Insights,Settings"|split_string %}
+          {% with slug=t|slugify %}
+          <button type="button" role="tab" data-tab="{{ slug }}"
+            class="tab-btn px-3 py-2 text-sm rounded-lg border border-transparent text-gray-600 hover:text-gray-900"
+            aria-controls="tab-{{ slug }}" aria-selected="false">{{ t }}</button>
+          {% endwith %}
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+  <div class="mx-auto max-w-6xl space-y-6 py-4">
+
+    <!-- BASICS -->
+    <section id="tab-basics" role="tabpanel" class="tab-panel rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+      <h2 class="text-sm font-semibold text-gray-900 mb-4">Basics</h2>
+      <div class="grid md:grid-cols-2 gap-4">
+        {% include "dashboard/_field.html" with field=form.title required=1 placeholder="e.g., AI Consulting" %}
+        {% include "dashboard/_field.html" with field=form.slug help="Auto-filled from title. You can tweak." %}
+      </div>
+      {% include "dashboard/_field.html" with field=form.eyebrow placeholder="Small label above the headline" %}
+    </section>
+
+    <!-- HERO (with preview) -->
+    <section id="tab-hero" role="tabpanel" class="tab-panel rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+      <h2 class="text-sm font-semibold text-gray-900 mb-4">Hero</h2>
+      {% include "dashboard/_field.html" with field=form.hero_headline required=1 placeholder="Headline…" %}
+      {% include "dashboard/_field.html" with field=form.hero_subcopy input_type="textarea" rows="3" placeholder="Short subcopy…" %}
+
+      <div class="grid md:grid-cols-[1fr,280px] gap-4">
+        <div class="space-y-4">
+          <div class="flex items-center gap-3">
+            <div class="flex-1">
+              {% include "dashboard/_field.html" with field=form.hero_media_url placeholder="https://…" %}
+            </div>
+            <button type="button" class="gallery-btn-hero px-3 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-lg hover:bg-gray-200 transition">
+              📷 Gallery
+            </button>
+          </div>
+          {% include "dashboard/_field.html" with field=form.canonical_path placeholder="/services/ai-consulting" %}
+          <p class="text-xs text-gray-500">Best image size: 1600×900 (16:9).</p>
+        </div>
+        <aside>
+          <div class="text-xs font-medium text-gray-700 mb-2">Hero preview</div>
+          <div class="relative aspect-video overflow-hidden rounded-xl border border-gray-200 bg-gray-50">
+            <img id="heroPreview" class="h-full w-full object-cover opacity-0 transition-opacity" alt="Hero preview" />
+            <div id="heroEmpty" class="absolute inset-0 grid place-items-center text-gray-400 text-xs">Paste an image URL</div>
+          </div>
+          <div id="heroPreviewMeta" class="mt-2 text-[11px] text-gray-500 truncate"></div>
+        </aside>
+      </div>
+    </section>
+
+    <!-- CONTENT (Pinned + Insights) -->
+    <section id="tab-content" role="tabpanel" class="tab-panel rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+      <h2 class="text-sm font-semibold text-gray-900 mb-4">Pinned & Insights</h2>
+
+      <div class="space-y-4">
+        <h3 class="text-xs uppercase tracking-wide text-gray-500">Pinned Content</h3>
+        {% include "dashboard/_field.html" with field=form.pinned_heading placeholder="What we do" %}
+        {% include "dashboard/_field.html" with field=form.pinned_title required=1 placeholder="End-to-end landscape design & build" %}
+        <div class="grid md:grid-cols-2 gap-4">
+          {% include "dashboard/_field.html" with field=form.pinned_body_1 input_type="textarea" rows="3" placeholder="First paragraph..." %}
+          {% include "dashboard/_field.html" with field=form.pinned_body_2 input_type="textarea" rows="3" placeholder="Second paragraph..." %}
+        </div>
+      </div>
+
+      <div class="mt-6 space-y-4">
+        <h3 class="text-xs uppercase tracking-wide text-gray-500">Insights Rail</h3>
+        {% include "dashboard/_field.html" with field=form.insights_heading placeholder="Latest Insights" %}
+        {% include "dashboard/_field.html" with field=form.insights_subcopy input_type="textarea" rows="2" placeholder="Short description..." %}
+      </div>
+    </section>
+
+    <!-- STATS & SEO -->
+    <section id="tab-stats-seo" role="tabpanel" class="tab-panel rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+      <h2 class="text-sm font-semibold text-gray-900 mb-4">Stats & SEO</h2>
+      <div class="grid md:grid-cols-3 gap-4">
+        {% include "dashboard/_field.html" with field=form.stat_projects placeholder="650+" %}
+        {% include "dashboard/_field.html" with field=form.stat_years placeholder="20+" %}
+        {% include "dashboard/_field.html" with field=form.stat_specialists placeholder="1000+" %}
+      </div>
+      <div class="grid md:grid-cols-2 gap-4 mt-6">
+        {% include "dashboard/_field.html" with field=form.seo_meta_title placeholder="Service Title – Company" %}
+        {% include "dashboard/_field.html" with field=form.seo_meta_description input_type="textarea" rows="2" placeholder="Meta description…" %}
+      </div>
+    </section>
+
+    <!-- IMAGES (before/after) -->
+    <section id="tab-images" role="tabpanel" class="tab-panel rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-sm font-semibold text-gray-900">Before/After Images</h2>
+        <button type="button" id="add-image" class="text-sm font-medium px-3 py-1.5 rounded-lg border border-gray-300 hover:bg-gray-50">+ Add Image</button>
+      </div>
+
+      <div id="images-container" class="space-y-4">
+        {{ image_formset.management_form }}
+        {% for form in image_formset %}
+        <div class="image-form border border-gray-200 rounded-lg p-4 {% if not form.instance.pk %}new-form{% endif %}">
+          {% if form.instance.pk %}{{ form.DELETE }}{% endif %}
+          <div class="grid md:grid-cols-[1fr,220px] gap-4">
+            <div class="space-y-3">
+              <div class="grid md:grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-xs font-medium text-gray-700 mb-1">Image URL</label>
+                  {{ form.image_url }}
+                </div>
+                <div>
+                  <label class="block text-xs font-medium text-gray-700 mb-1">Caption</label>
+                  {{ form.caption }}
+                </div>
+              </div>
+              <div class="flex items-center gap-3">
+                <label class="text-xs text-gray-600">Order:</label>
+                {{ form.sort_order }}
+              </div>
+            </div>
+            <div class="md:justify-self-end">
+              <div class="text-[11px] font-medium text-gray-700 mb-2">Preview</div>
+              <div class="relative aspect-video w-[220px] overflow-hidden rounded-lg border border-gray-200 bg-gray-50">
+                <img class="imagePreview h-full w-full object-cover opacity-0 transition-opacity" alt="Image preview" />
+                <div class="imageEmpty absolute inset-0 grid place-items-center text-gray-400 text-[11px]">No image</div>
+              </div>
+            </div>
+          </div>
+          <div class="flex items-center justify-between mt-3">
+            <div class="text-[11px] text-gray-500">ID: {{ form.id }}</div>
+            {% if form.instance.pk %}
+              <button type="button" class="remove-image text-red-600 hover:text-red-800 text-sm">Remove</button>
+            {% endif %}
+          </div>
+          {{ form.id }}
+        </div>
+        {% endfor %}
+      </div>
+    </section>
+
+    <!-- PROJECTS & CASE STUDIES -->
+    <section id="tab-projects-case-studies" role="tabpanel" class="tab-panel rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-sm font-semibold text-gray-900">Project Images Gallery</h2>
+        <button type="button" id="add-project-image" class="text-sm font-medium px-3 py-1.5 rounded-lg border border-gray-300 hover:bg-gray-50">+ Add Project Image</button>
+      </div>
+
+      <div id="project-images-container" class="space-y-4">
+        {{ project_image_formset.management_form }}
+        {% for form in project_image_formset %}
+        <div class="project-image-form border border-gray-200 rounded-lg p-4 {% if not form.instance.pk %}new-form{% endif %}">
+          {% if form.instance.pk %}{{ form.DELETE }}{% endif %}
+          <div class="grid md:grid-cols-[1fr,220px] gap-4">
+            <div class="space-y-3">
+              <div class="grid md:grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-xs font-medium text-gray-700 mb-1">Thumbnail URL</label>
+                  <div class="flex items-center gap-2">
+                    {{ form.thumb_url }}
+                    <button type="button" class="gallery-btn-thumb px-2 py-2 text-xs font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-lg hover:bg-gray-200 transition">
+                      📷
+                    </button>
+                  </div>
+                </div>
+                <div>
+                  <label class="block text-xs font-medium text-gray-700 mb-1">Full URL</label>
+                  <div class="flex items-center gap-2">
+                    {{ form.full_url }}
+                    <button type="button" class="gallery-btn-full px-2 py-2 text-xs font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-lg hover:bg-gray-200 transition">
+                      📷
+                    </button>
+                  </div>
+                </div>
+              </div>
+              <div>
+                <label class="block text-xs font-medium text-gray-700 mb-1">Caption</label>
+                {{ form.caption }}
+              </div>
+              <div class="flex items-center gap-2">
+                <label class="text-xs text-gray-600">Order:</label>
+                {{ form.sort_order }}
+              </div>
+            </div>
+            <div class="md:justify-self-end">
+              <div class="text-[11px] font-medium text-gray-700 mb-2">Preview</div>
+              <div class="relative aspect-video w-[220px] overflow-hidden rounded-lg border border-gray-200 bg-gray-50">
+                <img class="projectImagePreview h-full w-full object-cover opacity-0 transition-opacity" alt="Project image preview" />
+                <div class="projectImageEmpty absolute inset-0 grid place-items-center text-gray-400 text-[11px]">No image</div>
+              </div>
+            </div>
+          </div>
+          <div class="flex items-center justify-between mt-3">
+            <div class="text-[11px] text-gray-500">ID: {{ form.id }}</div>
+            {% if form.instance.pk %}
+              <button type="button" class="remove-project-image text-red-600 hover:text-red-800 text-sm">Remove</button>
+            {% endif %}
+          </div>
+          {{ form.id }}
+        </div>
+        {% endfor %}
+      </div>
+
+      <!-- Case Studies Section -->
+      <div class="mt-8 border-t pt-8">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-sm font-semibold text-gray-900">Featured Case Studies</h3>
+          <button type="button" id="add-case-study" class="text-sm font-medium px-3 py-1.5 rounded-lg border border-gray-300 hover:bg-gray-50">+ Add Case Study</button>
+        </div>
+
+        <div id="case-studies-container" class="space-y-4">
+          {{ case_study_formset.management_form }}
+          {% for form in case_study_formset %}
+          <div class="case-study-form border border-gray-200 rounded-lg p-4 {% if not form.instance.pk %}new-form{% endif %}">
+            {% if form.instance.pk %}{{ form.DELETE }}{% endif %}
+            <div class="grid md:grid-cols-[1fr,300px] gap-4">
+              <div class="space-y-3">
+                <div class="grid md:grid-cols-2 gap-4">
+                  <div>
+                    <label class="block text-xs font-medium text-gray-700 mb-1">Title</label>
+                    {{ form.title }}
+                  </div>
+                  <div>
+                    <label class="block text-xs font-medium text-gray-700 mb-1">Hero Image URL</label>
+                    <div class="flex items-center gap-2">
+                      {{ form.hero_image_url }}
+                      <button type="button" class="gallery-btn-case-study px-2 py-2 text-xs font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-lg hover:bg-gray-200 transition">
+                        📷
+                      </button>
+                    </div>
+                  </div>
+                </div>
+                <div>
+                  <label class="block text-xs font-medium text-gray-700 mb-1">Summary</label>
+                  {{ form.summary }}
+                </div>
+                <div class="grid md:grid-cols-2 gap-4">
+                  <div>
+                    <label class="block text-xs font-medium text-gray-700 mb-1">Scope</label>
+                    {{ form.scope }}
+                  </div>
+                  <div>
+                    <label class="block text-xs font-medium text-gray-700 mb-1">Size</label>
+                    {{ form.size_label }}
+                  </div>
+                </div>
+                <div class="grid md:grid-cols-2 gap-4">
+                  <div>
+                    <label class="block text-xs font-medium text-gray-700 mb-1">Timeline</label>
+                    {{ form.timeline_label }}
+                  </div>
+                  <div>
+                    <label class="block text-xs font-medium text-gray-700 mb-1">Status</label>
+                    {{ form.status_label }}
+                  </div>
+                </div>
+                <div>
+                  <label class="block text-xs font-medium text-gray-700 mb-1">Tags (comma-separated)</label>
+                  {{ form.tags_csv }}
+                </div>
+                <div>
+                  <label class="block text-xs font-medium text-gray-700 mb-1">CTA URL (optional)</label>
+                  {{ form.cta_url }}
+                </div>
+                <div class="flex items-center gap-4">
+                  <div class="flex items-center gap-2">
+                    <label class="text-xs text-gray-600">Featured:</label>
+                    {{ form.is_featured }}
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <label class="text-xs text-gray-600">Order:</label>
+                    {{ form.sort_order }}
+                  </div>
+                </div>
+              </div>
+              <div class="md:justify-self-end">
+                <div class="text-[11px] font-medium text-gray-700 mb-2">Preview</div>
+                <div class="relative aspect-video w-[300px] overflow-hidden rounded-lg border border-gray-200 bg-gray-50">
+                  <img class="caseStudyPreview h-full w-full object-cover opacity-0 transition-opacity" alt="Case study preview" />
+                  <div class="caseStudyEmpty absolute inset-0 grid place-items-center text-gray-400 text-[11px]">No image</div>
+                </div>
+                <div class="mt-2 text-[11px] text-gray-500">
+                  {% if form.instance.pk %}
+                    <div>ID: {{ form.instance.id }}</div>
+                    <div>Slug: {{ form.instance.slug }}</div>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+            <div class="flex items-center justify-between mt-3">
+              <div class="text-[11px] text-gray-500">ID: {{ form.id }}</div>
+              {% if form.instance.pk %}
+                <button type="button" class="remove-case-study text-red-600 hover:text-red-800 text-sm">Remove</button>
+              {% endif %}
+            </div>
+            {{ form.id }}
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- Gallery Preview Section -->
+      <div class="mt-8">
+        <h3 class="text-sm font-semibold text-gray-900 mb-4">Gallery Preview</h3>
+        <div id="project-gallery-preview" class="gallery-preview">
+          {% for p in service.project_images.all %}
+            <figure class="gallery-item{% if forloop.first %} active{% endif %}">
+              <img src="{{ p.full_url }}" alt="{{ p.caption|default:'Project' }}">
+              {% if p.caption %}<figcaption class="cap">{{ p.caption }}</figcaption>{% endif %}
+            </figure>
+          {% empty %}
+            <div class="text-center py-8 text-gray-500">
+              <p>No project images yet. Add some images above to see the gallery preview.</p>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    </section>
+
+    <!-- CAPABILITIES -->
+    <section id="tab-capabilities" role="tabpanel" class="tab-panel rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-sm font-semibold text-gray-900">Service Capabilities</h2>
+        <button type="button" id="add-capability" class="text-sm font-medium px-3 py-1.5 rounded-lg border border-gray-300 hover:bg-gray-50">+ Add Capability</button>
+      </div>
+
+      <div id="capabilities-container" class="space-y-4">
+        {{ capability_formset.management_form }}
+        {% for form in capability_formset %}
+        <div class="capability-form border border-gray-200 rounded-lg p-4 {% if not form.instance.pk %}new-form{% endif %}">
+          {% if form.instance.pk %}{{ form.DELETE }}{% endif %}
+          <div class="grid md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-medium text-gray-700 mb-1">Title</label>
+              {{ form.title }}
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-gray-700 mb-1">Icon Class</label>
+              {{ form.icon_class }}
+            </div>
+          </div>
+          <div class="mt-3">
+            <label class="block text-xs font-medium text-gray-700 mb-1">Description</label>
+            {{ form.blurb }}
+          </div>
+          <div class="flex items-center gap-2 mt-3">
+            <label class="text-xs text-gray-600">Order:</label>
+            {{ form.sort_order }}
+          </div>
+          {{ form.id }}
+        </div>
+        {% endfor %}
+      </div>
+    </section>
+
+    <!-- INSIGHTS -->
+    <section id="tab-insights" role="tabpanel" class="tab-panel rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-sm font-semibold text-gray-900">Connected Insights</h2>
+        <div class="flex gap-2">
+          <a href="{% url 'dashboard_insights_list' %}" class="text-sm font-medium px-3 py-1.5 rounded-lg border border-gray-300 hover:bg-gray-50">View All Insights</a>
+          <a href="{% url 'dashboard_insight_create' %}?service={{ service.id }}" class="text-sm font-medium px-3 py-1.5 rounded-lg bg-gray-900 text-white hover:bg-black">+ New Insight</a>
+        </div>
+      </div>
+
+      {% if service.insights.all %}
+        <div class="space-y-4">
+          {% for insight in service.insights.all %}
+          <div class="border border-gray-200 rounded-lg p-4 hover:bg-gray-50">
+            <div class="flex items-start justify-between">
+              <div class="flex-1">
+                <div class="flex items-center gap-3 mb-2">
+                  <h3 class="font-medium text-gray-900">{{ insight.title }}</h3>
+                  {% if insight.published %}
+                    <span class="px-2 py-1 text-xs font-medium text-green-700 bg-green-100 rounded-full">Published</span>
+                  {% else %}
+                    <span class="px-2 py-1 text-xs font-medium text-yellow-700 bg-yellow-100 rounded-full">Draft</span>
+                  {% endif %}
+                  {% if insight.tag %}
+                    <span class="px-2 py-1 text-xs font-medium text-blue-700 bg-blue-100 rounded-full">{{ insight.tag }}</span>
+                  {% endif %}
+                </div>
+                {% if insight.excerpt %}
+                  <p class="text-sm text-gray-600 mb-2">{{ insight.excerpt }}</p>
+                {% endif %}
+                <div class="flex items-center gap-4 text-xs text-gray-500">
+                  <span>{{ insight.read_minutes }} min read</span>
+                  {% if insight.published_at %}
+                    <span>Published {{ insight.published_at|date:"M j, Y" }}</span>
+                  {% endif %}
+                  <span>Created {{ insight.created_at|date:"M j, Y" }}</span>
+                </div>
+              </div>
+              <div class="flex items-center gap-2 ml-4">
+                <a href="{% url 'dashboard_insight_edit' insight.id %}" class="text-sm text-blue-600 hover:text-blue-800">Edit</a>
+                <a href="{% url 'insight_detail' insight.slug %}" target="_blank" class="text-sm text-gray-600 hover:text-gray-800">View</a>
+              </div>
+            </div>
+            {% if insight.cover_image_url %}
+              <div class="mt-3">
+                <img src="{{ insight.cover_image_url }}" alt="{{ insight.title }}" class="w-32 h-20 object-cover rounded-lg">
+              </div>
+            {% endif %}
+          </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="text-center py-8">
+          <div class="text-gray-400 mb-4">
+            <svg class="w-12 h-12 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+            </svg>
+          </div>
+          <h3 class="text-sm font-medium text-gray-900 mb-1">No insights yet</h3>
+          <p class="text-sm text-gray-500 mb-4">Create your first insight to showcase your expertise in this service area.</p>
+          <a href="{% url 'dashboard_insight_create' %}?service={{ service.id }}" class="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-gray-900 rounded-lg hover:bg-black">
+            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+            </svg>
+            Create First Insight
+          </a>
+        </div>
+      {% endif %}
+    </section>
+
+    <!-- SETTINGS -->
+    <section id="tab-settings" role="tabpanel" class="tab-panel rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+      <h2 class="text-sm font-semibold text-gray-900 mb-4">Settings</h2>
+      <div class="grid md:grid-cols-2 gap-4">
+        {% include "dashboard/_field.html" with field=form.is_active %}
+        {% include "dashboard/_field.html" with field=form.sort_order input_mode="numeric" placeholder="e.g., 10" %}
+      </div>
+    </section>
+
+  </div>
+
+  <!-- Sticky actions -->
+  <div class="sticky bottom-0 mt-4 border-t bg-white/85 backdrop-blur">
+    <div class="mx-auto max-w-6xl px-4 py-3 flex items-center justify-between">
+      <div id="dirtyFlag" class="text-sm text-gray-500">All changes saved</div>
+      <div class="flex gap-2">
+        <a href="{% url 'dashboard_services_list' %}" class="px-3 py-2 rounded-lg border border-gray-300 hover:bg-gray-50">Cancel</a>
+        <button type="submit" class="px-4 py-2 rounded-lg bg-gray-900 text-white hover:bg-black">Save</button>
+      </div>
+    </div>
+  </div>
+</form>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  // ----------------- Tabs -----------------
+  const tabBtns = Array.from(document.querySelectorAll('.tab-btn'));
+  const panels  = Array.from(document.querySelectorAll('.tab-panel'));
+  function activate(tab){ // tab = slug
+    tabBtns.forEach(b=>{
+      const on = b.dataset.tab === tab;
+      b.setAttribute('aria-selected', on);
+      b.classList.toggle('bg-gray-100', on);
+      b.classList.toggle('border-gray-300', on);
+    });
+    panels.forEach(p=>{
+      p.classList.toggle('hidden', p.id !== 'tab-'+tab);
+    });
+    history.replaceState(null, '', '#'+tab);
+    window.scrollTo({top: 0, behavior: 'smooth'});
+  }
+  const initial = (location.hash || '#basics').replace('#','');
+  activate(initial);
+  tabBtns.forEach(b=> b.addEventListener('click', ()=> activate(b.dataset.tab)));
+
+  // ----------------- Field chrome (for formset inputs) -----------------
+  function addChrome(sel){
+    document.querySelectorAll(sel).forEach(el=>{
+      el.classList.add('w-full','rounded-xl','border','border-gray-300','px-3','py-2',
+                       'focus:outline-none','focus:ring-2','focus:ring-gray-900/10','focus:border-gray-400','transition');
+    });
+  }
+  addChrome('.capability-form input, .capability-form textarea, .image-form input');
+
+  // ----------------- Hero preview -----------------
+  const heroInput = document.querySelector('input[name="hero_media_url"]');
+  const heroImg   = document.getElementById('heroPreview');
+  const heroEmpty = document.getElementById('heroEmpty');
+  const heroMeta  = document.getElementById('heroPreviewMeta');
+  
+  console.log('Hero preview elements:', { heroInput, heroImg, heroEmpty, heroMeta });
+  
+  function looksLikeImage(url){ 
+    if (!url || !url.trim()) return false;
+    const cleanUrl = url.trim();
+    // Check if it's a valid URL and looks like an image
+    return /^https?:\/\//i.test(cleanUrl) && (
+      /\.(png|jpe?g|webp|gif|avif|svg)(\?.*)?$/i.test(cleanUrl) || 
+      /cloudinary\.com.*\.(png|jpe?g|webp|gif|avif|svg)/i.test(cleanUrl) ||
+      /\.(png|jpe?g|webp|gif|avif|svg)$/i.test(cleanUrl.split('?')[0])
+    );
+  }
+  function updateHero(){
+    const v = (heroInput?.value||'').trim();
+    console.log('Hero input value:', v);
+    if (v && /^https?:\/\//i.test(v)) {
+      // Try to load the image regardless of extension
+      heroImg.src = v;
+      heroImg.onload = ()=>{ 
+        console.log('Hero image loaded successfully');
+        heroImg.classList.remove('opacity-0'); 
+        heroEmpty.style.display='none'; 
+      };
+      heroImg.onerror = ()=>{ 
+        console.log('Hero image failed to load');
+        heroImg.classList.add('opacity-0'); 
+        heroEmpty.style.display='grid'; 
+      };
+      if (heroMeta) heroMeta.textContent = v;
+    } else {
+      heroImg.removeAttribute('src'); 
+      heroImg.classList.add('opacity-0'); 
+      heroEmpty.style.display='grid';
+      if (heroMeta) heroMeta.textContent = '';
+    }
+  }
+  if (heroInput && heroImg) { 
+    console.log('Setting up hero preview');
+    updateHero(); 
+    heroInput.addEventListener('input', updateHero); 
+  } else {
+    console.log('Hero preview setup failed - missing elements');
+  }
+
+  // ----------------- Image row previews -----------------
+  function wireRow(row){
+    const url = row.querySelector('input[name$="-image_url"]');
+    const img = row.querySelector('.imagePreview');
+    const empty = row.querySelector('.imageEmpty');
+    console.log('Wiring image row:', { url, img, empty });
+    if (!url || !img || !empty) {
+      console.log('Missing elements in image row');
+      return;
+    }
+    function upd(){
+      const v = (url.value||'').trim();
+      console.log('Image input value:', v);
+      if (v && /^https?:\/\//i.test(v)) {
+        // Try to load the image regardless of extension
+        img.src = v;
+        img.onload = ()=>{ 
+          console.log('Image loaded successfully');
+          img.classList.remove('opacity-0'); 
+          empty.style.display='none'; 
+        };
+        img.onerror = ()=>{ 
+          console.log('Image failed to load');
+          img.classList.add('opacity-0'); 
+          empty.style.display='grid'; 
+        };
+      } else {
+        img.removeAttribute('src'); 
+        img.classList.add('opacity-0'); 
+        empty.style.display='grid';
+      }
+    }
+    upd(); url.addEventListener('input', upd);
+  }
+  console.log('Setting up image previews for', document.querySelectorAll('.image-form').length, 'forms');
+  document.querySelectorAll('.image-form').forEach(wireRow);
+
+  // ----------------- Project Image row previews -----------------
+  function wireProjectImageRow(row){
+    const thumbUrl = row.querySelector('input[name$="-thumb_url"]');
+    const fullUrl = row.querySelector('input[name$="-full_url"]');
+    const img = row.querySelector('.projectImagePreview');
+    const empty = row.querySelector('.projectImageEmpty');
+    console.log('Wiring project image row:', { thumbUrl, fullUrl, img, empty });
+    if (!thumbUrl || !fullUrl || !img || !empty) {
+      console.log('Missing elements in project image row');
+      return;
+    }
+    function upd(){
+      const thumbV = (thumbUrl.value||'').trim();
+      const fullV = (fullUrl.value||'').trim();
+      const v = fullV || thumbV; // Prefer full URL, fallback to thumb
+      console.log('Project image input values:', { thumbV, fullV, v });
+      if (v && /^https?:\/\//i.test(v)) {
+        // Try to load the image regardless of extension
+        img.src = v;
+        img.onload = ()=>{ 
+          console.log('Project image loaded successfully');
+          img.classList.remove('opacity-0'); 
+          empty.style.display='none'; 
+        };
+        img.onerror = ()=>{ 
+          console.log('Project image failed to load');
+          img.classList.add('opacity-0'); 
+          empty.style.display='grid'; 
+        };
+      } else {
+        img.removeAttribute('src'); 
+        img.classList.add('opacity-0'); 
+        empty.style.display='grid';
+      }
+    }
+    upd(); 
+    thumbUrl.addEventListener('input', upd);
+    fullUrl.addEventListener('input', upd);
+  }
+  console.log('Setting up project image previews for', document.querySelectorAll('.project-image-form').length, 'forms');
+  document.querySelectorAll('.project-image-form').forEach(wireProjectImageRow);
+
+  // ----------------- Case Study row previews -----------------
+  function wireCaseStudyRow(row){
+    const heroUrl = row.querySelector('input[name$="-hero_image_url"]');
+    const img = row.querySelector('.caseStudyPreview');
+    const empty = row.querySelector('.caseStudyEmpty');
+    console.log('Wiring case study row:', { heroUrl, img, empty });
+    if (!heroUrl || !img || !empty) {
+      console.log('Missing elements in case study row');
+      return;
+    }
+    function upd(){
+      const v = (heroUrl.value||'').trim();
+      console.log('Case study image input value:', v);
+      if (v && /^https?:\/\//i.test(v)) {
+        // Try to load the image regardless of extension
+        img.src = v;
+        img.onload = ()=>{ 
+          console.log('Case study image loaded successfully');
+          img.classList.remove('opacity-0'); 
+          empty.style.display='none'; 
+        };
+        img.onerror = ()=>{ 
+          console.log('Case study image failed to load');
+          img.classList.add('opacity-0'); 
+          empty.style.display='grid'; 
+        };
+      } else {
+        img.removeAttribute('src'); 
+        img.classList.add('opacity-0'); 
+        empty.style.display='grid';
+      }
+    }
+    upd(); 
+    heroUrl.addEventListener('input', upd);
+  }
+  console.log('Setting up case study previews for', document.querySelectorAll('.case-study-form').length, 'forms');
+  document.querySelectorAll('.case-study-form').forEach(wireCaseStudyRow);
+
+  // ----------------- Add/Remove capability rows -----------------
+  const capBox = document.getElementById('capabilities-container');
+  const addCap = document.getElementById('add-capability');
+  let capCount = capBox ? capBox.querySelectorAll('.capability-form').length : 0;
+  addCap?.addEventListener('click', ()=>{
+    const n = document.createElement('div');
+    n.className = 'capability-form border border-gray-200 rounded-lg p-4 new-form';
+    n.innerHTML = `
+      <div class="grid md:grid-cols-2 gap-4">
+        <div><label class="block text-xs font-medium text-gray-700 mb-1">Title</label>
+          <input type="text" name="capabilities-${capCount}-title" class="w-full rounded-xl border border-gray-300 px-3 py-2"></div>
+        <div><label class="block text-xs font-medium text-gray-700 mb-1">Icon Class</label>
+          <input type="text" name="capabilities-${capCount}-icon_class" class="w-full rounded-xl border border-gray-300 px-3 py-2"></div>
+      </div>
+      <div class="mt-3"><label class="block text-xs font-medium text-gray-700 mb-1">Description</label>
+        <input type="text" name="capabilities-${capCount}-blurb" class="w-full rounded-xl border border-gray-300 px-3 py-2"></div>
+      <div class="flex items-center gap-2 mt-3"><label class="text-xs text-gray-600">Order:</label>
+        <input type="number" name="capabilities-${capCount}-sort_order" class="w-24 rounded-xl border border-gray-300 px-3 py-2" value="${capCount}" min="0"></div>
+      <input type="hidden" name="capabilities-${capCount}-id" value="">
+    `;
+    capBox.appendChild(n); capCount++;
+    const total = document.querySelector('input[name="capabilities-TOTAL_FORMS"]'); if (total) total.value = capCount;
+    addChrome('.capability-form input, .capability-form textarea');
+  });
+
+  // ----------------- Add/Remove image rows -----------------
+  const imgBox = document.getElementById('images-container');
+  const addImg = document.getElementById('add-image');
+  let imgCount = imgBox ? imgBox.querySelectorAll('.image-form').length : 0;
+  addImg?.addEventListener('click', ()=>{
+    const n = document.createElement('div');
+    n.className = 'image-form border border-gray-200 rounded-lg p-4 new-form';
+    n.innerHTML = `
+      <div class="grid md:grid-cols-[1fr,220px] gap-4">
+        <div class="space-y-3">
+          <div class="grid md:grid-cols-2 gap-4">
+            <div><label class="block text-xs font-medium text-gray-700 mb-1">Image URL</label>
+              <div class="flex items-center gap-2">
+                <input type="url" name="images-${imgCount}-image_url" class="flex-1 rounded-xl border border-gray-300 px-3 py-2" placeholder="https://…">
+                <button type="button" class="gallery-btn-image px-2 py-2 text-xs font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-lg hover:bg-gray-200 transition">
+                  📷
+                </button>
+              </div>
+            </div>
+            <div><label class="block text-xs font-medium text-gray-700 mb-1">Caption</label>
+              <input type="text" name="images-${imgCount}-caption" class="w-full rounded-xl border border-gray-300 px-3 py-2" placeholder="Image caption…"></div>
+          </div>
+          <div class="flex items-center gap-2"><label class="text-xs text-gray-600">Order:</label>
+            <input type="number" name="images-${imgCount}-sort_order" class="w-24 rounded-xl border border-gray-300 px-3 py-2" value="${imgCount}" min="0"></div>
+        </div>
+        <div class="md:justify-self-end">
+          <div class="text-[11px] font-medium text-gray-700 mb-2">Preview</div>
+          <div class="relative aspect-video w-[220px] overflow-hidden rounded-lg border border-gray-200 bg-gray-50">
+            <img class="imagePreview h-full w-full object-cover opacity-0 transition-opacity" alt="Image preview" />
+            <div class="imageEmpty absolute inset-0 grid place-items-center text-gray-400 text-[11px]">No image</div>
+          </div>
+        </div>
+      </div>
+      <div class="mt-3 text-[11px] text-gray-500">ID: <input type="hidden" name="images-${imgCount}-id" value=""></div>
+    `;
+    imgBox.appendChild(n); imgCount++;
+    const total = document.querySelector('input[name="images-TOTAL_FORMS"]'); if (total) total.value = imgCount;
+    addChrome('.image-form input'); wireRow(n);
+  });
+
+  // ----------------- Add/Remove project image rows -----------------
+  const projectImgBox = document.getElementById('project-images-container');
+  const addProjectImg = document.getElementById('add-project-image');
+  let projectImgCount = projectImgBox ? projectImgBox.querySelectorAll('.project-image-form').length : 0;
+  addProjectImg?.addEventListener('click', ()=>{
+    const n = document.createElement('div');
+    n.className = 'project-image-form border border-gray-200 rounded-lg p-4 new-form';
+    n.innerHTML = `
+      <div class="grid md:grid-cols-[1fr,220px] gap-4">
+        <div class="space-y-3">
+          <div class="grid md:grid-cols-2 gap-4">
+            <div><label class="block text-xs font-medium text-gray-700 mb-1">Thumbnail URL</label>
+              <div class="flex items-center gap-2">
+                <input type="url" name="project_images-${projectImgCount}-thumb_url" class="flex-1 rounded-xl border border-gray-300 px-3 py-2" placeholder="https://…/w_400,h_auto,c_fill">
+                <button type="button" class="gallery-btn-thumb px-2 py-2 text-xs font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-lg hover:bg-gray-200 transition">
+                  📷
+                </button>
+              </div>
+            </div>
+            <div><label class="block text-xs font-medium text-gray-700 mb-1">Full URL</label>
+              <div class="flex items-center gap-2">
+                <input type="url" name="project_images-${projectImgCount}-full_url" class="flex-1 rounded-xl border border-gray-300 px-3 py-2" placeholder="https://…/w_2400,h_auto,c_fill">
+                <button type="button" class="gallery-btn-full px-2 py-2 text-xs font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-lg hover:bg-gray-200 transition">
+                  📷
+                </button>
+              </div>
+            </div>
+          </div>
+          <div><label class="block text-xs font-medium text-gray-700 mb-1">Caption</label>
+            <input type="text" name="project_images-${projectImgCount}-caption" class="w-full rounded-xl border border-gray-300 px-3 py-2" placeholder="Project image caption…"></div>
+          <div class="flex items-center gap-2"><label class="text-xs text-gray-600">Order:</label>
+            <input type="number" name="project_images-${projectImgCount}-sort_order" class="w-24 rounded-xl border border-gray-300 px-3 py-2" value="${projectImgCount}" min="0"></div>
+        </div>
+        <div class="md:justify-self-end">
+          <div class="text-[11px] font-medium text-gray-700 mb-2">Preview</div>
+          <div class="relative aspect-video w-[220px] overflow-hidden rounded-lg border border-gray-200 bg-gray-50">
+            <img class="projectImagePreview h-full w-full object-cover opacity-0 transition-opacity" alt="Project image preview" />
+            <div class="projectImageEmpty absolute inset-0 grid place-items-center text-gray-400 text-[11px]">No image</div>
+          </div>
+        </div>
+      </div>
+      <div class="mt-3 text-[11px] text-gray-500">ID: <input type="hidden" name="project_images-${projectImgCount}-id" value=""></div>
+    `;
+    projectImgBox.appendChild(n); projectImgCount++;
+    const total = document.querySelector('input[name="project_images-TOTAL_FORMS"]'); if (total) total.value = projectImgCount;
+    addChrome('.project-image-form input'); wireProjectImageRow(n);
+  });
+
+  // ----------------- Add/Remove case study rows -----------------
+  const caseStudyBox = document.getElementById('case-studies-container');
+  const addCaseStudy = document.getElementById('add-case-study');
+  let caseStudyCount = caseStudyBox ? caseStudyBox.querySelectorAll('.case-study-form').length : 0;
+  addCaseStudy?.addEventListener('click', ()=>{
+    const n = document.createElement('div');
+    n.className = 'case-study-form border border-gray-200 rounded-lg p-4 new-form';
+    n.innerHTML = `
+      <div class="grid md:grid-cols-[1fr,300px] gap-4">
+        <div class="space-y-3">
+          <div class="grid md:grid-cols-2 gap-4">
+            <div><label class="block text-xs font-medium text-gray-700 mb-1">Title</label>
+              <input type="text" name="case_studies-${caseStudyCount}-title" class="w-full rounded-xl border border-gray-300 px-3 py-2" placeholder="Case study title..."></div>
+            <div><label class="block text-xs font-medium text-gray-700 mb-1">Hero Image URL</label>
+              <div class="flex items-center gap-2">
+                <input type="url" name="case_studies-${caseStudyCount}-hero_image_url" class="flex-1 rounded-xl border border-gray-300 px-3 py-2" placeholder="https://…/w_1600,h_900,c_fill">
+                <button type="button" class="gallery-btn-case-study px-2 py-2 text-xs font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-lg hover:bg-gray-200 transition">
+                  📷
+                </button>
+              </div>
+            </div>
+          </div>
+          <div><label class="block text-xs font-medium text-gray-700 mb-1">Summary</label>
+            <textarea name="case_studies-${caseStudyCount}-summary" class="w-full rounded-xl border border-gray-300 px-3 py-2" rows="3" placeholder="Brief summary of the project..."></textarea></div>
+          <div class="grid md:grid-cols-2 gap-4">
+            <div><label class="block text-xs font-medium text-gray-700 mb-1">Scope</label>
+              <input type="text" name="case_studies-${caseStudyCount}-scope" class="w-full rounded-xl border border-gray-300 px-3 py-2" placeholder="e.g., Design + Build"></div>
+            <div><label class="block text-xs font-medium text-gray-700 mb-1">Size</label>
+              <input type="text" name="case_studies-${caseStudyCount}-size_label" class="w-full rounded-xl border border-gray-300 px-3 py-2" placeholder="e.g., 5,000 sq ft"></div>
+          </div>
+          <div class="grid md:grid-cols-2 gap-4">
+            <div><label class="block text-xs font-medium text-gray-700 mb-1">Timeline</label>
+              <input type="text" name="case_studies-${caseStudyCount}-timeline_label" class="w-full rounded-xl border border-gray-300 px-3 py-2" placeholder="e.g., 6 months"></div>
+            <div><label class="block text-xs font-medium text-gray-700 mb-1">Status</label>
+              <input type="text" name="case_studies-${caseStudyCount}-status_label" class="w-full rounded-xl border border-gray-300 px-3 py-2" placeholder="e.g., Completed"></div>
+          </div>
+          <div><label class="block text-xs font-medium text-gray-700 mb-1">Tags (comma-separated)</label>
+            <input type="text" name="case_studies-${caseStudyCount}-tags_csv" class="w-full rounded-xl border border-gray-300 px-3 py-2" placeholder="e.g., Architecture, Interior Fit-Out, Joinery, Landscape"></div>
+          <div><label class="block text-xs font-medium text-gray-700 mb-1">CTA URL (optional)</label>
+            <input type="url" name="case_studies-${caseStudyCount}-cta_url" class="w-full rounded-xl border border-gray-300 px-3 py-2" placeholder="https://... (optional detail page)"></div>
+          <div class="flex items-center gap-4">
+            <div class="flex items-center gap-2">
+              <label class="text-xs text-gray-600">Featured:</label>
+              <input type="checkbox" name="case_studies-${caseStudyCount}-is_featured" class="rounded border-gray-300">
+            </div>
+            <div class="flex items-center gap-2">
+              <label class="text-xs text-gray-600">Order:</label>
+              <input type="number" name="case_studies-${caseStudyCount}-sort_order" class="w-24 rounded-xl border border-gray-300 px-3 py-2" value="${caseStudyCount}" min="0">
+            </div>
+          </div>
+        </div>
+        <div class="md:justify-self-end">
+          <div class="text-[11px] font-medium text-gray-700 mb-2">Preview</div>
+          <div class="relative aspect-video w-[300px] overflow-hidden rounded-lg border border-gray-200 bg-gray-50">
+            <img class="caseStudyPreview h-full w-full object-cover opacity-0 transition-opacity" alt="Case study preview" />
+            <div class="caseStudyEmpty absolute inset-0 grid place-items-center text-gray-400 text-[11px]">No image</div>
+          </div>
+        </div>
+      </div>
+      <div class="mt-3 text-[11px] text-gray-500">ID: <input type="hidden" name="case_studies-${caseStudyCount}-id" value=""></div>
+    `;
+    caseStudyBox.appendChild(n); caseStudyCount++;
+    const total = document.querySelector('input[name="case_studies-TOTAL_FORMS"]'); if (total) total.value = caseStudyCount;
+    addChrome('.case-study-form input, .case-study-form textarea'); wireCaseStudyRow(n);
+  });
+
+  // ----------------- Gallery functionality -----------------
+  let currentTargetInput = null;
+  
+  function openGallery(targetInput) {
+    currentTargetInput = targetInput;
+    // Create gallery modal if it doesn't exist
+    let modal = document.getElementById('galleryModal');
+    if (!modal) {
+      modal = createGalleryModal();
+      document.body.appendChild(modal);
+    }
+    modal.classList.remove('hidden');
+    loadGalleryImages();
+  }
+
+  function createGalleryModal() {
+    const modal = document.createElement('div');
+    modal.id = 'galleryModal';
+    modal.className = 'fixed inset-0 bg-black bg-opacity-50 z-50 hidden';
+    modal.innerHTML = `
+      <div class="flex items-center justify-center min-h-screen p-4">
+        <div class="bg-white rounded-2xl shadow-xl max-w-4xl w-full max-h-[80vh] overflow-hidden">
+          <div class="flex items-center justify-between p-6 border-b border-gray-200">
+            <h3 class="text-lg font-semibold text-gray-900">Image Gallery</h3>
+            <button id="closeGallery" class="text-gray-400 hover:text-gray-600">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+              </svg>
+            </button>
+          </div>
+          
+          <!-- Tab Navigation -->
+          <div class="flex border-b border-gray-200">
+            <button id="galleryTab" class="flex-1 px-6 py-3 text-sm font-medium text-gray-900 border-b-2 border-gray-900 bg-gray-50">
+              📷 Gallery
+            </button>
+            <button id="uploadTab" class="flex-1 px-6 py-3 text-sm font-medium text-gray-500 border-b-2 border-transparent hover:text-gray-700 hover:bg-gray-50">
+              ⬆️ Upload
+            </button>
+          </div>
+          
+          <!-- Tab Content -->
+          <div class="p-6 overflow-y-auto max-h-[60vh]">
+            <!-- Gallery Tab -->
+            <div id="galleryTabContent" class="tab-content">
+              <div id="galleryGrid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                <!-- Images will be loaded here -->
+              </div>
+            </div>
+            
+            <!-- Upload Tab -->
+            <div id="uploadTabContent" class="tab-content hidden">
+              <div class="max-w-md mx-auto">
+                <div class="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-gray-400 transition">
+                  <input type="file" id="imageUpload" accept="image/*" class="hidden" multiple>
+                  <label for="imageUpload" class="cursor-pointer">
+                    <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
+                      <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                    <div class="mt-4">
+                      <p class="text-sm font-medium text-gray-900">Upload Images</p>
+                      <p class="text-xs text-gray-500">Click to select files or drag and drop</p>
+                    </div>
+                  </label>
+                </div>
+                
+                <div id="uploadProgress" class="mt-4 hidden">
+                  <div class="bg-gray-200 rounded-full h-2">
+                    <div id="uploadBar" class="bg-blue-600 h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
+                  </div>
+                  <p id="uploadStatus" class="text-sm text-gray-600 mt-2">Uploading...</p>
+                </div>
+                
+                <div id="uploadedImages" class="mt-4 grid grid-cols-2 gap-2">
+                  <!-- Newly uploaded images will appear here -->
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+    
+    // Add event listeners
+    modal.querySelector('#closeGallery').addEventListener('click', () => {
+      modal.classList.add('hidden');
+    });
+    
+    return modal;
+  }
+
+  function loadGalleryImages() {
+    const galleryGrid = document.getElementById('galleryGrid');
+    if (!galleryGrid) return;
+    
+    fetch('/dashboard/gallery/api/images/')
+      .then(response => response.json())
+      .then(data => {
+        galleryGrid.innerHTML = '';
+        data.images.forEach(image => {
+          const imgElement = document.createElement('div');
+          imgElement.className = 'relative group cursor-pointer rounded-lg overflow-hidden border border-gray-200 hover:border-gray-400 transition';
+          imgElement.innerHTML = `
+            <img src="${image.thumb_url || image.web_url || image.secure_url}" 
+                 alt="${image.title}" 
+                 class="w-full h-32 object-cover">
+            <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition">
+              <div class="absolute bottom-2 left-2 right-2 text-white text-xs opacity-0 group-hover:opacity-100 transition">
+                ${image.title}
+              </div>
+            </div>
+          `;
+          imgElement.addEventListener('click', () => {
+            if (currentTargetInput) {
+              currentTargetInput.value = image.web_url || image.secure_url;
+              // Trigger input event to update previews
+              currentTargetInput.dispatchEvent(new Event('input', { bubbles: true }));
+            }
+            document.getElementById('galleryModal').classList.add('hidden');
+          });
+          galleryGrid.appendChild(imgElement);
+        });
+      })
+      .catch(error => {
+        console.error('Error loading gallery images:', error);
+        galleryGrid.innerHTML = '<p class="text-gray-500 text-center py-8">Error loading images</p>';
+      });
+  }
+
+  // Add gallery button event listeners
+  document.addEventListener('click', (e) => {
+    if (e.target.classList.contains('gallery-btn-hero')) {
+      const heroInput = document.querySelector('input[name="hero_media_url"]');
+      openGallery(heroInput);
+    } else if (e.target.classList.contains('gallery-btn-image')) {
+      const imageInput = e.target.parentElement.querySelector('input[type="url"]');
+      openGallery(imageInput);
+    } else if (e.target.classList.contains('gallery-btn-thumb')) {
+      const thumbInput = e.target.parentElement.querySelector('input[name$="-thumb_url"]');
+      openGallery(thumbInput);
+    } else if (e.target.classList.contains('gallery-btn-full')) {
+      const fullInput = e.target.parentElement.querySelector('input[name$="-full_url"]');
+      openGallery(fullInput);
+    } else if (e.target.classList.contains('gallery-btn-case-study')) {
+      const caseStudyInput = e.target.parentElement.querySelector('input[name$="-hero_image_url"]');
+      openGallery(caseStudyInput);
+    }
+  });
+
+  // ----------------- Project Gallery Preview -----------------
+  const projectGallery = document.getElementById('project-gallery-preview');
+  if (projectGallery) {
+    const galleryItems = projectGallery.querySelectorAll('.gallery-item');
+    galleryItems.forEach(item => {
+      item.addEventListener('click', () => {
+        // On desktop: spotlight expand
+        if (window.innerWidth > 768) {
+          galleryItems.forEach(i => i.classList.remove('active'));
+          item.classList.add('active');
+        } else {
+          // On mobile: just toggle highlight
+          galleryItems.forEach(i => i.classList.remove('active'));
+          item.classList.add('active');
+          // smooth scroll into view
+          item.scrollIntoView({behavior: 'smooth', inline: 'center'});
+        }
+      });
+    });
+  }
+
+  // ----------------- Dirty flag -----------------
+  const dirtyEl = document.getElementById('dirtyFlag'); let dirty=false, timer;
+  function setDirty(v){ dirty=v; if(dirtyEl) dirtyEl.textContent = v ? 'Unsaved changes…' : 'All changes saved'; }
+  document.querySelector('form').addEventListener('input', ()=> setDirty(true));
+  document.querySelector('form').addEventListener('submit', ()=>{ clearTimeout(timer); if(dirtyEl) dirtyEl.textContent='Saving…'; timer=setTimeout(()=>setDirty(false),800); });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,12 @@
+{% extends "dashboard/base.html" %}
+{% block page_title %}Confirm Delete{% endblock %}
+{% block content %}
+<h2 class="text-lg font-semibold mb-4">Delete {{ type }}</h2>
+<p class="mb-6">This action cannot be undone. Are you sure you want to delete <strong>{{ object }}</strong>?</p>
+<form method="post" class="flex items-center gap-3">
+  {% csrf_token %}
+  <button type="submit" class="bg-red-700 text-white px-4 py-2 rounded-md">Yes, delete</button>
+  <a href="{% if type == 'Service' %}{% url 'dashboard_services_list' %}{% else %}{% url 'dashboard_insights_list' %}{% endif %}" class="px-4 py-2 rounded-md border">Cancel</a>
+</form>
+{% endblock %}
+
