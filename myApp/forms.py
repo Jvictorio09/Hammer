@@ -125,8 +125,8 @@ class ServiceForm(forms.ModelForm):
 
     def clean_seo_meta_description(self):
         d = (self.cleaned_data.get("seo_meta_description") or "").strip()
-        if len(d) > 180:
-            raise forms.ValidationError("Keep meta description concise (≤ 180 chars).")
+        if len(d) > 200:
+            raise forms.ValidationError("Keep meta description concise (≤ 200 chars).")
         return d
 
 
@@ -186,6 +186,9 @@ class ServiceEditorialImageForm(forms.ModelForm):
 
 
 class ServiceProjectImageForm(forms.ModelForm):
+    """
+    Simplified form - case study will be created/managed through inline case study form
+    """
     class Meta:
         model = ServiceProjectImage
         fields = ['thumb_url', 'full_url', 'caption', 'sort_order']
@@ -195,28 +198,34 @@ class ServiceProjectImageForm(forms.ModelForm):
             'caption': forms.TextInput(attrs={'placeholder': 'Project image caption...'}),
             'sort_order': forms.NumberInput(attrs={'min': '0', 'step': '1'}),
         }
-
+    
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         # Add CSS classes for styling
         for field in self.fields.values():
-            field.widget.attrs.update({'class': 'w-full rounded-xl border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-gray-900/10 focus:border-gray-400 transition'})
+            if 'class' not in field.widget.attrs:
+                field.widget.attrs.update({'class': 'w-full rounded-xl border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-gray-900/10 focus:border-gray-400 transition'})
 
 
 class CaseStudyForm(forms.ModelForm):
     class Meta:
         model = CaseStudy
-        fields = ['title', 'hero_image_url', 'summary', 'scope', 'size_label', 'timeline_label', 'status_label', 'tags_csv', 'is_featured', 'sort_order', 'cta_url']
+        fields = ['title', 'hero_image_url', 'thumb_url', 'full_url', 'gallery_urls', 'summary', 'description', 'completion_date', 'scope', 'size_label', 'timeline_label', 'status_label', 'tags_csv', 'is_featured', 'sort_order', 'cta_url']
         widgets = {
-            'title': forms.TextInput(attrs={'placeholder': 'Case study title...'}),
-            'hero_image_url': forms.URLInput(attrs={'placeholder': 'https://res.cloudinary.com/.../w_1600,h_900,c_fill'}),
-            'summary': forms.Textarea(attrs={'rows': 3, 'placeholder': 'Brief summary of the project...'}),
+            'title': forms.TextInput(attrs={'placeholder': 'Project title...'}),
+            'hero_image_url': forms.URLInput(attrs={'placeholder': 'https://... (detail page hero)'}),
+            'thumb_url': forms.URLInput(attrs={'placeholder': 'https://... (thumbnail for gallery)'}),
+            'full_url': forms.URLInput(attrs={'placeholder': 'https://... (full resolution)'}),
+            'gallery_urls': forms.HiddenInput(),  # Make it a hidden field
+            'summary': forms.Textarea(attrs={'rows': 2, 'placeholder': 'Brief summary (shown in cards)...'}),
+            'description': forms.Textarea(attrs={'rows': 4, 'placeholder': 'Full project story...'}),
+            'completion_date': forms.DateInput(attrs={'type': 'date', 'placeholder': 'YYYY-MM-DD'}),
             'scope': forms.TextInput(attrs={'placeholder': 'e.g., Design + Build'}),
             'size_label': forms.TextInput(attrs={'placeholder': 'e.g., 5,000 sq ft'}),
             'timeline_label': forms.TextInput(attrs={'placeholder': 'e.g., 6 months'}),
             'status_label': forms.TextInput(attrs={'placeholder': 'e.g., Completed'}),
-            'tags_csv': forms.TextInput(attrs={'placeholder': 'e.g., Architecture, Interior Fit-Out, Joinery, Landscape'}),
-            'cta_url': forms.URLInput(attrs={'placeholder': 'https://... (optional detail page)'}),
+            'tags_csv': forms.TextInput(attrs={'placeholder': 'e.g., Architecture, Interior, Joinery'}),
+            'cta_url': forms.URLInput(attrs={'placeholder': 'https://... (optional)'}),
             'sort_order': forms.NumberInput(attrs={'min': '0', 'step': '1'}),
         }
 
@@ -225,6 +234,20 @@ class CaseStudyForm(forms.ModelForm):
         # Add CSS classes for styling
         for field in self.fields.values():
             field.widget.attrs.update({'class': 'w-full rounded-xl border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-gray-900/10 focus:border-gray-400 transition'})
+    
+    def clean_gallery_urls(self):
+        """Parse the JSON string from the hidden input"""
+        gallery_urls = self.cleaned_data.get('gallery_urls', '')
+        if not gallery_urls:
+            return []
+        
+        try:
+            import json
+            if isinstance(gallery_urls, str):
+                return json.loads(gallery_urls)
+            return gallery_urls
+        except (json.JSONDecodeError, TypeError):
+            return []
 
 
 # Create the inline formsets

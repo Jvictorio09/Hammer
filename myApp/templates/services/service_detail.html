@@ -663,77 +663,61 @@ details[open] .faq-content{ height:auto; }      /* fallback if JS off */
     })();
   </script>
 </section>
-
 <section id="expand-gallery" class="bg-white py-20">
   <style>
     :root { --ink:#0B0E14; --teal:#18AFAB; }
 
-    /* Desktop full-screen flex */
-    #expand-gallery .gallery {
-      display:flex; gap:1rem;
-      height:70vh; /* tall spread */
-      overflow:hidden;
+    /* ===== Layout & look ===== */
+    #expand-gallery .gallery{
+      display:flex; gap:1rem; height:70vh; overflow:hidden;
     }
-    #expand-gallery .item {
-      flex:1; position:relative; overflow:hidden;
-      cursor:pointer; border-radius:0; /* sharp corners */
+    #expand-gallery .item{
+      flex:1; position:relative; overflow:hidden; cursor:pointer;
+      border-radius:0; text-decoration:none;
       transition:flex .6s cubic-bezier(.22,1,.36,1), filter .4s ease;
+      color:inherit;
     }
-    #expand-gallery .item img {
+    #expand-gallery .item figure{height:100%; width:100%; margin:0;}
+    #expand-gallery .item img{
       width:100%; height:100%; object-fit:cover;
       transition:transform .6s cubic-bezier(.22,1,.36,1);
+      display:block;
     }
-    #expand-gallery .item.active {
-      flex:4; /* spotlight */
-      z-index:2;
-    }
-    #expand-gallery .item:not(.active) {
-      filter:brightness(.65) contrast(.9);
-    }
-    #expand-gallery .item.active img {
-      transform:scale(1.05);
-    }
-    /* caption */
-    #expand-gallery .cap {
-      position:absolute; bottom:1rem; left:1rem;
-      background:rgba(0,0,0,.45); color:#fff;
-      padding:.5rem .9rem; font-weight:600;
-      font-size:.9rem; border-radius:.3rem;
-      backdrop-filter:blur(4px);
-      opacity:0; transition:opacity .3s;
-    }
-    #expand-gallery .item.active .cap { opacity:1; }
+    #expand-gallery .item.active{ flex:4; z-index:2; }
+    #expand-gallery .item:not(.active){ filter:brightness(.65) contrast(.9); }
+    #expand-gallery .item.active img{ transform:scale(1.05); }
 
-    /* ===== Mobile behavior: horizontal swipe carousel ===== */
-    @media (max-width: 768px) {
-      #expand-gallery .gallery {
-        flex-direction: row;
-        overflow-x:auto; overflow-y:hidden;
-        scroll-snap-type:x mandatory;
-        -webkit-overflow-scrolling: touch;
-        height:60vh; /* slightly shorter than desktop */
-      }
-      #expand-gallery .item {
-        flex:0 0 90%;  /* card width for swipe feel */
-        scroll-snap-align:center;
-        border-radius:12px;
-        transition: transform .4s ease, filter .3s ease;
-      }
-      #expand-gallery .item img {
-        border-radius:12px;
-      }
-      #expand-gallery .item.active {
-        flex:0 0 90%;
-        transform:scale(1.02);
-        z-index:2;
-      }
-      #expand-gallery .item:not(.active) {
-        filter:brightness(.9) contrast(.95);
-      }
-      #expand-gallery .item.active .cap {
-        opacity:1; font-size:1rem;
-      }
+    /* caption chip */
+    #expand-gallery .cap{
+      position:absolute; left:1rem; bottom:1rem;
+      background:rgba(0,0,0,.45); color:#fff;
+      padding:.5rem .9rem; font-weight:600; font-size:.9rem; border-radius:.35rem;
+      backdrop-filter:blur(4px); opacity:0; transition:opacity .3s ease;
+      max-width:min(520px, 85%);
     }
+    #expand-gallery .item.active .cap{ opacity:1; }
+    #expand-gallery .cap .hint{ display:flex; align-items:center; gap:.35rem; font-size:.75rem; opacity:.9; margin-top:.35rem;}
+
+    /* ===== Mobile: horizontal swipe w/ snap ===== */
+    @media (max-width:768px){
+      #expand-gallery .gallery{
+        flex-direction:row; overflow-x:auto; overflow-y:hidden;
+        scroll-snap-type:x mandatory; -webkit-overflow-scrolling:touch;
+        height:60vh; padding:0 .5rem;
+      }
+      #expand-gallery .item{
+        flex:0 0 90%; scroll-snap-align:center; border-radius:12px;
+        transition:transform .4s ease, filter .3s ease;
+      }
+      #expand-gallery .item img{ border-radius:12px; }
+      #expand-gallery .item.active{ flex:0 0 90%; transform:scale(1.02); z-index:2; }
+      #expand-gallery .item:not(.active){ filter:brightness(.9) contrast(.95); }
+      #expand-gallery .item.active .cap{ opacity:1; font-size:1rem; }
+    }
+
+    /* Nice scrollbar for iOS/desktop (optional) */
+    #expand-gallery .gallery::-webkit-scrollbar{ height:8px; }
+    #expand-gallery .gallery::-webkit-scrollbar-thumb{ background:#e5e7eb; border-radius:8px; }
   </style>
 
   <div class="max-w-7xl mx-auto px-6 mb-8 text-center">
@@ -742,18 +726,38 @@ details[open] .faq-content{ height:auto; }      /* fallback if JS off */
     <p class="text-gray-500 mt-2">Explore our portfolio in a gallery that unfolds with every click.</p>
   </div>
 
-  <div id="gallery" class="gallery">
-    {% for p in service.project_images.all %}
-      <figure class="item{% if forloop.first %} active{% endif %}">
-        <img src="{{ p.full_url }}" alt="{{ p.caption|default:'Project' }}">
-        {% if p.caption %}<figcaption class="cap">{{ p.caption }}</figcaption>{% endif %}
-      </figure>
+  <div id="gallery" class="gallery" aria-label="Case study gallery">
+    {% for cs in service.case_studies.all %}
+      {% if cs.full_url %}
+      <a href="{{ cs.get_absolute_url }}"
+         class="item{% if forloop.first %} active{% endif %}"
+         title="View {{ cs.title }}"
+         data-project="{{ cs.slug }}"
+         role="button" aria-pressed="{% if forloop.first %}true{% else %}false{% endif %}">
+        <figure>
+          <img
+            src="{{ cs.full_url }}"
+            alt="{{ cs.title }}"
+            loading="{% if forloop.first %}eager{% else %}lazy{% endif %}">
+          <figcaption class="cap">
+            <span class="font-semibold">{{ cs.title }}</span>
+            {% if cs.summary %}
+              <span class="block text-xs opacity-90 mt-1">{{ cs.summary|truncatewords:12 }}</span>
+            {% endif %}
+            <span class="hint"><svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg> View project</span>
+          </figcaption>
+        </figure>
+      </a>
+      {% endif %}
     {% empty %}
       {% for i in "1,2,3,4"|cut:","|make_list %}
-        <figure class="item{% if forloop.first %} active{% endif %}">
-          <img src="https://picsum.photos/2400/1400?random={{ i }}" alt="Placeholder {{ i }}">
-          <figcaption class="cap">Project {{ i }}</figcaption>
-        </figure>
+        <div class="item{% if forloop.first %} active{% endif %}">
+          <figure>
+            <img src="https://picsum.photos/2400/1400?random={{ i }}" alt="Placeholder {{ i }}">
+            <figcaption class="cap">Project {{ i }}</figcaption>
+          </figure>
+        </div>
       {% endfor %}
     {% endfor %}
   </div>
@@ -762,25 +766,63 @@ details[open] .faq-content{ height:auto; }      /* fallback if JS off */
     (function(){
       const gallery = document.getElementById('gallery');
       if(!gallery) return;
-      const items = gallery.querySelectorAll('.item');
+
+      const items = Array.from(gallery.querySelectorAll('.item'));
+      if(items.length === 0) return;
+
+      function setActive(target){
+        items.forEach(i=>{
+          i.classList.remove('active');
+          i.setAttribute('aria-pressed','false');
+        });
+        target.classList.add('active');
+        target.setAttribute('aria-pressed','true');
+      }
+
+      // Click to expand (desktop) + keep link behavior on second click / Enter
       items.forEach(item=>{
-        item.addEventListener('click', ()=>{
-          // On desktop: spotlight expand
-          if(window.innerWidth > 768){
-            items.forEach(i=> i.classList.remove('active'));
-            item.classList.add('active');
-          } else {
-            // On mobile: just toggle highlight
-            items.forEach(i=> i.classList.remove('active'));
-            item.classList.add('active');
-            // smooth scroll into view
-            item.scrollIntoView({behavior:'smooth', inline:'center'});
+        item.addEventListener('click', (e)=>{
+          const isDesktop = window.innerWidth > 768;
+          const alreadyActive = item.classList.contains('active');
+
+          if(isDesktop){
+            if(!alreadyActive){
+              e.preventDefault(); // first click only spotlights
+              setActive(item);
+            } // else: let it navigate
+          }else{
+            // Mobile: spotlight and center; navigation still works on second tap
+            if(!alreadyActive){
+              e.preventDefault();
+              setActive(item);
+              item.scrollIntoView({behavior:'smooth', inline:'center', block:'nearest'});
+            }
           }
         });
+
+        // Keyboard: Enter navigates, Space toggles spotlight
+        item.addEventListener('keydown', (e)=>{
+          if(e.key === ' '){ e.preventDefault(); setActive(item); }
+          if(e.key === 'Enter'){ /* allow native link nav */ }
+        });
       });
+
+      // Mobile: highlight the card most centered in view while swiping
+      const mql = window.matchMedia('(max-width:768px)');
+      if(mql.matches){
+        const observer = new IntersectionObserver((entries)=>{
+          entries.forEach(entry=>{
+            if(entry.isIntersecting && entry.intersectionRatio > 0.6){
+              setActive(entry.target);
+            }
+          });
+        }, { threshold:[0.6] });
+        items.forEach(i=>observer.observe(i));
+      }
     })();
   </script>
 </section>
+
 
 
 
@@ -1319,11 +1361,12 @@ details[open] .faq-content{ height:auto; }      /* fallback if JS off */
 
   (function(){
   const reel = document.getElementById('sigReel');
+  if(!reel) return;
+  
   const dots = document.querySelectorAll('.dots button');
-  if(!reel || !dots.length) return;
-
-  // map slides
   const slides = [...reel.querySelectorAll('.reel-card')];
+  
+  if(!dots.length || !slides.length) return;
 
   // wheel → horizontal (nice on mobile trackpads too)
   reel.addEventListener('wheel', (e)=>{
@@ -1382,11 +1425,13 @@ details[open] .faq-content{ height:auto; }      /* fallback if JS off */
 (function(){
   const rail = document.getElementById('rail');
   const bar  = document.getElementById('railProgress');
+  if(!rail || !bar) return;
+  
   const steps= [...rail.querySelectorAll('.step')];
   const idxEl= document.getElementById('railIndex');
   const statusEl = document.getElementById('railStatus');
 
-  if(!rail||!bar||!steps.length) return;
+  if(!steps.length) return;
 
   // mark first active
   steps[0].classList.add('is-active');

@@ -68,6 +68,26 @@
 {% block page_title %}{% if mode == 'edit' %}Edit Service{% else %}New Service{% endif %}{% endblock %}
 
 {% block content %}
+<!-- Display Django messages -->
+{% if messages %}
+<div class="mb-4 space-y-2">
+  {% for message in messages %}
+  <div class="rounded-lg p-4 {% if message.tags == 'success' %}bg-green-50 text-green-800 border border-green-200{% elif message.tags == 'error' %}bg-red-50 text-red-800 border border-red-200{% else %}bg-blue-50 text-blue-800 border border-blue-200{% endif %}">
+    <div class="flex items-start">
+      <div class="flex-1">
+        <p class="text-sm font-medium">{{ message }}</p>
+      </div>
+      <button onclick="this.parentElement.parentElement.remove()" class="ml-4 text-gray-400 hover:text-gray-600">
+        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+        </svg>
+      </button>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+
 <form method="post" class="min-h-screen">
   {% csrf_token %}
 
@@ -84,7 +104,7 @@
   <div id="tablist" role="tablist" class="sticky top-0 z-10 -mx-4 px-4 bg-white/90 backdrop-blur border-b">
     <div class="mx-auto max-w-6xl">
       <div class="flex gap-1 overflow-x-auto py-2">
-        {% for t in "Basics,Hero,Content,Stats & SEO,Images,Projects & Case Studies,Capabilities,Insights,Settings"|split_string %}
+        {% for t in "Basics,Hero,Content,Stats & SEO,Images,Projects,Capabilities,Insights,Settings"|split_string %}
           {% with slug=t|slugify %}
           <button type="button" role="tab" data-tab="{{ slug }}"
             class="tab-btn px-3 py-2 text-sm rounded-lg border border-transparent text-gray-600 hover:text-gray-900"
@@ -221,74 +241,15 @@
       </div>
     </section>
 
-    <!-- PROJECTS & CASE STUDIES -->
-    <section id="tab-projects-case-studies" role="tabpanel" class="tab-panel rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+    <!-- PROJECTS (consolidated case studies) -->
+    <section id="tab-projects" role="tabpanel" class="tab-panel rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
       <div class="flex items-center justify-between mb-4">
-        <h2 class="text-sm font-semibold text-gray-900">Project Images Gallery</h2>
-        <button type="button" id="add-project-image" class="text-sm font-medium px-3 py-1.5 rounded-lg border border-gray-300 hover:bg-gray-50">+ Add Project Image</button>
-      </div>
-
-      <div id="project-images-container" class="space-y-4">
-        {{ project_image_formset.management_form }}
-        {% for form in project_image_formset %}
-        <div class="project-image-form border border-gray-200 rounded-lg p-4 {% if not form.instance.pk %}new-form{% endif %}">
-          {% if form.instance.pk %}{{ form.DELETE }}{% endif %}
-          <div class="grid md:grid-cols-[1fr,220px] gap-4">
-            <div class="space-y-3">
-              <div class="grid md:grid-cols-2 gap-4">
-                <div>
-                  <label class="block text-xs font-medium text-gray-700 mb-1">Thumbnail URL</label>
-                  <div class="flex items-center gap-2">
-                    {{ form.thumb_url }}
-                    <button type="button" class="gallery-btn-thumb px-2 py-2 text-xs font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-lg hover:bg-gray-200 transition">
-                      📷
-                    </button>
-                  </div>
-                </div>
-                <div>
-                  <label class="block text-xs font-medium text-gray-700 mb-1">Full URL</label>
-                  <div class="flex items-center gap-2">
-                    {{ form.full_url }}
-                    <button type="button" class="gallery-btn-full px-2 py-2 text-xs font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-lg hover:bg-gray-200 transition">
-                      📷
-                    </button>
-                  </div>
-                </div>
-              </div>
-              <div>
-                <label class="block text-xs font-medium text-gray-700 mb-1">Caption</label>
-                {{ form.caption }}
-              </div>
-              <div class="flex items-center gap-2">
-                <label class="text-xs text-gray-600">Order:</label>
-                {{ form.sort_order }}
-              </div>
-            </div>
-            <div class="md:justify-self-end">
-              <div class="text-[11px] font-medium text-gray-700 mb-2">Preview</div>
-              <div class="relative aspect-video w-[220px] overflow-hidden rounded-lg border border-gray-200 bg-gray-50">
-                <img class="projectImagePreview h-full w-full object-cover opacity-0 transition-opacity" alt="Project image preview" />
-                <div class="projectImageEmpty absolute inset-0 grid place-items-center text-gray-400 text-[11px]">No image</div>
-              </div>
-            </div>
-          </div>
-          <div class="flex items-center justify-between mt-3">
-            <div class="text-[11px] text-gray-500">ID: {{ form.id }}</div>
-            {% if form.instance.pk %}
-              <button type="button" class="remove-project-image text-red-600 hover:text-red-800 text-sm">Remove</button>
-            {% endif %}
-          </div>
-          {{ form.id }}
+        <div>
+          <h2 class="text-sm font-semibold text-gray-900">Projects Portfolio</h2>
+          <p class="text-xs text-gray-600 mt-1">Each project includes details + images shown on service page gallery</p>
         </div>
-        {% endfor %}
+        <button type="button" id="add-case-study" class="text-sm font-medium px-3 py-1.5 rounded-lg border border-gray-300 hover:bg-gray-50">+ Add Project</button>
       </div>
-
-      <!-- Case Studies Section -->
-      <div class="mt-8 border-t pt-8">
-        <div class="flex items-center justify-between mb-4">
-          <h3 class="text-sm font-semibold text-gray-900">Featured Case Studies</h3>
-          <button type="button" id="add-case-study" class="text-sm font-medium px-3 py-1.5 rounded-lg border border-gray-300 hover:bg-gray-50">+ Add Case Study</button>
-        </div>
 
         <div id="case-studies-container" class="space-y-4">
           {{ case_study_formset.management_form }}
@@ -297,13 +258,13 @@
             {% if form.instance.pk %}{{ form.DELETE }}{% endif %}
             <div class="grid md:grid-cols-[1fr,300px] gap-4">
               <div class="space-y-3">
-                <div class="grid md:grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-xs font-medium text-gray-700 mb-1">Project Title</label>
+                  {{ form.title }}
+                </div>
+                <div class="grid md:grid-cols-3 gap-4">
                   <div>
-                    <label class="block text-xs font-medium text-gray-700 mb-1">Title</label>
-                    {{ form.title }}
-                  </div>
-                  <div>
-                    <label class="block text-xs font-medium text-gray-700 mb-1">Hero Image URL</label>
+                    <label class="block text-xs font-medium text-gray-700 mb-1">Hero (Detail Page)</label>
                     <div class="flex items-center gap-2">
                       {{ form.hero_image_url }}
                       <button type="button" class="gallery-btn-case-study px-2 py-2 text-xs font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-lg hover:bg-gray-200 transition">
@@ -311,10 +272,39 @@
                       </button>
                     </div>
                   </div>
+                  <div>
+                    <label class="block text-xs font-medium text-gray-700 mb-1">Thumbnail (Gallery)</label>
+                    <div class="flex items-center gap-2">
+                      {{ form.thumb_url }}
+                      <button type="button" class="gallery-btn-thumb px-2 py-2 text-xs font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-lg hover:bg-gray-200 transition">
+                        📷
+                      </button>
+                    </div>
+                  </div>
+                  <div>
+                    <label class="block text-xs font-medium text-gray-700 mb-1">Full Size (Gallery)</label>
+                    <div class="flex items-center gap-2">
+                      {{ form.full_url }}
+                      <button type="button" class="gallery-btn-full px-2 py-2 text-xs font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-lg hover:bg-gray-200 transition">
+                        📷
+                      </button>
+                    </div>
+                  </div>
                 </div>
                 <div>
-                  <label class="block text-xs font-medium text-gray-700 mb-1">Summary</label>
+                  <label class="block text-xs font-medium text-gray-700 mb-1">Summary (Brief)</label>
                   {{ form.summary }}
+                </div>
+                <div>
+                  <label class="block text-xs font-medium text-gray-700 mb-1">Description (Full Story)</label>
+                  {{ form.description }}
+                </div>
+                <div class="grid md:grid-cols-2 gap-4">
+                  <div>
+                    <label class="block text-xs font-medium text-gray-700 mb-1">Completion Date</label>
+                    {{ form.completion_date }}
+                  </div>
+                  <div></div>
                 </div>
                 <div class="grid md:grid-cols-2 gap-4">
                   <div>
@@ -344,6 +334,22 @@
                   <label class="block text-xs font-medium text-gray-700 mb-1">CTA URL (optional)</label>
                   {{ form.cta_url }}
                 </div>
+                
+                <!-- Gallery Images Section -->
+                <div class="border-t border-gray-200 pt-4">
+                  <div class="flex items-center justify-between mb-3">
+                    <h4 class="text-xs font-medium text-gray-700">Gallery Images</h4>
+                    <button type="button" class="gallery-upload-btn text-xs font-medium px-3 py-1.5 rounded-lg border border-gray-300 hover:bg-gray-50">
+                      📷 Upload Gallery
+                    </button>
+                  </div>
+                  <div class="gallery-preview grid grid-cols-3 gap-2 min-h-[60px] p-2 border border-gray-200 rounded-lg bg-gray-50">
+                    <div class="text-xs text-gray-500 text-center py-4 col-span-3">No gallery images</div>
+                  </div>
+                  <!-- Hidden input to store selected gallery images -->
+                  {{ form.gallery_urls }}
+                </div>
+                
                 <div class="flex items-center gap-4">
                   <div class="flex items-center gap-2">
                     <label class="text-xs text-gray-600">Featured:</label>
@@ -379,24 +385,6 @@
           </div>
           {% endfor %}
         </div>
-      </div>
-
-      <!-- Gallery Preview Section -->
-      <div class="mt-8">
-        <h3 class="text-sm font-semibold text-gray-900 mb-4">Gallery Preview</h3>
-        <div id="project-gallery-preview" class="gallery-preview">
-          {% for p in service.project_images.all %}
-            <figure class="gallery-item{% if forloop.first %} active{% endif %}">
-              <img src="{{ p.full_url }}" alt="{{ p.caption|default:'Project' }}">
-              {% if p.caption %}<figcaption class="cap">{{ p.caption }}</figcaption>{% endif %}
-            </figure>
-          {% empty %}
-            <div class="text-center py-8 text-gray-500">
-              <p>No project images yet. Add some images above to see the gallery preview.</p>
-            </div>
-          {% endfor %}
-        </div>
-      </div>
     </section>
 
     <!-- CAPABILITIES -->
@@ -646,49 +634,7 @@ document.addEventListener('DOMContentLoaded', () => {
   console.log('Setting up image previews for', document.querySelectorAll('.image-form').length, 'forms');
   document.querySelectorAll('.image-form').forEach(wireRow);
 
-  // ----------------- Project Image row previews -----------------
-  function wireProjectImageRow(row){
-    const thumbUrl = row.querySelector('input[name$="-thumb_url"]');
-    const fullUrl = row.querySelector('input[name$="-full_url"]');
-    const img = row.querySelector('.projectImagePreview');
-    const empty = row.querySelector('.projectImageEmpty');
-    console.log('Wiring project image row:', { thumbUrl, fullUrl, img, empty });
-    if (!thumbUrl || !fullUrl || !img || !empty) {
-      console.log('Missing elements in project image row');
-      return;
-    }
-    function upd(){
-      const thumbV = (thumbUrl.value||'').trim();
-      const fullV = (fullUrl.value||'').trim();
-      const v = fullV || thumbV; // Prefer full URL, fallback to thumb
-      console.log('Project image input values:', { thumbV, fullV, v });
-      if (v && /^https?:\/\//i.test(v)) {
-        // Try to load the image regardless of extension
-        img.src = v;
-        img.onload = ()=>{ 
-          console.log('Project image loaded successfully');
-          img.classList.remove('opacity-0'); 
-          empty.style.display='none'; 
-        };
-        img.onerror = ()=>{ 
-          console.log('Project image failed to load');
-          img.classList.add('opacity-0'); 
-          empty.style.display='grid'; 
-        };
-      } else {
-        img.removeAttribute('src'); 
-        img.classList.add('opacity-0'); 
-        empty.style.display='grid';
-      }
-    }
-    upd(); 
-    thumbUrl.addEventListener('input', upd);
-    fullUrl.addEventListener('input', upd);
-  }
-  console.log('Setting up project image previews for', document.querySelectorAll('.project-image-form').length, 'forms');
-  document.querySelectorAll('.project-image-form').forEach(wireProjectImageRow);
-
-  // ----------------- Case Study row previews -----------------
+  // ----------------- Case Study/Project row previews -----------------
   function wireCaseStudyRow(row){
     const heroUrl = row.querySelector('input[name$="-hero_image_url"]');
     const img = row.querySelector('.caseStudyPreview');
@@ -791,55 +737,7 @@ document.addEventListener('DOMContentLoaded', () => {
     addChrome('.image-form input'); wireRow(n);
   });
 
-  // ----------------- Add/Remove project image rows -----------------
-  const projectImgBox = document.getElementById('project-images-container');
-  const addProjectImg = document.getElementById('add-project-image');
-  let projectImgCount = projectImgBox ? projectImgBox.querySelectorAll('.project-image-form').length : 0;
-  addProjectImg?.addEventListener('click', ()=>{
-    const n = document.createElement('div');
-    n.className = 'project-image-form border border-gray-200 rounded-lg p-4 new-form';
-    n.innerHTML = `
-      <div class="grid md:grid-cols-[1fr,220px] gap-4">
-        <div class="space-y-3">
-          <div class="grid md:grid-cols-2 gap-4">
-            <div><label class="block text-xs font-medium text-gray-700 mb-1">Thumbnail URL</label>
-              <div class="flex items-center gap-2">
-                <input type="url" name="project_images-${projectImgCount}-thumb_url" class="flex-1 rounded-xl border border-gray-300 px-3 py-2" placeholder="https://…/w_400,h_auto,c_fill">
-                <button type="button" class="gallery-btn-thumb px-2 py-2 text-xs font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-lg hover:bg-gray-200 transition">
-                  📷
-                </button>
-              </div>
-            </div>
-            <div><label class="block text-xs font-medium text-gray-700 mb-1">Full URL</label>
-              <div class="flex items-center gap-2">
-                <input type="url" name="project_images-${projectImgCount}-full_url" class="flex-1 rounded-xl border border-gray-300 px-3 py-2" placeholder="https://…/w_2400,h_auto,c_fill">
-                <button type="button" class="gallery-btn-full px-2 py-2 text-xs font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-lg hover:bg-gray-200 transition">
-                  📷
-                </button>
-              </div>
-            </div>
-          </div>
-          <div><label class="block text-xs font-medium text-gray-700 mb-1">Caption</label>
-            <input type="text" name="project_images-${projectImgCount}-caption" class="w-full rounded-xl border border-gray-300 px-3 py-2" placeholder="Project image caption…"></div>
-          <div class="flex items-center gap-2"><label class="text-xs text-gray-600">Order:</label>
-            <input type="number" name="project_images-${projectImgCount}-sort_order" class="w-24 rounded-xl border border-gray-300 px-3 py-2" value="${projectImgCount}" min="0"></div>
-        </div>
-        <div class="md:justify-self-end">
-          <div class="text-[11px] font-medium text-gray-700 mb-2">Preview</div>
-          <div class="relative aspect-video w-[220px] overflow-hidden rounded-lg border border-gray-200 bg-gray-50">
-            <img class="projectImagePreview h-full w-full object-cover opacity-0 transition-opacity" alt="Project image preview" />
-            <div class="projectImageEmpty absolute inset-0 grid place-items-center text-gray-400 text-[11px]">No image</div>
-          </div>
-        </div>
-      </div>
-      <div class="mt-3 text-[11px] text-gray-500">ID: <input type="hidden" name="project_images-${projectImgCount}-id" value=""></div>
-    `;
-    projectImgBox.appendChild(n); projectImgCount++;
-    const total = document.querySelector('input[name="project_images-TOTAL_FORMS"]'); if (total) total.value = projectImgCount;
-    addChrome('.project-image-form input'); wireProjectImageRow(n);
-  });
-
-  // ----------------- Add/Remove case study rows -----------------
+  // ----------------- Add/Remove case study/project rows -----------------
   const caseStudyBox = document.getElementById('case-studies-container');
   const addCaseStudy = document.getElementById('add-case-study');
   let caseStudyCount = caseStudyBox ? caseStudyBox.querySelectorAll('.case-study-form').length : 0;
@@ -849,20 +747,43 @@ document.addEventListener('DOMContentLoaded', () => {
     n.innerHTML = `
       <div class="grid md:grid-cols-[1fr,300px] gap-4">
         <div class="space-y-3">
-          <div class="grid md:grid-cols-2 gap-4">
-            <div><label class="block text-xs font-medium text-gray-700 mb-1">Title</label>
-              <input type="text" name="case_studies-${caseStudyCount}-title" class="w-full rounded-xl border border-gray-300 px-3 py-2" placeholder="Case study title..."></div>
-            <div><label class="block text-xs font-medium text-gray-700 mb-1">Hero Image URL</label>
+          <div><label class="block text-xs font-medium text-gray-700 mb-1">Project Title</label>
+            <input type="text" name="case_studies-${caseStudyCount}-title" class="w-full rounded-xl border border-gray-300 px-3 py-2" placeholder="Project title..."></div>
+          <div class="grid md:grid-cols-3 gap-4">
+            <div><label class="block text-xs font-medium text-gray-700 mb-1">Hero (Detail Page)</label>
               <div class="flex items-center gap-2">
-                <input type="url" name="case_studies-${caseStudyCount}-hero_image_url" class="flex-1 rounded-xl border border-gray-300 px-3 py-2" placeholder="https://…/w_1600,h_900,c_fill">
+                <input type="url" name="case_studies-${caseStudyCount}-hero_image_url" class="flex-1 rounded-xl border border-gray-300 px-3 py-2" placeholder="https://...">
                 <button type="button" class="gallery-btn-case-study px-2 py-2 text-xs font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-lg hover:bg-gray-200 transition">
                   📷
                 </button>
               </div>
             </div>
+            <div><label class="block text-xs font-medium text-gray-700 mb-1">Thumbnail (Gallery)</label>
+              <div class="flex items-center gap-2">
+                <input type="url" name="case_studies-${caseStudyCount}-thumb_url" class="flex-1 rounded-xl border border-gray-300 px-3 py-2" placeholder="https://...">
+                <button type="button" class="gallery-btn-thumb px-2 py-2 text-xs font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-lg hover:bg-gray-200 transition">
+                  📷
+                </button>
+              </div>
+            </div>
+            <div><label class="block text-xs font-medium text-gray-700 mb-1">Full Size (Gallery)</label>
+              <div class="flex items-center gap-2">
+                <input type="url" name="case_studies-${caseStudyCount}-full_url" class="flex-1 rounded-xl border border-gray-300 px-3 py-2" placeholder="https://...">
+                <button type="button" class="gallery-btn-full px-2 py-2 text-xs font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-lg hover:bg-gray-200 transition">
+                  📷
+                </button>
+              </div>
+            </div>
           </div>
-          <div><label class="block text-xs font-medium text-gray-700 mb-1">Summary</label>
-            <textarea name="case_studies-${caseStudyCount}-summary" class="w-full rounded-xl border border-gray-300 px-3 py-2" rows="3" placeholder="Brief summary of the project..."></textarea></div>
+          <div><label class="block text-xs font-medium text-gray-700 mb-1">Summary (Brief)</label>
+            <textarea name="case_studies-${caseStudyCount}-summary" class="w-full rounded-xl border border-gray-300 px-3 py-2" rows="3" placeholder="Brief summary (shown in cards and hero)..."></textarea></div>
+          <div><label class="block text-xs font-medium text-gray-700 mb-1">Description (Full Story)</label>
+            <textarea name="case_studies-${caseStudyCount}-description" class="w-full rounded-xl border border-gray-300 px-3 py-2" rows="4" placeholder="Full project description, challenges, solutions, and outcomes..."></textarea></div>
+          <div class="grid md:grid-cols-2 gap-4">
+            <div><label class="block text-xs font-medium text-gray-700 mb-1">Completion Date</label>
+              <input type="date" name="case_studies-${caseStudyCount}-completion_date" class="w-full rounded-xl border border-gray-300 px-3 py-2" placeholder="YYYY-MM-DD"></div>
+            <div></div>
+          </div>
           <div class="grid md:grid-cols-2 gap-4">
             <div><label class="block text-xs font-medium text-gray-700 mb-1">Scope</label>
               <input type="text" name="case_studies-${caseStudyCount}-scope" class="w-full rounded-xl border border-gray-300 px-3 py-2" placeholder="e.g., Design + Build"></div>
@@ -958,15 +879,16 @@ document.addEventListener('DOMContentLoaded', () => {
             <!-- Upload Tab -->
             <div id="uploadTabContent" class="tab-content hidden">
               <div class="max-w-md mx-auto">
-                <div class="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-gray-400 transition">
+                <div id="dropZone" class="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-gray-400 transition">
                   <input type="file" id="imageUpload" accept="image/*" class="hidden" multiple>
                   <label for="imageUpload" class="cursor-pointer">
                     <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
                       <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
                     </svg>
                     <div class="mt-4">
-                      <p class="text-sm font-medium text-gray-900">Upload Images</p>
-                      <p class="text-xs text-gray-500">Click to select files or drag and drop</p>
+                      <p class="text-sm font-medium text-gray-900">Upload Images (Bulk)</p>
+                      <p class="text-xs text-gray-500">Click to select multiple files or drag and drop</p>
+                      <p class="text-xs text-gray-400 mt-1">Supports: JPG, PNG, WebP (max 10MB each)</p>
                     </div>
                   </label>
                 </div>
@@ -993,40 +915,269 @@ document.addEventListener('DOMContentLoaded', () => {
       modal.classList.add('hidden');
     });
     
+    // Tab switching
+    const galleryTab = modal.querySelector('#galleryTab');
+    const uploadTab = modal.querySelector('#uploadTab');
+    const galleryTabContent = modal.querySelector('#galleryTabContent');
+    const uploadTabContent = modal.querySelector('#uploadTabContent');
+    
+    galleryTab.addEventListener('click', () => {
+      galleryTab.classList.add('text-gray-900', 'border-gray-900', 'bg-gray-50');
+      galleryTab.classList.remove('text-gray-500', 'border-transparent');
+      uploadTab.classList.remove('text-gray-900', 'border-gray-900', 'bg-gray-50');
+      uploadTab.classList.add('text-gray-500', 'border-transparent');
+      galleryTabContent.classList.remove('hidden');
+      uploadTabContent.classList.add('hidden');
+    });
+    
+    uploadTab.addEventListener('click', () => {
+      uploadTab.classList.add('text-gray-900', 'border-gray-900', 'bg-gray-50');
+      uploadTab.classList.remove('text-gray-500', 'border-transparent');
+      galleryTab.classList.remove('text-gray-900', 'border-gray-900', 'bg-gray-50');
+      galleryTab.classList.add('text-gray-500', 'border-transparent');
+      uploadTabContent.classList.remove('hidden');
+      galleryTabContent.classList.add('hidden');
+    });
+    
+    // File upload handling
+    const fileInput = modal.querySelector('#imageUpload');
+    const uploadProgress = modal.querySelector('#uploadProgress');
+    const uploadBar = modal.querySelector('#uploadBar');
+    const uploadStatus = modal.querySelector('#uploadStatus');
+    const uploadedImages = modal.querySelector('#uploadedImages');
+    const dropZone = modal.querySelector('#dropZone');
+    
+    // Drag and drop functionality
+    dropZone.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      dropZone.classList.add('border-blue-400', 'bg-blue-50');
+    });
+    
+    dropZone.addEventListener('dragleave', (e) => {
+      e.preventDefault();
+      dropZone.classList.remove('border-blue-400', 'bg-blue-50');
+    });
+    
+    dropZone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      dropZone.classList.remove('border-blue-400', 'bg-blue-50');
+      
+      const files = e.dataTransfer.files;
+      if (files.length > 0) {
+        fileInput.files = files;
+        fileInput.dispatchEvent(new Event('change'));
+      }
+    });
+    
+    fileInput.addEventListener('change', async (e) => {
+      const files = e.target.files;
+      if (!files || files.length === 0) return;
+      
+      // Show progress
+      uploadProgress.classList.remove('hidden');
+      uploadBar.style.width = '0%';
+      uploadStatus.textContent = `Uploading ${files.length} image${files.length > 1 ? 's' : ''}...`;
+      
+      // Create FormData
+      const formData = new FormData();
+      for (let i = 0; i < files.length; i++) {
+        formData.append('files', files[i]);
+      }
+      
+      // Add CSRF token
+      const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+      
+      try {
+        uploadBar.style.width = '50%';
+        
+        const response = await fetch('/dashboard/gallery/api/upload/', {
+          method: 'POST',
+          body: formData,
+          headers: {
+            'X-CSRFToken': csrfToken
+          }
+        });
+        
+        uploadBar.style.width = '100%';
+        
+        const result = await response.json();
+        
+        if (result.success) {
+          uploadStatus.textContent = `Successfully uploaded ${result.images.length} image${result.images.length > 1 ? 's' : ''}!`;
+          uploadStatus.classList.add('text-green-600');
+          
+          // Display uploaded images
+          uploadedImages.innerHTML = '';
+          result.images.forEach(image => {
+            const imgEl = document.createElement('div');
+            imgEl.className = 'relative group cursor-pointer rounded-lg overflow-hidden border border-gray-200 hover:border-green-500 transition';
+            imgEl.innerHTML = `
+              <img src="${image.thumb_url || image.web_url}" alt="${image.title}" class="w-full h-24 object-cover">
+              <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition flex items-center justify-center">
+                <span class="text-white text-xs opacity-0 group-hover:opacity-100">Click to use</span>
+              </div>
+            `;
+            imgEl.addEventListener('click', () => {
+              if (currentTargetInput) {
+                currentTargetInput.value = image.web_url || image.secure_url;
+                currentTargetInput.dispatchEvent(new Event('input', { bubbles: true }));
+              }
+              modal.classList.add('hidden');
+            });
+            uploadedImages.appendChild(imgEl);
+          });
+          
+          // Reload gallery to show new images
+          loadGalleryImages();
+          
+          // Reset after 3 seconds
+          setTimeout(() => {
+            uploadProgress.classList.add('hidden');
+            uploadBar.style.width = '0%';
+            uploadStatus.textContent = 'Uploading...';
+            uploadStatus.classList.remove('text-green-600');
+            fileInput.value = '';
+          }, 3000);
+        } else {
+          uploadStatus.textContent = `Error: ${result.error}`;
+          uploadStatus.classList.add('text-red-600');
+        }
+      } catch (error) {
+        console.error('Upload error:', error);
+        uploadStatus.textContent = `Upload failed: ${error.message}`;
+        uploadStatus.classList.add('text-red-600');
+      }
+    });
+    
     return modal;
   }
 
   function loadGalleryImages() {
     const galleryGrid = document.getElementById('galleryGrid');
+    console.log('loadGalleryImages called, galleryGrid:', galleryGrid);
+    if (!galleryGrid) {
+      console.error('galleryGrid not found!');
+      return;
+    }
+    
+    console.log('Fetching gallery images...');
+    fetch('/dashboard/gallery/api/images/')
+      .then(response => {
+        console.log('Gallery API response:', response.status);
+        return response.json();
+      })
+      .then(data => {
+        console.log('Gallery API data:', data);
+        galleryGrid.innerHTML = '';
+        if (data.images && data.images.length > 0) {
+          data.images.forEach(image => {
+            const imgElement = document.createElement('div');
+            imgElement.className = 'relative group cursor-pointer rounded-lg overflow-hidden border border-gray-200 hover:border-gray-400 transition';
+            imgElement.innerHTML = `
+              <img src="${image.thumb_url || image.web_url || image.secure_url}" 
+                   alt="${image.title}" 
+                   class="w-full h-32 object-cover">
+              <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition">
+                <div class="absolute bottom-2 left-2 right-2 text-white text-xs opacity-0 group-hover:opacity-100 transition">
+                  ${image.title}
+                </div>
+              </div>
+            `;
+            // Don't add the old click handler - we'll handle selection in the modal event listener
+            galleryGrid.appendChild(imgElement);
+          });
+        } else {
+          galleryGrid.innerHTML = '<p class="text-gray-500 text-center py-8">No images available</p>';
+        }
+      })
+      .catch(error => {
+        console.error('Error loading gallery images:', error);
+        galleryGrid.innerHTML = '<p class="text-gray-500 text-center py-8">Error loading images</p>';
+      });
+  }
+
+  // Function to open gallery for individual image selection
+  function openImageGallery(targetInput) {
+    console.log('Opening image gallery for:', targetInput);
+    
+    // Create gallery modal for single image selection
+    const modal = document.createElement('div');
+    modal.id = 'imageGalleryModal';
+    modal.className = 'fixed inset-0 bg-black bg-opacity-50 z-50';
+    modal.innerHTML = `
+      <div class="flex items-center justify-center min-h-screen p-4">
+        <div class="bg-white rounded-2xl shadow-xl max-w-4xl w-full max-h-[80vh] overflow-hidden">
+          <div class="flex items-center justify-between p-6 border-b border-gray-200">
+            <h3 class="text-lg font-semibold text-gray-900">Select Image</h3>
+            <button id="closeImageGallery" class="text-gray-400 hover:text-gray-600">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+              </svg>
+            </button>
+          </div>
+          
+          <div class="p-6 overflow-y-auto max-h-[60vh]">
+            <div id="imageGalleryGrid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+              <!-- Images will be loaded here -->
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+    
+    document.body.appendChild(modal);
+    
+    // Load gallery images
+    loadImageGalleryImages(modal, targetInput);
+    
+    // Add close button functionality
+    modal.querySelector('#closeImageGallery').addEventListener('click', () => {
+      modal.remove();
+    });
+    
+    // Close on backdrop click
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) {
+        modal.remove();
+      }
+    });
+  }
+
+  function loadImageGalleryImages(modal, targetInput) {
+    const galleryGrid = modal.querySelector('#imageGalleryGrid');
     if (!galleryGrid) return;
     
     fetch('/dashboard/gallery/api/images/')
       .then(response => response.json())
       .then(data => {
         galleryGrid.innerHTML = '';
-        data.images.forEach(image => {
-          const imgElement = document.createElement('div');
-          imgElement.className = 'relative group cursor-pointer rounded-lg overflow-hidden border border-gray-200 hover:border-gray-400 transition';
-          imgElement.innerHTML = `
-            <img src="${image.thumb_url || image.web_url || image.secure_url}" 
-                 alt="${image.title}" 
-                 class="w-full h-32 object-cover">
-            <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition">
-              <div class="absolute bottom-2 left-2 right-2 text-white text-xs opacity-0 group-hover:opacity-100 transition">
-                ${image.title}
+        if (data.images && data.images.length > 0) {
+          data.images.forEach(image => {
+            const imgElement = document.createElement('div');
+            imgElement.className = 'relative group cursor-pointer rounded-lg overflow-hidden border border-gray-200 hover:border-gray-400 transition';
+            imgElement.innerHTML = `
+              <img src="${image.thumb_url || image.web_url || image.secure_url}" 
+                   alt="${image.title}" 
+                   class="w-full h-32 object-cover">
+              <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition">
+                <div class="absolute bottom-2 left-2 right-2 text-white text-xs opacity-0 group-hover:opacity-100 transition">
+                  ${image.title}
+                </div>
               </div>
-            </div>
-          `;
-          imgElement.addEventListener('click', () => {
-            if (currentTargetInput) {
-              currentTargetInput.value = image.web_url || image.secure_url;
-              // Trigger input event to update previews
-              currentTargetInput.dispatchEvent(new Event('input', { bubbles: true }));
-            }
-            document.getElementById('galleryModal').classList.add('hidden');
+            `;
+            imgElement.addEventListener('click', () => {
+              if (targetInput) {
+                targetInput.value = image.web_url || image.secure_url;
+                // Trigger input event to update previews
+                targetInput.dispatchEvent(new Event('input', { bubbles: true }));
+              }
+              modal.remove();
+            });
+            galleryGrid.appendChild(imgElement);
           });
-          galleryGrid.appendChild(imgElement);
-        });
+        } else {
+          galleryGrid.innerHTML = '<p class="text-gray-500 text-center py-8">No images available</p>';
+        }
       })
       .catch(error => {
         console.error('Error loading gallery images:', error);
@@ -1038,48 +1189,295 @@ document.addEventListener('DOMContentLoaded', () => {
   document.addEventListener('click', (e) => {
     if (e.target.classList.contains('gallery-btn-hero')) {
       const heroInput = document.querySelector('input[name="hero_media_url"]');
-      openGallery(heroInput);
+      openImageGallery(heroInput);
     } else if (e.target.classList.contains('gallery-btn-image')) {
       const imageInput = e.target.parentElement.querySelector('input[type="url"]');
-      openGallery(imageInput);
+      openImageGallery(imageInput);
     } else if (e.target.classList.contains('gallery-btn-thumb')) {
       const thumbInput = e.target.parentElement.querySelector('input[name$="-thumb_url"]');
-      openGallery(thumbInput);
+      openImageGallery(thumbInput);
     } else if (e.target.classList.contains('gallery-btn-full')) {
       const fullInput = e.target.parentElement.querySelector('input[name$="-full_url"]');
-      openGallery(fullInput);
+      openImageGallery(fullInput);
     } else if (e.target.classList.contains('gallery-btn-case-study')) {
       const caseStudyInput = e.target.parentElement.querySelector('input[name$="-hero_image_url"]');
-      openGallery(caseStudyInput);
+      openImageGallery(caseStudyInput);
     }
   });
-
-  // ----------------- Project Gallery Preview -----------------
-  const projectGallery = document.getElementById('project-gallery-preview');
-  if (projectGallery) {
-    const galleryItems = projectGallery.querySelectorAll('.gallery-item');
-    galleryItems.forEach(item => {
-      item.addEventListener('click', () => {
-        // On desktop: spotlight expand
-        if (window.innerWidth > 768) {
-          galleryItems.forEach(i => i.classList.remove('active'));
-          item.classList.add('active');
-        } else {
-          // On mobile: just toggle highlight
-          galleryItems.forEach(i => i.classList.remove('active'));
-          item.classList.add('active');
-          // smooth scroll into view
-          item.scrollIntoView({behavior: 'smooth', inline: 'center'});
-        }
-      });
-    });
-  }
 
   // ----------------- Dirty flag -----------------
   const dirtyEl = document.getElementById('dirtyFlag'); let dirty=false, timer;
   function setDirty(v){ dirty=v; if(dirtyEl) dirtyEl.textContent = v ? 'Unsaved changes…' : 'All changes saved'; }
   document.querySelector('form').addEventListener('input', ()=> setDirty(true));
-  document.querySelector('form').addEventListener('submit', ()=>{ clearTimeout(timer); if(dirtyEl) dirtyEl.textContent='Saving…'; timer=setTimeout(()=>setDirty(false),800); });
+  document.querySelector('form').addEventListener('submit', (e)=>{ 
+    clearTimeout(timer); 
+    if(dirtyEl) dirtyEl.textContent='Saving…'; 
+    timer=setTimeout(()=>setDirty(false),800);
+    
+    // Debug: Log form data being submitted
+    const formData = new FormData(e.target);
+    console.group('Form Submission Debug');
+    console.log('Total form entries:', Array.from(formData.entries()).length);
+    
+    // Log image formset data
+    const imageFields = Array.from(formData.entries()).filter(([key]) => key.startsWith('images-'));
+    console.log('Image formset fields:', imageFields.length);
+    imageFields.forEach(([key, value]) => {
+      if (value) console.log(`  ${key}: ${value}`);
+    });
+    
+    // Log project image formset data
+    const projectImageFields = Array.from(formData.entries()).filter(([key]) => key.startsWith('project_images-'));
+    console.log('Project image formset fields:', projectImageFields.length);
+    projectImageFields.forEach(([key, value]) => {
+      if (value) console.log(`  ${key}: ${value}`);
+    });
+    
+    // Log case study formset data
+    const caseStudyFields = Array.from(formData.entries()).filter(([key]) => key.startsWith('case_studies-'));
+    console.log('Case study formset fields:', caseStudyFields.length);
+    caseStudyFields.forEach(([key, value]) => {
+      if (value) console.log(`  ${key}: ${value}`);
+    });
+    
+    console.groupEnd();
+  });
+  
+  // Gallery upload for case studies - simple approach
+  document.addEventListener('click', function(e) {
+    if (e.target.classList.contains('gallery-upload-btn')) {
+      console.log('Gallery upload button clicked!');
+      
+      const caseStudyForm = e.target.closest('.case-study-form');
+      const galleryPreview = caseStudyForm.querySelector('.gallery-preview');
+      
+      console.log('Case study form found:', caseStudyForm);
+      console.log('Gallery preview found:', galleryPreview);
+      
+      // Create gallery modal for this specific case study
+      console.log('Creating gallery modal...');
+      const modal = createGalleryModal();
+      if (!modal) {
+        console.error('Failed to create gallery modal!');
+        return;
+      }
+      modal.style.zIndex = '9999';
+      document.body.appendChild(modal);
+      
+      // Show the modal
+      modal.classList.remove('hidden');
+      console.log('Modal should be visible now');
+      
+      // Set up tab switching
+      const galleryTab = modal.querySelector('#galleryTab');
+      const uploadTab = modal.querySelector('#uploadTab');
+      const galleryTabContent = modal.querySelector('#galleryTabContent');
+      const uploadTabContent = modal.querySelector('#uploadTabContent');
+      
+      console.log('Modal elements found:');
+      console.log('galleryTab:', galleryTab);
+      console.log('uploadTab:', uploadTab);
+      console.log('galleryTabContent:', galleryTabContent);
+      console.log('uploadTabContent:', uploadTabContent);
+      
+      // Switch to gallery tab by default
+      galleryTab.classList.add('text-gray-900', 'border-gray-900', 'bg-gray-50');
+      galleryTab.classList.remove('text-gray-500', 'border-transparent');
+      uploadTab.classList.remove('text-gray-900', 'border-gray-900', 'bg-gray-50');
+      uploadTab.classList.add('text-gray-500', 'border-transparent');
+      galleryTabContent.classList.remove('hidden');
+      uploadTabContent.classList.add('hidden');
+      
+      // Add tab switching functionality
+      galleryTab.addEventListener('click', () => {
+        galleryTab.classList.add('text-gray-900', 'border-gray-900', 'bg-gray-50');
+        galleryTab.classList.remove('text-gray-500', 'border-transparent');
+        uploadTab.classList.remove('text-gray-900', 'border-gray-900', 'bg-gray-50');
+        uploadTab.classList.add('text-gray-500', 'border-transparent');
+        galleryTabContent.classList.remove('hidden');
+        uploadTabContent.classList.add('hidden');
+      });
+      
+      uploadTab.addEventListener('click', () => {
+        uploadTab.classList.add('text-gray-900', 'border-gray-900', 'bg-gray-50');
+        uploadTab.classList.remove('text-gray-500', 'border-transparent');
+        galleryTab.classList.remove('text-gray-900', 'border-gray-900', 'bg-gray-50');
+        galleryTab.classList.add('text-gray-500', 'border-transparent');
+        uploadTabContent.classList.remove('hidden');
+        galleryTabContent.classList.add('hidden');
+      });
+      
+      // Load gallery images
+      loadGalleryImages();
+      
+      // Add close button functionality
+      const closeBtn = modal.querySelector('#closeGallery');
+      if (closeBtn) {
+        closeBtn.addEventListener('click', function() {
+          modal.remove();
+        });
+      }
+      
+      // Handle image selection for this case study - support multiple selection
+      const selectedImages = new Set();
+      
+      // Add click handler to the gallery grid specifically
+      const galleryGrid = modal.querySelector('#galleryGrid');
+      if (galleryGrid) {
+        galleryGrid.addEventListener('click', function(e) {
+          // Check if clicked on a gallery image (either the img or its container)
+          const galleryItem = e.target.closest('.relative.group.cursor-pointer');
+          if (galleryItem) {
+            const img = galleryItem.querySelector('img');
+            if (img) {
+              const fullUrl = img.src; // Use the full URL from the image src
+              const thumbUrl = img.src; // Same for thumb since we're using the same URL
+              const imageId = fullUrl; // Use URL as unique identifier
+              
+              console.log('Image clicked:', imageId);
+              
+              // Toggle selection
+              if (selectedImages.has(imageId)) {
+                selectedImages.delete(imageId);
+                galleryItem.classList.remove('ring-2', 'ring-blue-500', 'bg-blue-50');
+                console.log('Image deselected:', imageId);
+              } else {
+                selectedImages.add(imageId);
+                galleryItem.classList.add('ring-2', 'ring-blue-500', 'bg-blue-50');
+                console.log('Image selected:', imageId);
+              }
+              
+              // Update button
+              updateButton();
+            }
+          }
+        });
+      }
+      
+      // Update button text when selection changes
+      const updateButton = () => {
+        const btn = modal.querySelector('#addSelectedImages');
+        if (btn) {
+          const count = selectedImages.size;
+          btn.textContent = `Add Selected Images (${count})`;
+          btn.disabled = count === 0;
+        }
+      };
+      
+      // Add "Add Selected" button to modal
+      const modalContent = modal.querySelector('.p-6');
+      const addSelectedBtn = document.createElement('div');
+      addSelectedBtn.className = 'mt-4 text-center';
+      addSelectedBtn.innerHTML = `
+        <button type="button" id="addSelectedImages" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed">
+          Add Selected Images (0)
+        </button>
+      `;
+      modalContent.appendChild(addSelectedBtn);
+      
+      // Update button initially
+      updateButton();
+      
+      // Handle "Add Selected" button click
+      modal.querySelector('#addSelectedImages').addEventListener('click', function() {
+        if (selectedImages.size === 0) return;
+        
+        // Get current gallery URLs - find the hidden input for gallery_urls
+        const hiddenInput = caseStudyForm.querySelector('input[name*="gallery_urls"]');
+        let currentUrls = [];
+        if (hiddenInput && hiddenInput.value) {
+          try {
+            currentUrls = JSON.parse(hiddenInput.value);
+          } catch (e) {
+            currentUrls = [];
+          }
+        }
+        
+        // Add selected images
+        selectedImages.forEach(imageUrl => {
+          const newImage = {full: imageUrl, thumb: imageUrl};
+          currentUrls.push(newImage);
+          
+          // Add to gallery preview
+          const previewItem = document.createElement('div');
+          previewItem.className = 'relative group';
+          previewItem.innerHTML = `
+            <img src="${imageUrl}" alt="Gallery image" class="w-full h-16 object-cover rounded border border-gray-200" data-full-url="${imageUrl}" data-thumb-url="${imageUrl}">
+            <button type="button" class="remove-gallery-item absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full hover:bg-red-600">×</button>
+          `;
+          
+          // Remove "No gallery images" message if it exists
+          const noImagesMsg = galleryPreview.querySelector('.text-gray-500');
+          if (noImagesMsg) noImagesMsg.remove();
+          
+          galleryPreview.appendChild(previewItem);
+        });
+        
+        // Update hidden input
+        if (hiddenInput) {
+          hiddenInput.value = JSON.stringify(currentUrls);
+        }
+        
+        modal.remove();
+      });
+      
+      // Handle gallery item removal
+      galleryPreview.addEventListener('click', function(e) {
+        if (e.target.classList.contains('remove-gallery-item')) {
+          const itemToRemove = e.target.closest('.group');
+          itemToRemove.remove();
+          
+          // Update hidden input
+          const hiddenInput = caseStudyForm.querySelector('input[name*="gallery_urls"]');
+          if (hiddenInput) {
+            const currentUrls = JSON.parse(hiddenInput.value || '[]');
+            const imgSrc = itemToRemove.querySelector('img').src;
+            const updatedUrls = currentUrls.filter(url => url.full !== imgSrc);
+            hiddenInput.value = JSON.stringify(updatedUrls);
+          }
+          
+          // Show "No gallery images" message if no images left
+          if (galleryPreview.children.length === 0) {
+            galleryPreview.innerHTML = '<div class="text-xs text-gray-500 text-center py-4 col-span-3">No gallery images</div>';
+          }
+        }
+      });
+    }
+  });
+});
+
+// Load existing gallery images when page loads
+document.addEventListener('DOMContentLoaded', function() {
+  // Find all case study forms and load their gallery images
+  const caseStudyForms = document.querySelectorAll('.case-study-form');
+  caseStudyForms.forEach(form => {
+    const galleryPreview = form.querySelector('.gallery-preview');
+    const hiddenInput = form.querySelector('input[name*="gallery_urls"]');
+    
+    if (hiddenInput && hiddenInput.value) {
+      try {
+        const galleryUrls = JSON.parse(hiddenInput.value);
+        if (galleryUrls.length > 0) {
+          // Clear "No gallery images" message
+          const noImagesMsg = galleryPreview.querySelector('.text-gray-500');
+          if (noImagesMsg) noImagesMsg.remove();
+          
+          // Add existing images to preview
+          galleryUrls.forEach(imageData => {
+            const previewItem = document.createElement('div');
+            previewItem.className = 'relative group';
+            previewItem.innerHTML = `
+              <img src="${imageData.thumb || imageData.full}" alt="Gallery image" class="w-full h-16 object-cover rounded border border-gray-200" data-full-url="${imageData.full}" data-thumb-url="${imageData.thumb || imageData.full}">
+              <button type="button" class="remove-gallery-item absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full hover:bg-red-600">×</button>
+            `;
+            galleryPreview.appendChild(previewItem);
+          });
+        }
+      } catch (e) {
+        console.error('Error parsing gallery URLs:', e);
+      }
+    }
+  });
 });
 </script>
 {% endblock %}

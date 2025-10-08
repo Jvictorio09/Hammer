@@ -11,362 +11,312 @@ Notes:
 - Idempotent: existing rows are updated (unless --wipe).
 - Mirrors the live page content you shared (hero, metrics, capabilities, steps, BA pairs, projects, FAQs).
 """
-
+# seed_landscape.py
 import os
 import sys
 import argparse
-from pathlib import Path
+from datetime import date
 
-# -----------------------------------------------------------------------------
-# Django bootstrap
-# -----------------------------------------------------------------------------
-BASE_DIR = Path(__file__).resolve().parent
-if str(BASE_DIR) not in sys.path:
-    sys.path.insert(0, str(BASE_DIR))
+# -----------------------------
+# Django setup (optional --settings)
+# -----------------------------
+def setup_django(settings_module: str | None):
+    if settings_module:
+        os.environ.setdefault("DJANGO_SETTINGS_MODULE", settings_module)
+    try:
+        import django  # noqa
+        django.setup()
+    except Exception as e:
+        print(f"[!] Django setup failed: {e}")
+        raise
 
-parser = argparse.ArgumentParser(description="Seed Landscape Service + related content")
-parser.add_argument("--settings", help="Django settings module (e.g. myProject.settings)")
-parser.add_argument("--title", default="Landscape Design & Build")
-parser.add_argument("--slug", default="landscape-design-build")
-parser.add_argument("--wipe", action="store_true", help="Delete existing related rows before seeding")
-args = parser.parse_args()
+# -----------------------------
+# Main seeding routine
+# -----------------------------
+def main():
+    parser = argparse.ArgumentParser(description="Seed Case Studies / Projects for a Service")
+    parser.add_argument("--settings", help="Django settings module (e.g., myProject.settings)")
+    parser.add_argument("--service-id", type=int, help="Service ID to attach case studies to")
+    parser.add_argument("--service-slug", help="Service slug to attach case studies to")
+    parser.add_argument("--wipe", action="store_true", help="Wipe existing related rows first")
+    args = parser.parse_args()
 
-if args.settings:
-    os.environ.setdefault("DJANGO_SETTINGS_MODULE", args.settings)
-elif not os.environ.get("DJANGO_SETTINGS_MODULE"):
-    os.environ.setdefault("DJANGO_SETTINGS_MODULE", "myProject.settings")
+    setup_django(args.settings)
 
-import django  # noqa: E402
-django.setup()
-
-from django.db import transaction  # noqa: E402
-from django.utils import timezone  # noqa: E402
-
-from myApp.models import (  # noqa: E402
-    Service,
-    ServiceFeature,
-    ServiceEditorialImage,
-    ServiceProjectImage,
-    ServiceCapability,
-    ServiceProcessStep,
-    ServiceMetric,
-    ServiceFAQ,
-    ServicePartnerBrand,
-    ServiceTestimonial,
-    Insight,
-)
-
-# -----------------------------------------------------------------------------
-# Content (taken from your latest page)
-# -----------------------------------------------------------------------------
-
-HERO_MEDIA = "https://images.unsplash.com/photo-1501004318641-b39e6451bec6?q=80&w=2000&auto=format&fit=crop"
-
-SERVICE_DEFAULTS = dict(
-    eyebrow="Landscape",
-    hero_headline="Quiet-Luxury Landscape Design & Build in Dubai",
-    hero_subcopy=(
-        "Native planting. Custom pools & pergolas. Architectural lighting. "
-        "One integrated team—from concept to aftercare."
-    ),
-    hero_media_url=HERO_MEDIA,
-    pinned_heading="Our Capability",
-    pinned_title="End-to-end landscape design & build for modern living",
-    pinned_body_1=(
-        "Hammer Landscape delivers premium outdoor architecture in Dubai—custom pools, pergolas, lighting, "
-        "water features and native planting—driven by innovative design and meticulous execution."
-    ),
-    pinned_body_2="One integrated contract from concept to aftercare. Weekly cadence. No surprises.",
-    insights_heading="Insights",
-    insights_subcopy="Ideas, guides, and updates from our landscape team.",
-    stat_projects="650+",
-    stat_years="20+",
-    stat_specialists="1000+",
-    seo_meta_title="Landscape Design & Build in Dubai | Hammer Group",
-    seo_meta_description="Premium landscape design & build in Dubai. Native planting, custom pools, pergolas and architectural lighting—with fixed milestones and one accountable team.",
-    canonical_path="/services/landscape-design-build/",
-)
-
-CAPABILITIES = [
-    {
-        "title": "Design Studio",
-        "blurb": "Concept, 2D/3D, planting palettes, lighting scenes.",
-        "icon_class": "fa-solid fa-compass-drafting",
-    },
-    {
-        "title": "Technical & Drawings",
-        "blurb": "Authority-ready packages with GA, details, BOQ, and full coordination.",
-        "icon_class": "fa-solid fa-file-shield",
-    },
-    {
-        "title": "Build & Delivery",
-        "blurb": "One crew. Clear milestones. Clean sites.",
-        "icon_class": "fa-solid fa-helmet-safety",
-    },
-    {
-        "title": "Pools",
-        "blurb": "Custom shells, resurfacing, filtration & automation, LED scenes & safety.",
-        "icon_class": "fa-solid fa-water-ladder",
-    },
-    {
-        "title": "Water Features",
-        "blurb": "Rills, scuppers, sheet falls—engineered to whisper with low upkeep.",
-        "icon_class": "fa-solid fa-water",
-    },
-    {
-        "title": "Architectural Lighting",
-        "blurb": "Layers that celebrate form—paths, trees, and water—glare controlled.",
-        "icon_class": "fa-solid fa-lightbulb",
-    },
-]
-
-# 4-step delivery rail (matches the page)
-PROCESS = [
-    {"step_no": 1, "title": "Site study & concept",       "description": "Survey, sun/wind analysis, native palette, 3D mood."},
-    {"step_no": 2, "title": "Permits & technical",        "description": "MEP, structural, authority approvals, tender-ready drawings."},
-    {"step_no": 3, "title": "Build & logistics",          "description": "One crew. Stone, decking, water features, lighting, planting."},
-    {"step_no": 4, "title": "Handover & aftercare",       "description": "Snag-free delivery, irrigation tuning, seasonal lighting scenes."},
-]
-
-# Metrics – three cards shown on page
-METRICS = [
-    {"value": "650+",   "label": "Projects Delivered"},
-    {"value": "20+ yrs","label": "Operating in Dubai"},
-    {"value": "1000+",  "label": "In-house Specialists"},
-]
-
-# Editorials → used as Before/After pairs (2 pairs here; add more if you like)
-EDITORIALS = [
-    # Lighting BA
-    {"image_url": "https://images.unsplash.com/photo-1481627834876-b7833e8f5570?q=80&w=1600&auto=format&fit=crop", "caption": "Lighting: Before"},
-    {"image_url": "https://images.unsplash.com/photo-1519710164239-da123dc03ef4?q=80&w=1600&auto=format&fit=crop", "caption": "Lighting: After"},
-    # Pool BA
-    {"image_url": "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?q=80&w=1600&auto=format&fit=crop", "caption": "Pool: Before"},
-    {"image_url": "https://images.unsplash.com/photo-1505852679233-d9fd70aff56d?q=80&w=1600&auto=format&fit=crop", "caption": "Pool: After"},
-]
-
-# Signature projects (5 cards, desktop grid + mobile reel)
-PROJECTS = [
-    {"thumb_url": "https://images.unsplash.com/photo-1499793983690-e29da59ef1c2?q=80&w=800&auto=format&fit=crop",
-     "full_url":  "https://images.unsplash.com/photo-1499793983690-e29da59ef1c2?q=80&w=1600&auto=format&fit=crop",
-     "caption":   "Evening ambience"},
-    {"thumb_url": "https://images.unsplash.com/photo-1501183638710-841dd1904471?q=80&w=800&auto=format&fit=crop",
-     "full_url":  "https://images.unsplash.com/photo-1501183638710-841dd1904471?q=80&w=1600&auto=format&fit=crop",
-     "caption":   "Pool & pergola"},
-    {"thumb_url": "https://images.unsplash.com/photo-1519389950473-47ba0277781c?auto=format&fit=crop&w=800&q=80",
-     "full_url":  "https://images.unsplash.com/photo-1519389950473-47ba0277781c?auto=format&fit=crop&w=1600&q=80",
-     "caption":   "Native & low-water"},
-    {"thumb_url": "https://images.unsplash.com/photo-1499951360447-b19be8fe80f5?q=80&w=800&auto=format&fit=crop",
-     "full_url":  "https://images.unsplash.com/photo-1499951360447-b19be8fe80f5?q=80&w=1600&auto=format&fit=crop",
-     "caption":   "Outdoor rooms"},
-    {"thumb_url": "https://images.unsplash.com/photo-1542744173-05336fcc7ad4?auto=format&fit=crop&w=800&q=80",
-     "full_url":  "https://images.unsplash.com/photo-1542744173-05336fcc7ad4?auto=format&fit=crop&w=1600&q=80",
-     "caption":   "Architectural lighting"},
-]
-
-BRANDS = [
-    {"name": "Cosentino",         "logo_url": "https://dummyimage.com/240x80/eeeeee/111111&text=Cosentino", "site_url": "https://www.cosentino.com/"},
-    {"name": "Hunter Irrigation", "logo_url": "https://dummyimage.com/240x80/eeeeee/111111&text=Hunter",    "site_url": "https://www.hunterindustries.com/"},
-    {"name": "Lutron",            "logo_url": "https://dummyimage.com/240x80/eeeeee/111111&text=Lutron",    "site_url": "https://www.lutron.com/"},
-]
-
-TESTIMONIALS = [
-    {"author": "R. Al Mansoori", "role_company": "Private Villa Owner",
-     "quote": "Hammer turned our yard into a resort. Clear schedule, zero surprises.", "headshot_url": "https://i.pravatar.cc/100?img=12"},
-    {"author": "S. Haddad", "role_company": "Hospitality Director",
-     "quote": "Their coordination between design and build saved us weeks.", "headshot_url": "https://i.pravatar.cc/100?img=22"},
-    {"author": "M. Abed", "role_company": "Developer, Meydan",
-     "quote": "Excellent quality control and communication—would award again.", "headshot_url": "https://i.pravatar.cc/100?img=31"},
-]
-
-FAQS = [
-    {"question": "How soon can you start?",
-     "answer": "Typically 2–4 weeks from concept sign-off. Authority approvals can extend timelines; we’ll surface that early and keep a transparent weekly cadence."},
-    {"question": "Do you work with existing pools?",
-     "answer": "Yes. We refresh surfaces and coping, add discreet architectural lighting, upgrade filtration/automation, and integrate planting without disrupting structure."},
-    {"question": "What maintenance do you offer?",
-     "answer": "Our aftercare team handles plant health, irrigation balancing, and seasonal lighting presets. We can also schedule deep cleans and re-mulching annually."},
-    {"question": "Do you handle permits and authority approvals?",
-     "answer": "Yes. Our engineering team prepares drawings and manages submissions end-to-end."},
-]
-
-FEATURES_FOR_FALLBACK = [
-    {"icon_class": "fa-solid fa-pen-ruler",      "label": "2D / 3D Design"},
-    {"icon_class": "fa-solid fa-draw-polygon",   "label": "Full Drawings"},
-    {"icon_class": "fa-solid fa-mountain-sun",   "label": "Hardscape"},
-    {"icon_class": "fa-solid fa-seedling",       "label": "Softscape"},
-    {"icon_class": "fa-solid fa-water-ladder",   "label": "Pools"},
-    {"icon_class": "fa-solid fa-water",          "label": "Water Features"},
-    {"icon_class": "fa-solid fa-lightbulb",      "label": "Architectural Lighting"},
-    {"icon_class": "fa-solid fa-people-group",   "label": "In-house Build Team"},
-]
-
-INSIGHTS = [
-    {
-        "title": "Planning a drought-smart garden in Dubai",
-        "cover_image_url": "https://picsum.photos/1200/700?random=91001",
-        "tag": "Landscape",
-        "excerpt": "Water-wise planting and efficient irrigation—without losing the lush look.",
-        "read_minutes": 5,
-        "body": "Selecting regional natives and tuning irrigation zones can cut water use 35–50% while improving plant health...",
-    },
-    {
-        "title": "Pool lighting: layers that enhance, never glare",
-        "cover_image_url": "https://picsum.photos/1200/700?random=91002",
-        "tag": "Lighting",
-        "excerpt": "How to design pool and garden lighting scenes that feel cinematic and safe.",
-        "read_minutes": 4,
-        "body": "Think in layers: soft path markers, tree uplights, and low-glare underwater fixtures on separate scenes...",
-    },
-]
-
-# -----------------------------------------------------------------------------
-# Helpers
-# -----------------------------------------------------------------------------
-def upsert(instance, data: dict, fields: list[str]) -> bool:
-    """Update instance fields from data. Return True if any field changed."""
-    changed = False
-    for f in fields:
-        new = data.get(f)
-        if new is not None and getattr(instance, f) != new:
-            setattr(instance, f, new)
-            changed = True
-    if changed:
-        instance.save()
-    return changed
-
-# -----------------------------------------------------------------------------
-# Seeder
-# -----------------------------------------------------------------------------
-@transaction.atomic
-def seed(title: str, slug: str, wipe: bool = False):
-    svc, created = Service.objects.get_or_create(
-        slug=slug,
-        defaults={"title": title, **SERVICE_DEFAULTS},
+    # Imports after Django setup
+    from django.db import transaction
+    from myApp.models import (
+        Service,
+        ServiceFeature,
+        ServiceEditorialImage,
+        ServiceProjectImage,  # keep for backwards compatibility
+        ServiceCapability,
+        ServiceProcessStep,
+        ServiceMetric,
+        ServiceFAQ,
+        ServicePartnerBrand,
+        ServiceTestimonial,
+        Insight,
+        CaseStudy,
     )
-    if not created:
-        changed = upsert(
-            svc,
-            {"title": title, **SERVICE_DEFAULTS},
-            [
-                "title",
-                "eyebrow",
-                "hero_headline",
-                "hero_subcopy",
-                "hero_media_url",
-                "pinned_heading",
-                "pinned_title",
-                "pinned_body_1",
-                "pinned_body_2",
-                "insights_heading",
-                "insights_subcopy",
-                "stat_projects",
-                "stat_years",
-                "stat_specialists",
-                "seo_meta_title",
-                "seo_meta_description",
-                "canonical_path",
-            ],
-        )
-        print(f"[i] Service exists: {svc.title} ({'updated' if changed else 'no change'})")
+
+    # Optional gallery model
+    try:
+        from myApp.models import CaseStudyImage  # FK to CaseStudy, related_name="images"
+        HAS_CS_IMAGE = True
+    except Exception:
+        HAS_CS_IMAGE = False
+
+    # -----------------------------
+    # Helpers
+    # -----------------------------
+    UNSPLASH_16x9 = [
+        "https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=80&w=1600&auto=format&fit=crop",
+        "https://images.unsplash.com/photo-1501785888041-af3ef285b470?q=80&w=1600&auto=format&fit=crop",
+        "https://images.unsplash.com/photo-1494526585095-c41746248156?q=80&w=1600&auto=format&fit=crop",
+        "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?q=80&w=1600&auto=format&fit=crop",
+        "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?q=80&w=1600&auto=format&fit=crop",
+    ]
+
+    def five_dummy_images(seed_hint: str):
+        out = []
+        for i, url in enumerate(UNSPLASH_16x9, start=1):
+            out.append({
+                "thumb_url": url.replace("w=1600", "w=800"),
+                "full_url": url,
+                "caption": f"{seed_hint} — View {i}",
+            })
+        return out
+
+    def upsert(instance, data: dict, fields: list[str]):
+        changed = False
+        for f in fields:
+            if hasattr(instance, f):
+                old = getattr(instance, f, None)
+                new = data.get(f, old)
+                if old != new:
+                    setattr(instance, f, new)
+                    changed = True
+        if changed:
+            instance.save()
+        return changed
+
+    # -----------------------------
+    # CASE STUDIES payload
+    # -----------------------------
+    CASE_STUDIES = [
+        {
+            "title": "Tilal Al Ghaf",
+            "hero_image_url": "https://images.unsplash.com/photo-1499793983690-e29da59ef1c2?q=80&w=2000&auto=format&fit=crop",
+            "thumb_url": "https://images.unsplash.com/photo-1499793983690-e29da59ef1c2?q=80&w=800&auto=format&fit=crop",
+            "full_url": "https://images.unsplash.com/photo-1499793983690-e29da59ef1c2?q=80&w=1600&auto=format&fit=crop",
+            "summary": "Private courtyard pool framed by elegant cactus and olive trees with warm evening lighting.",
+            "description": """A modern oasis in the heart of the city, featuring a private courtyard pool, sculptural cactus arrangements, and mature olive trees. Subtle lighting highlights natural textures for relaxed evenings and intimate gatherings.""",
+            "completion_date": date(2025, 6, 27),
+            "scope": "Design + Build + Pool",
+            "size_label": "—",
+            "timeline_label": "—",
+            "status_label": "Completed",
+            "tags_csv": "Landscape, Pool, Lighting, Courtyard",
+            "is_featured": True,
+            "sort_order": 1,
+            "cta_url": "",
+            "location": "Dubai, UAE",
+            "project_type": "landscape",
+            "gallery": five_dummy_images("Tilal Al Ghaf"),
+        },
+        {
+            "title": "Murooj Al Furjan",
+            "hero_image_url": "https://images.unsplash.com/photo-1501183638710-841dd1904471?q=80&w=2000&auto=format&fit=crop",
+            "thumb_url": "https://images.unsplash.com/photo-1501183638710-841dd1904471?q=80&w=800&auto=format&fit=crop",
+            "full_url": "https://images.unsplash.com/photo-1501183638710-841dd1904471?q=80&w=1600&auto=format&fit=crop",
+            "summary": "Luxury landscape with modern pool, pergola, and lush greenery for stylish outdoor living.",
+            "description": """A contemporary outdoor program with a linear pool, shade pergola, and layered greenery. Optimized circulation for entertaining and low-maintenance planting tuned to Dubai’s climate.""",
+            "completion_date": date(2025, 9, 3),
+            "scope": "Design + Build",
+            "size_label": "—",
+            "timeline_label": "—",
+            "status_label": "Completed",
+            "tags_csv": "Landscape, Pergola, Pool",
+            "is_featured": False,
+            "sort_order": 2,
+            "cta_url": "",
+            "location": "Dubai, UAE",
+            "project_type": "landscape",
+            "gallery": five_dummy_images("Murooj Al Furjan"),
+        },
+        {
+            "title": "Dubai Hills — Parkways (Minimalist Pool)",
+            "hero_image_url": "https://images.unsplash.com/photo-1519389950473-47ba0277781c?auto=format&fit=crop&w=2000&q=80",
+            "thumb_url": "https://images.unsplash.com/photo-1519389950473-47ba0277781c?auto=format&fit=crop&w=800&q=80",
+            "full_url": "https://images.unsplash.com/photo-1519389950473-47ba0277781c?auto=format&fit=crop&w=1600&q=80",
+            "summary": "Sleek pool, refined greenery, and architectural lines for calm, contemporary outdoor living.",
+            "description": """A minimalist outdoor space with crisp water geometry, architectural planting, and considered hardscape. Visual quiet supports relaxation and everyday usability.""",
+            "completion_date": date(2025, 7, 21),
+            "scope": "Design + Build",
+            "size_label": "—",
+            "timeline_label": "—",
+            "status_label": "Completed",
+            "tags_csv": "Landscape, Minimalist, Pool",
+            "is_featured": False,
+            "sort_order": 3,
+            "cta_url": "",
+            "location": "Dubai, UAE",
+            "project_type": "landscape",
+            "gallery": five_dummy_images("Dubai Hills — Parkways"),
+        },
+        {
+            "title": "Dubai Hills — Modern Villa Pool",
+            "hero_image_url": "https://images.unsplash.com/photo-1523419409543-8a26d050f3c9?q=80&w=2000&auto=format&fit=crop",
+            "thumb_url": "https://images.unsplash.com/photo-1523419409543-8a26d050f3c9?q=80&w=800&auto=format&fit=crop",
+            "full_url": "https://images.unsplash.com/photo-1523419409543-8a26d050f3c9?q=80&w=1600&auto=format&fit=crop",
+            "summary": "Clean-lined pool with glass fencing and elegant, functional landscaping.",
+            "description": """Balances safety and aesthetics with glass fencing, low-glare lighting, and drought-aware planting. Zones circulation for families and entertaining.""",
+            "completion_date": date(2025, 9, 4),
+            "scope": "Design + Build + Pool",
+            "size_label": "—",
+            "timeline_label": "—",
+            "status_label": "Completed",
+            "tags_csv": "Landscape, Pool, Family-friendly",
+            "is_featured": False,
+            "sort_order": 4,
+            "cta_url": "",
+            "location": "Dubai, UAE",
+            "project_type": "landscape",
+            "gallery": five_dummy_images("Dubai Hills — Modern Villa Pool"),
+        },
+        {
+            "title": "Emirate Hills",
+            "hero_image_url": "https://images.unsplash.com/photo-1507089947368-19c1da9775ae?q=80&w=2000&auto=format&fit=crop",
+            "thumb_url": "https://images.unsplash.com/photo-1507089947368-19c1da9775ae?q=80&w=800&auto=format&fit=crop",
+            "full_url": "https://images.unsplash.com/photo-1507089947368-19c1da9775ae?q=80&w=1600&auto=format&fit=crop",
+            "summary": "Resort-style landscape with palm-lined paths, reflective water, and soft evening lighting.",
+            "description": """An elegant fusion of architecture and landscape. Manicured lawns, reflective pools, and palm allées create a resort ambiance with screened privacy.""",
+            "completion_date": date(2025, 6, 29),
+            "scope": "Design + Build",
+            "size_label": "—",
+            "timeline_label": "—",
+            "status_label": "Completed",
+            "tags_csv": "Landscape, Resort, Water Feature",
+            "is_featured": True,
+            "sort_order": 5,
+            "cta_url": "",
+            "location": "Dubai, UAE",
+            "project_type": "landscape",
+            "gallery": five_dummy_images("Emirate Hills"),
+        },
+        {
+            "title": "Jumeirah Bay Rooftop",
+            "hero_image_url": "https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?q=80&w=2000&auto=format&fit=crop",
+            "thumb_url": "https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?q=80&w=800&auto=format&fit=crop",
+            "full_url": "https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?q=80&w=1600&auto=format&fit=crop",
+            "summary": "Future-forward rooftop with panoramic views, comfort, and refined materials.",
+            "description": """A high-performance rooftop terrace combining wind-conscious planting, integrated seating, and lighting tuned for skyline views.""",
+            "completion_date": date(2025, 9, 4),
+            "scope": "Design + Build",
+            "size_label": "—",
+            "timeline_label": "—",
+            "status_label": "Completed",
+            "tags_csv": "Landscape, Rooftop, Lighting",
+            "is_featured": False,
+            "sort_order": 6,
+            "cta_url": "",
+            "location": "Dubai, UAE",
+            "project_type": "landscape",
+            "gallery": five_dummy_images("Jumeirah Bay Rooftop"),
+        },
+    ]
+
+    # -----------------------------
+    # Locate target Service
+    # -----------------------------
+    svc = None
+    if args.service_id:
+        svc = Service.objects.filter(id=args.service_id).first()
+        if not svc:
+            print(f"[!] No Service found with id={args.service_id}")
+            sys.exit(1)
+    elif args.service_slug:
+        svc = Service.objects.filter(slug=args.service_slug).first()
+        if not svc:
+            print(f"[!] No Service found with slug='{args.service_slug}'")
+            sys.exit(1)
     else:
-        print(f"[+] Created service: {svc.title}")
+        svc = Service.objects.order_by("id").first()
+        if not svc:
+            print("[!] No Service records exist. Create one first.")
+            sys.exit(1)
 
-    if wipe:
-        print("[!] Wiping existing related rows…")
-        svc.capabilities.all().delete()
-        svc.process_steps.all().delete()
-        svc.metrics.all().delete()
-        svc.project_images.all().delete()
-        svc.editorial_images.all().delete()
-        svc.partner_brands.all().delete()
-        svc.testimonials.all().delete()
-        svc.faqs.all().delete()
-        svc.features.all().delete()
-        svc.insights.all().delete()
+    print(f"[i] Seeding Case Studies for Service: {getattr(svc, 'title', svc.id)}")
 
-    # Capabilities
-    for i, c in enumerate(CAPABILITIES, start=1):
-        obj, _ = ServiceCapability.objects.get_or_create(service=svc, title=c["title"])
-        changed = upsert(obj, {**c, "sort_order": i}, ["blurb", "icon_class", "sort_order"])
-        print(f" {'[~] Updated' if changed else '[=] Kept  '} Capability • {obj.title}")
+    # -----------------------------
+    # Do the work
+    # -----------------------------
+    with transaction.atomic():
+        if args.wipe:
+            print("[!] Wiping existing related rows…")
+            svc.capabilities.all().delete()
+            svc.process_steps.all().delete()
+            svc.metrics.all().delete()
+            svc.case_studies.all().delete()   # switched from project_images
+            svc.editorial_images.all().delete()
+            svc.partner_brands.all().delete()
+            svc.testimonials.all().delete()
+            svc.faqs.all().delete()
+            svc.features.all().delete()
+            svc.insights.all().delete()
 
-    # Process steps
-    for i, s in enumerate(PROCESS, start=1):
-        obj, _ = ServiceProcessStep.objects.get_or_create(service=svc, step_no=s["step_no"], title=s["title"])
-        changed = upsert(obj, {**s, "sort_order": i}, ["description", "sort_order"])
-        print(f" {'[~] Updated' if changed else '[=] Kept  '} Step {obj.step_no:02d} • {obj.title}")
+        # Seed Case Studies
+        for i, cs in enumerate(CASE_STUDIES, start=1):
+            obj, _ = CaseStudy.objects.get_or_create(service=svc, title=cs["title"])
+            changed = upsert(
+                obj,
+                {
+                    "hero_image_url": cs["hero_image_url"],
+                    "thumb_url": cs["thumb_url"],
+                    "full_url": cs["full_url"],
+                    "summary": cs["summary"],
+                    "description": cs["description"],
+                    "completion_date": cs["completion_date"],
+                    "scope": cs["scope"],
+                    "size_label": cs["size_label"],
+                    "timeline_label": cs["timeline_label"],
+                    "status_label": cs["status_label"],
+                    "tags_csv": cs["tags_csv"],
+                    "is_featured": cs["is_featured"],
+                    "sort_order": cs["sort_order"],
+                    "cta_url": cs["cta_url"],
+                    # Optional fields if present on your model:
+                    "location": cs.get("location", ""),
+                    "project_type": cs.get("project_type", ""),
+                },
+                [
+                    "hero_image_url","thumb_url","full_url","summary","description",
+                    "completion_date","scope","size_label","timeline_label","status_label",
+                    "tags_csv","is_featured","sort_order","cta_url",
+                    "location","project_type",
+                ],
+            )
+            print(f" {'[~] Updated' if changed else '[=] Kept  '} Case Study • {obj.title}")
 
-    # Metrics
-    for i, m in enumerate(METRICS, start=1):
-        obj, _ = ServiceMetric.objects.get_or_create(service=svc, label=m["label"])
-        changed = upsert(obj, {"value": m["value"], "sort_order": i}, ["value", "sort_order"])
-        print(f" {'[~] Updated' if changed else '[=] Kept  '} Metric • {obj.value} {obj.label}")
+            # Optional gallery
+            if HAS_CS_IMAGE and cs.get("gallery"):
+                # Clear old images for this case study
+                if hasattr(obj, "images"):
+                    obj.images.all().delete()
+                for g_i, img in enumerate(cs["gallery"], start=1):
+                    CaseStudyImage.objects.create(
+                        case_study=obj,
+                        thumb_url=img["thumb_url"],
+                        full_url=img["full_url"],
+                        caption=img["caption"],
+                        sort_order=g_i,
+                    )
+                print(f"     ↳ Seeded {len(cs['gallery'])} gallery images")
+            elif not HAS_CS_IMAGE and cs.get("gallery"):
+                print("     (Gallery provided but no CaseStudyImage model detected—skipping safely.)")
 
-    # Projects
-    for i, p in enumerate(PROJECTS, start=1):
-        obj, _ = ServiceProjectImage.objects.get_or_create(service=svc, full_url=p["full_url"])
-        changed = upsert(obj, {**p, "sort_order": i}, ["thumb_url", "caption", "sort_order"])
-        print(f" {'[~] Updated' if changed else '[=] Kept  '} Project • {obj.caption or obj.full_url}")
+    print("[✓] Done seeding Case Studies.")
 
-    # Editorials (for BA)
-    for i, e in enumerate(EDITORIALS, start=1):
-        obj, _ = ServiceEditorialImage.objects.get_or_create(service=svc, image_url=e["image_url"])
-        changed = upsert(obj, {**e, "sort_order": i}, ["caption", "sort_order"])
-        print(f" {'[~] Updated' if changed else '[=] Kept  '} Editorial • {obj.caption or obj.image_url}")
-
-    # Brands
-    for i, b in enumerate(BRANDS, start=1):
-        obj, _ = ServicePartnerBrand.objects.get_or_create(service=svc, name=b["name"])
-        changed = upsert(obj, {**b, "sort_order": i}, ["logo_url", "site_url", "sort_order"])
-        print(f" {'[~] Updated' if changed else '[=] Kept  '} Brand • {obj.name}")
-
-    # Testimonials
-    for i, t in enumerate(TESTIMONIALS, start=1):
-        obj, _ = ServiceTestimonial.objects.get_or_create(service=svc, author=t["author"], quote=t["quote"])
-        changed = upsert(obj, {**t, "sort_order": i}, ["role_company", "headshot_url", "sort_order"])
-        who = f"{obj.author} ({obj.role_company})" if obj.role_company else obj.author
-        print(f" {'[~] Updated' if changed else '[=] Kept  '} Testimonial • {who}")
-
-    # FAQs
-    for i, q in enumerate(FAQS, start=1):
-        obj, _ = ServiceFAQ.objects.get_or_create(service=svc, question=q["question"])
-        changed = upsert(obj, {"answer": q.get("answer", ""), "sort_order": i}, ["answer", "sort_order"])
-        print(f" {'[~] Updated' if changed else '[=] Kept  '} FAQ • {obj.question[:60]}")
-
-    # Fallback features for Overview
-    for i, f in enumerate(FEATURES_FOR_FALLBACK, start=1):
-        obj, _ = ServiceFeature.objects.get_or_create(service=svc, label=f["label"])
-        changed = upsert(obj, {**f, "sort_order": i}, ["icon_class", "sort_order"])
-        print(f" {'[~] Updated' if changed else '[=] Kept  '} Feature • {obj.label}")
-
-    # Insights
-    for i, item in enumerate(INSIGHTS, start=1):
-        obj, _ = Insight.objects.get_or_create(service=svc, title=item["title"])
-        payload = {
-            "cover_image_url": item.get("cover_image_url", ""),
-            "tag": item.get("tag", ""),
-            "excerpt": item.get("excerpt", ""),
-            "body": item.get("body", ""),
-            "read_minutes": item.get("read_minutes", 4),
-            "published": True,
-            "published_at": obj.published_at or timezone.now(),
-        }
-        changed = upsert(
-            obj,
-            payload,
-            ["cover_image_url", "tag", "excerpt", "body", "read_minutes", "published", "published_at"],
-        )
-        print(f" {'[~] Updated' if changed else '[=] Kept  '} Insight • {obj.title}")
-
-    return svc
-
-# -----------------------------------------------------------------------------
-# Main
-# -----------------------------------------------------------------------------
 if __name__ == "__main__":
-    svc = seed(args.title, args.slug, wipe=args.wipe)
-    print("\n✔ Seed complete.")
-    print(f"→ Visit {svc.canonical_path or f'/services/{svc.slug}/'}")
-    print("Tip: Add editorial images in even counts so the Before/After panel renders clean pairs.")
-    print("Tip: Use transparent PNG/SVG brand logos for the cleanest row.")
+    main()

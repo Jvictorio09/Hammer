@@ -46,6 +46,7 @@ from .models import (
     ContentVersion,
     MediaAsset,
     InsightAuditLog,
+    CaseStudy,
 )
 from .forms import ServiceForm, InsightForm, ServiceCapabilityFormSet, ServiceEditorialImageFormSet, ServiceProjectImageFormSet, CaseStudyFormSet
 
@@ -272,6 +273,10 @@ def service_detail(request, slug):
             Prefetch("project_images",
                 queryset=ServiceProjectImage.objects.only(
                     "id","service_id","sort_order","thumb_url","full_url","caption"
+                ).order_by("sort_order","id")),
+            Prefetch("case_studies",
+                queryset=CaseStudy.objects.only(
+                    "id","service_id","title","slug","hero_image_url","thumb_url","full_url","summary","sort_order"
                 ).order_by("sort_order","id")),
             Prefetch("capabilities",
                 queryset=ServiceCapability.objects.only(
@@ -713,6 +718,73 @@ def team_detail(request, slug):
 
 
 # --------------------------------------------------------------------------------------
+# Case Study Detail
+# --------------------------------------------------------------------------------------
+from .models import CaseStudy
+
+def case_study_detail(request, slug):
+    """
+    Case study detail page showing project information and related details.
+    Images are now stored directly on the CaseStudy model (hero_image_url, thumb_url, full_url).
+    """
+    case_study = get_object_or_404(
+        CaseStudy.objects.select_related('service'),
+        slug=slug
+    )
+    
+    # Build gallery from gallery_urls field (new approach) or legacy_images (backwards compatibility)
+    gallery_images = []
+    
+    # First, try the new gallery_urls field
+    if case_study.gallery_urls:
+        class GalleryImage:
+            def __init__(self, thumb, full, caption=''):
+                self.thumb_url = thumb
+                self.full_url = full
+                self.caption = caption
+        
+        for img_data in case_study.gallery_urls:
+            if isinstance(img_data, dict) and 'full' in img_data and 'thumb' in img_data:
+                gallery_images.append(GalleryImage(
+                    img_data.get('thumb', ''),
+                    img_data.get('full', ''),
+                    case_study.title
+                ))
+    
+    # Fallback to legacy images if no gallery_urls
+    if not gallery_images:
+        gallery_images = list(case_study.legacy_images.all().order_by('sort_order', 'id'))
+    
+    # Final fallback: use the main case study images
+    if not gallery_images and case_study.full_url:
+        class GalleryImage:
+            def __init__(self, thumb, full, caption=''):
+                self.thumb_url = thumb
+                self.full_url = full
+                self.caption = caption
+        
+        gallery_images = [GalleryImage(
+            case_study.thumb_url or case_study.hero_image_url,
+            case_study.full_url or case_study.hero_image_url,
+            case_study.title
+        )]
+    
+    # Get related case studies from the same service
+    related_case_studies = (
+        CaseStudy.objects
+        .filter(service=case_study.service)
+        .exclude(id=case_study.id)
+        .order_by('-is_featured', 'sort_order')[:3]
+    )
+    
+    return render(request, "case_studies/detail.html", {
+        "case_study": case_study,
+        "gallery_images": gallery_images,
+        "related_case_studies": related_case_studies,
+    })
+
+
+# --------------------------------------------------------------------------------------
 # Client Dashboard (Services + Insights CRUD)
 # --------------------------------------------------------------------------------------
 
@@ -737,32 +809,34 @@ def dashboard_service_create(request):
         form = ServiceForm(request.POST)
         capability_formset = ServiceCapabilityFormSet(request.POST, prefix='capabilities')
         image_formset = ServiceEditorialImageFormSet(request.POST, prefix='images')
-        project_image_formset = ServiceProjectImageFormSet(request.POST, prefix='project_images')
         case_study_formset = CaseStudyFormSet(request.POST, prefix='case_studies')
         
-        if form.is_valid() and capability_formset.is_valid() and image_formset.is_valid() and project_image_formset.is_valid() and case_study_formset.is_valid():
+        if form.is_valid() and capability_formset.is_valid() and image_formset.is_valid() and case_study_formset.is_valid():
             service = form.save()
             capability_formset.instance = service
             capability_formset.save()
             image_formset.instance = service
             image_formset.save()
-            project_image_formset.instance = service
-            project_image_formset.save()
-            case_study_formset.instance = service
-            case_study_formset.save()
+            
+            # Save case studies
+            case_studies = case_study_formset.save(commit=False)
+            for cs in case_studies:
+                cs.service = service
+                cs.save()
+            case_study_formset.save_m2m()
+            
+            messages.success(request, "Service created successfully!")
             return redirect(service.get_absolute_url())
     else:
         form = ServiceForm()
         capability_formset = ServiceCapabilityFormSet(prefix='capabilities')
         image_formset = ServiceEditorialImageFormSet(prefix='images')
-        project_image_formset = ServiceProjectImageFormSet(prefix='project_images')
         case_study_formset = CaseStudyFormSet(prefix='case_studies')
     
     return render(request, "dashboard/service_form.html", {
         "form": form, 
         "capability_formset": capability_formset,
         "image_formset": image_formset,
-        "project_image_formset": project_image_formset,
         "case_study_formset": case_study_formset,
         "mode": "create"
     })
@@ -775,28 +849,49 @@ def dashboard_service_edit(request, pk: int):
         form = ServiceForm(request.POST, instance=service)
         capability_formset = ServiceCapabilityFormSet(request.POST, instance=service, prefix='capabilities')
         image_formset = ServiceEditorialImageFormSet(request.POST, instance=service, prefix='images')
-        project_image_formset = ServiceProjectImageFormSet(request.POST, instance=service, prefix='project_images')
         case_study_formset = CaseStudyFormSet(request.POST, instance=service, prefix='case_studies')
         
-        if form.is_valid() and capability_formset.is_valid() and image_formset.is_valid() and project_image_formset.is_valid() and case_study_formset.is_valid():
-            form.save()
+        # Validate all forms
+        form_valid = form.is_valid()
+        capability_valid = capability_formset.is_valid()
+        image_valid = image_formset.is_valid()
+        case_study_valid = case_study_formset.is_valid()
+        
+        if form_valid and capability_valid and image_valid and case_study_valid:
+            service = form.save()
             capability_formset.save()
             image_formset.save()
-            project_image_formset.save()
-            case_study_formset.save()
+            
+            # Save case studies first, then link project images to them
+            case_studies = case_study_formset.save(commit=False)
+            for cs in case_studies:
+                if not cs.pk:
+                    cs.service = service
+                cs.save()
+            case_study_formset.save_m2m()
+            
+            messages.success(request, "Service updated successfully!")
             return redirect("dashboard_services_list")
+        else:
+            # Add error messages for debugging
+            if not form_valid:
+                messages.error(request, f"Service form errors: {form.errors}")
+            if not capability_valid:
+                messages.error(request, f"Capability formset errors: {capability_formset.errors}")
+            if not image_valid:
+                messages.error(request, f"Image formset errors: {image_formset.errors}")
+            if not case_study_valid:
+                messages.error(request, f"Case study formset errors: {case_study_formset.errors}")
     else:
         form = ServiceForm(instance=service)
         capability_formset = ServiceCapabilityFormSet(instance=service, prefix='capabilities')
         image_formset = ServiceEditorialImageFormSet(instance=service, prefix='images')
-        project_image_formset = ServiceProjectImageFormSet(instance=service, prefix='project_images')
         case_study_formset = CaseStudyFormSet(instance=service, prefix='case_studies')
     
     return render(request, "dashboard/service_form.html", {
         "form": form, 
         "capability_formset": capability_formset,
         "image_formset": image_formset,
-        "project_image_formset": project_image_formset,
         "case_study_formset": case_study_formset,
         "mode": "edit", 
         "service": service

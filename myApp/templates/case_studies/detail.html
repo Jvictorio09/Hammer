@@ -1,0 +1,370 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ case_study.title }} | {{ case_study.service.title }} | Hammer Group{% endblock %}
+{% block meta_description %}{{ case_study.summary|default:"Case study showcasing our work in "|add:case_study.service.title|truncatechars:160 }}{% endblock %}
+
+<style>
+:root { --lux-gold: #c7a770; }
+</style>
+
+{% block content %}
+<main class="bg-white text-gray-900 selection:bg-gray-900 selection:text-white">
+
+  {# ================= HERO: editorial cover ================= #}
+  <header class="relative isolate overflow-hidden">
+    {% if case_study.hero_image_url %}
+      <img src="{{ case_study.hero_image_url }}" alt="{{ case_study.title }}"
+           class="absolute inset-0 h-full w-full object-cover" />
+    {% else %}
+      <div class="absolute inset-0 bg-gradient-to-br from-[#0f1220] to-[#1c2233]"></div>
+    {% endif %}
+    <div class="absolute inset-0 bg-black/40"></div>
+    <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-28 pb-24 md:pt-36 md:pb-28">
+      <nav class="mb-6 text-sm text-white/80">
+        <a href="{% url 'home' %}" class="hover:text-white">Home</a>
+        <span class="mx-2 text-white/60">/</span>
+        <a href="{{ case_study.service.get_absolute_url }}" class="hover:text-white">{{ case_study.service.title }}</a>
+      </nav>
+
+      <h1 class="font-semibold tracking-tight text-white leading-[1.03]
+                 text-4xl sm:text-5xl md:text-6xl lg:text-7xl">
+        {{ case_study.title }}
+      </h1>
+
+      {% if case_study.summary %}
+      <p class="mt-5 max-w-3xl text-white/90 text-lg md:text-xl leading-relaxed">
+        {{ case_study.summary }}
+      </p>
+      {% endif %}
+
+      <div class="mt-6 flex flex-wrap items-center gap-3">
+        {% if case_study.location %}
+          <span class="inline-flex items-center rounded-full bg-white/10 text-white border border-white/30 px-3 py-1.5 text-sm">{{ case_study.location }}</span>
+        {% endif %}
+        {% if case_study.project_type %}
+          <span class="inline-flex items-center rounded-full bg-white/10 text-white border border-white/30 px-3 py-1.5 text-sm">{{ case_study.project_type|title }}</span>
+        {% endif %}
+        {% if case_study.completion_date %}
+          <span class="inline-flex items-center rounded-full bg-white/10 text-white border border-white/30 px-3 py-1.5 text-sm">{{ case_study.completion_date|date:"F Y" }}</span>
+        {% endif %}
+      </div>
+    </div>
+  </header>
+
+  {# ================= ARTICLE LAYOUT ================= #}
+  <article class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 -mt-10 md:-mt-12">
+      {# ---- Sticky editorial sidebar ---- #}
+      <aside class="lg:col-span-4">
+        <div class="lg:sticky lg:top-24 space-y-6">
+          <section class="rounded-2xl border border-gray-200 bg-white p-6">
+            <h3 class="text-xs font-semibold tracking-wider uppercase text-gray-500">Project Facts</h3>
+            <dl class="mt-4 space-y-3 text-sm">
+              {% if case_study.scope %}
+              <div class="flex justify-between gap-4">
+                <dt class="text-gray-500">Scope</dt><dd class="font-medium text-gray-900 text-right">{{ case_study.scope }}</dd>
+              </div>
+              {% endif %}
+              {% if case_study.size_label %}
+              <div class="flex justify-between gap-4">
+                <dt class="text-gray-500">Size</dt><dd class="font-medium text-gray-900 text-right">{{ case_study.size_label }}</dd>
+              </div>
+              {% endif %}
+              {% if case_study.timeline_label %}
+              <div class="flex justify-between gap-4">
+                <dt class="text-gray-500">Timeline</dt><dd class="font-medium text-gray-900 text-right">{{ case_study.timeline_label }}</dd>
+              </div>
+              {% endif %}
+              {% if case_study.status_label %}
+              <div class="flex justify-between gap-4">
+                <dt class="text-gray-500">Status</dt><dd class="font-medium text-gray-900 text-right">{{ case_study.status_label }}</dd>
+              </div>
+              {% endif %}
+              {% if case_study.completion_date %}
+              <div class="flex justify-between gap-4">
+                <dt class="text-gray-500">Completed</dt><dd class="font-medium text-gray-900 text-right">{{ case_study.completion_date|date:"F Y" }}</dd>
+              </div>
+              {% endif %}
+            </dl>
+
+            {% if case_study.tags_list %}
+            <div class="mt-5 flex flex-wrap gap-2">
+              {% for tag in case_study.tags_list %}
+              <span class="inline-flex items-center rounded-full border border-gray-200 bg-gray-50 px-3 py-1.5 text-xs text-gray-800">
+                {{ tag }}
+              </span>
+              {% endfor %}
+            </div>
+            {% endif %}
+
+            <div class="mt-6 grid grid-cols-2 gap-3">
+              <a href="{% url 'contact' %}" class="inline-flex items-center justify-center rounded-lg bg-gray-900 text-white px-4 py-2.5 text-sm font-semibold hover:bg-black">
+                Start a project
+              </a>
+              <button id="copy-link" type="button" class="inline-flex items-center justify-center rounded-lg border border-gray-300 px-4 py-2.5 text-sm font-medium hover:bg-gray-50">
+                Copy link
+              </button>
+            </div>
+          </section>
+
+          {% if case_study.summary %}
+          <blockquote class="rounded-2xl bg-gradient-to-br from-gray-50 to-white border border-gray-200 p-6 shadow-sm">
+            <span aria-hidden="true" class="block text-[44px] leading-none opacity-25 -mt-2" style="color:var(--lux-gold)">&ldquo;</span>
+            <p class="text-gray-900 text-base leading-relaxed -mt-6">{{ case_study.summary }}</p>
+            <span aria-hidden="true" class="block text-[44px] leading-none opacity-25 text-right -mb-6" style="color:var(--lux-gold)">&rdquo;</span>
+          </blockquote>
+          {% endif %}
+        </div>
+      </aside>
+
+      {# ---- Editorial body ---- #}
+      <div class="lg:col-span-8">
+        <!-- Lead with drop cap -->
+        <div class="prose prose-lg max-w-none text-gray-800
+                    [&>p:first-of-type]:first-letter:float-left
+                    [&>p:first-of-type]:first-letter:mr-3
+                    [&>p:first-of-type]:first-letter:text-6xl
+                    [&>p:first-of-type]:first-letter:font-semibold
+                    [&>p:first-of-type]:first-letter:leading-[.8]
+                    [&>p:first-of-type]:first-letter:text-gray-900">
+          <div id="cs-lead" class="whitespace-pre-line leading-relaxed"></div>
+        </div>
+
+        <!-- Spec cards -->
+        <div class="mt-8 grid sm:grid-cols-2 gap-6">
+          <article class="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+            <h3 class="text-xs font-semibold tracking-wider uppercase text-gray-500 mb-4">Challenges</h3>
+            <ul id="cs-ch" class="space-y-2.5 text-gray-900"></ul>
+          </article>
+          <article class="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+            <h3 class="text-xs font-semibold tracking-wider uppercase text-gray-500 mb-4">What we did</h3>
+            <ul id="cs-do" class="space-y-2.5 text-gray-900"></ul>
+          </article>
+        </div>
+
+        <!-- Outro -->
+        <p id="cs-outro" class="mt-8 text-gray-800 text-lg leading-relaxed"></p>
+
+        {# Feature strip #}
+        <section class="mt-10 md:mt-12">
+          <figure class="relative rounded-3xl overflow-hidden ring-1 ring-gray-200">
+            <img src="{{ case_study.full_url|default:case_study.hero_image_url }}" alt="{{ case_study.title }}"
+                 class="w-full h-auto object-cover" />
+          </figure>
+        </section>
+      </div>
+    </div>
+
+    {# Hidden source for parser — NOTE: text/plain, not JSON #}
+    <script type="text/plain" id="cs-desc-raw">{{ case_study.description|escape }}</script>
+  </article>
+
+  {# ================= GALLERY ================= #}
+  {% if gallery_images %}
+  <section class="mt-16 md:mt-24 bg-[#0f1220] text-white relative">
+    <div class="absolute inset-0 opacity-[0.08] pointer-events-none" style="background-image: radial-gradient(600px 220px at 20% 10%, #c7a77033, transparent 60%), radial-gradient(500px 200px at 80% 90%, #c7a77033, transparent 60%);"></div>
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14 md:py-20 relative">
+      <h2 class="text-3xl md:text-4xl font-semibold text-center">Project Gallery</h2>
+      <p class="mt-2 text-center text-white/80">Highlights from design + build</p>
+
+      <div class="mt-10 lg:columns-3 lg:gap-6 [column-fill:_balance] space-y-4 lg:space-y-6">
+        {% for image in gallery_images %}
+        <figure class="break-inside-avoid relative overflow-hidden rounded-2xl bg-white/5 ring-1 ring-white/10 hover:ring-white/20 transition cursor-zoom-in"
+                onclick="openLightbox({{ forloop.counter0 }})">
+          <img src="{{ image.thumb_url }}" alt="{{ image.caption|default:'Project image' }}"
+               class="w-full h-auto object-cover transition duration-500 group-hover:scale-[1.02]" loading="lazy" />
+          {% if image.caption %}
+            <figcaption class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent p-3 text-sm">{{ image.caption }}</figcaption>
+          {% endif %}
+        </figure>
+        {% endfor %}
+      </div>
+    </div>
+  </section>
+
+  <!-- Lightbox -->
+  <div id="lightbox" class="fixed inset-0 z-50 hidden bg-black/95 flex items-center justify-center p-4" onclick="closeLightbox()">
+    <button aria-label="Close" class="absolute top-4 right-4 text-white/90 hover:text-white text-4xl font-light" onclick="closeLightbox()">&times;</button>
+    <button aria-label="Previous" class="absolute left-4 top-1/2 -translate-y-1/2 text-white/90 hover:text-white text-4xl font-light" onclick="event.stopPropagation(); prevImage()">&lsaquo;</button>
+    <button aria-label="Next" class="absolute right-4 top-1/2 -translate-y-1/2 text-white/90 hover:text-white text-4xl font-light" onclick="event.stopPropagation(); nextImage()">&rsaquo;</button>
+    <div class="max-w-6xl w-full" onclick="event.stopPropagation()">
+      <img id="lightbox-img" src="" alt="" class="w-full h-auto max-h-[85vh] object-contain rounded-xl shadow-2xl ring-1 ring-white/10" />
+      <p id="lightbox-caption" class="text-white/80 text-center mt-4 text-sm"></p>
+    </div>
+  </div>
+  {% endif %}
+
+  {# ================= RELATED ================= #}
+  {% if related_case_studies %}
+  <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14 md:py-20">
+    <div class="flex items-center justify-between mb-8 md:mb-10">
+      <h2 class="text-3xl md:text-4xl font-semibold">Related Projects</h2>
+      <a href="{{ case_study.service.get_absolute_url }}" class="text-sm font-semibold text-gray-600 hover:text-gray-900">
+        View all {{ case_study.service.title }}
+      </a>
+    </div>
+    <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+      {% for related in related_case_studies %}
+      <a href="{{ related.get_absolute_url }}" class="group block focus:outline-none focus:ring-2 focus:ring-[#c7a770]/30 rounded-2xl">
+        <article class="bg-white rounded-2xl overflow-hidden border border-gray-200/70 shadow-sm hover:shadow-[0_24px_60px_-20px_rgba(0,0,0,0.35)] transition-all">
+          <div class="aspect-[16/10] overflow-hidden bg-gray-100">
+            {% if related.hero_image_url %}
+              <img src="{{ related.hero_image_url }}" alt="{{ related.title }}"
+                   class="h-full w-full object-cover group-hover:scale-[1.02] transition-transform duration-500" loading="lazy" />
+            {% endif %}
+          </div>
+          <div class="p-6">
+            <h3 class="text-lg md:text-xl font-semibold text-gray-900 mb-1">{{ related.title }}</h3>
+            {% if related.summary %}
+              <p class="text-gray-600 text-sm line-clamp-2">{{ related.summary }}</p>
+            {% endif %}
+          </div>
+        </article>
+      </a>
+      {% endfor %}
+    </div>
+  </section>
+  {% endif %}
+
+  {# ================= CTA ================= #}
+  <section class="relative overflow-hidden">
+    <div class="absolute inset-0 bg-[#0f1220]"></div>
+    <div aria-hidden="true" class="absolute -left-24 -top-24 h-80 w-80 rounded-full bg-[#c7a770]/20 blur-3xl"></div>
+    <div aria-hidden="true" class="absolute right-[-5rem] bottom-[-6rem] h-72 w-72 rounded-full bg-[#c7a770]/20 blur-3xl"></div>
+
+    <div class="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-20 text-center text-white">
+      <h2 class="text-3xl md:text-4xl font-semibold mb-3">Ready to build your space?</h2>
+      <p class="text-base md:text-lg text-white/80 mb-8">Let’s design and deliver something timeless—beautiful, durable, and effortless to live with.</p>
+      <div class="flex flex-col sm:flex-row gap-4 justify-center">
+        <a href="{% url 'contact' %}" class="inline-flex items-center justify-center px-6 py-3 rounded-full bg-white text-gray-900 font-semibold hover:bg-gray-100">Get in touch</a>
+        <a href="{{ case_study.service.get_absolute_url }}" class="inline-flex items-center justify-center px-6 py-3 rounded-full border border-white/30 text-white font-semibold hover:bg-white/10">View {{ case_study.service.title }}</a>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+{# ================= JS ================= #}
+<script>
+  // Copy link
+  const copyBtn = document.getElementById('copy-link');
+  if (copyBtn) {
+    copyBtn.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(window.location.href);
+        const prev = copyBtn.textContent;
+        copyBtn.textContent = 'Link copied';
+        setTimeout(() => (copyBtn.textContent = prev), 1400);
+      } catch (e) {}
+    });
+  }
+
+  // Lightbox
+  const images = [
+    {% for image in gallery_images %}
+      { full: "{{ image.full_url }}", caption: "{{ image.caption|default:''|escapejs }}" }{% if not forloop.last %},{% endif %}
+    {% endfor %}
+  ];
+  let currentIndex = 0;
+  function openLightbox(index){ currentIndex=index; updateLightbox(); const lb=document.getElementById('lightbox'); lb.classList.remove('hidden'); document.body.style.overflow='hidden'; }
+  function closeLightbox(){ const lb=document.getElementById('lightbox'); if(!lb) return; lb.classList.add('hidden'); document.body.style.overflow=''; }
+  function nextImage(){ if(!images.length) return; currentIndex=(currentIndex+1)%images.length; updateLightbox(); }
+  function prevImage(){ if(!images.length) return; currentIndex=(currentIndex-1+images.length)%images.length; updateLightbox(); }
+  function updateLightbox(){ const img=document.getElementById('lightbox-img'); const cap=document.getElementById('lightbox-caption'); if(img) img.src=images[currentIndex]?.full||''; if(cap) cap.textContent=images[currentIndex]?.caption||''; }
+  document.addEventListener('keydown',(e)=>{ const lb=document.getElementById('lightbox'); if(!lb||lb.classList.contains('hidden')) return; if(e.key==='Escape') closeLightbox(); if(e.key==='ArrowLeft') prevImage(); if(e.key==='ArrowRight') nextImage(); });
+
+  // Editorial parser — reads RAW TEXT (no JSON.parse), fills lead/challenges/solutions/outro
+  (function(){
+    const src = document.getElementById('cs-desc-raw');
+    if (!src) return;
+    const text = String(src.textContent || '').trim();
+
+    // Helpers
+    const findIdx = (labelRe) => {
+      const m = text.match(labelRe);
+      return m ? m.index : -1;
+    };
+    const sliceAfter = (labelRe) => {
+      const m = text.match(labelRe);
+      if (!m) return '';
+      return text.slice(m.index + m[0].length).trim();
+    };
+
+    // Indices for sections (support variations)
+    const chRe  = /\b(THE\s+CHALLENGE|CHALLENGES)\s*:?\s*/i;
+    const didRe = /\b(WHAT\s+WE\s+DID|OUR\s+SOLUTION|DELIVERED)\s*:?\s*/i;
+
+    const idxCh  = findIdx(chRe);
+    const idxDid = findIdx(didRe);
+
+    let lead = '';
+    let challengesBlock = '';
+    let didBlock = '';
+    let outro = '';
+
+    if (idxCh >= 0) {
+      lead = text.slice(0, idxCh).trim();
+      const afterCh = sliceAfter(chRe);
+      if (idxDid >= 0) {
+        challengesBlock = text.slice(idxCh + (text.match(chRe)?.[0].length || 0), idxDid).trim();
+        didBlock = sliceAfter(didRe);
+        // outro is anything after a blank line following the didBlock bullets
+        const parts = didBlock.split(/\n\s*\n/);
+        if (parts.length > 1) {
+          didBlock = parts[0].trim();
+          outro = parts.slice(1).join('\n\n').trim();
+        }
+      } else {
+        // No "What we did" block, everything after ch is outro unless bullets exist
+        const parts = afterCh.split(/\n\s*\n/);
+        if (parts.length > 1) {
+          challengesBlock = parts[0].trim();
+          outro = parts.slice(1).join('\n\n').trim();
+        } else {
+          challengesBlock = afterCh;
+        }
+      }
+    } else {
+      // No challenge header — treat first paragraph as lead, rest as outro
+      const parts = text.split(/\n\s*\n/);
+      lead = parts.shift() || '';
+      outro = parts.join('\n\n').trim();
+    }
+
+    // Bullet extraction — accepts —, –, -, or •
+    const bulletLine = /^\s*[—–\-•]\s+/;
+    const toItems = (block) => block.split(/\r?\n/).filter(l => bulletLine.test(l))
+      .map(l => l.replace(bulletLine, '').trim())
+      .filter(Boolean);
+
+    const challenges = toItems(challengesBlock);
+    const did = toItems(didBlock);
+
+    // Fill DOM (fallbacks)
+    const leadEl = document.getElementById('cs-lead');
+    const chEl   = document.getElementById('cs-ch');
+    const doEl   = document.getElementById('cs-do');
+    const outEl  = document.getElementById('cs-outro');
+
+    const setLead = (txt) => { if (leadEl) leadEl.textContent = txt; };
+    const setOutro = (txt) => { if (outEl)  outEl.textContent  = txt; };
+
+    const li = (t) => `
+      <li class="flex gap-3">
+        <span aria-hidden="true" class="mt-2 h-2 w-2 shrink-0 rounded-full" style="background:var(--lux-gold,#c7a770)"></span>
+        <span class="leading-relaxed">${t.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</span>
+      </li>`;
+
+    if (lead) setLead(lead);
+    if (chEl && challenges.length) chEl.innerHTML = challenges.map(li).join('');
+    if (doEl && did.length)        doEl.innerHTML = did.map(li).join('');
+    if (outro) setOutro(outro);
+
+    // TOTAL FALLBACK: if nothing parsed, just dump the original text as body
+    if (!lead && !challenges.length && !did.length && !outro) {
+      setLead(text);
+    }
+  })();
+</script>
+{% endblock %}

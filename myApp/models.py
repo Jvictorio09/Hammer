@@ -33,7 +33,7 @@ class Service(TimeStamped):
     sort_order = models.PositiveIntegerField(default=0, db_index=True)
 
     seo_meta_title = models.CharField(max_length=70, blank=True)
-    seo_meta_description = models.CharField(max_length=160, blank=True)
+    seo_meta_description = models.CharField(max_length=200, blank=True)
     canonical_path = models.CharField(max_length=255, blank=True)
 
     class Meta:
@@ -102,10 +102,13 @@ class ServiceEditorialImage(models.Model):
         return f"{self.service.title} • editorial {self.pk}"
 
 
+# ServiceProjectImage is deprecated - images are now stored directly in CaseStudy
+# Keeping model for backwards compatibility but no longer used
 class ServiceProjectImage(models.Model):
     service = models.ForeignKey(Service, on_delete=models.CASCADE, related_name="project_images")
-    thumb_url = models.URLField()
-    full_url = models.URLField()
+    case_study = models.ForeignKey('CaseStudy', on_delete=models.SET_NULL, related_name="legacy_images", null=True, blank=True, help_text="Legacy field - images now in CaseStudy")
+    thumb_url = models.URLField(blank=True)
+    full_url = models.URLField(blank=True)
     caption = models.CharField(max_length=140, blank=True)
     sort_order = models.PositiveIntegerField(default=0)
 
@@ -302,7 +305,17 @@ class CaseStudy(models.Model):
     title = models.CharField(max_length=220)
     slug = models.SlugField(max_length=240, unique=True, blank=True)
     hero_image_url = models.URLField(help_text="Cloudinary URL for the featured banner image")
+    
+    # Project images (stored inline with case study)
+    thumb_url = models.URLField(blank=True, help_text="Thumbnail for service page gallery")
+    full_url = models.URLField(blank=True, help_text="Full resolution image")
+    
+    # Gallery images (JSON array of {full: url, thumb: url} objects)
+    gallery_urls = models.JSONField(default=list, blank=True, help_text="Array of gallery image objects with full and thumb URLs")
+    
     summary = models.TextField(blank=True, help_text="Short teaser for the projects section")
+    description = models.TextField(blank=True, help_text="Full project description and story")
+    completion_date = models.DateField(null=True, blank=True, help_text="When was the project completed?")
 
     # Facts shown in the 2x2 grid
     scope = models.CharField(max_length=100, blank=True, default="Design + Build")
@@ -339,6 +352,10 @@ class CaseStudy(models.Model):
         if not self.tags_csv:
             return []
         return [t.strip() for t in self.tags_csv.split(",") if t.strip()]
+    
+    def get_absolute_url(self):
+        """Return the detail page URL for this case study"""
+        return reverse('case_study_detail', kwargs={'slug': self.slug})
 
 
 # myApp/models.py
@@ -456,7 +473,14 @@ class MediaAsset(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.slug:
-            self.slug = slugify(self.title)[:220]
+            base_slug = slugify(self.title)[:220]
+            self.slug = base_slug
+            
+            # Ensure slug is unique by appending a number if needed
+            counter = 1
+            while MediaAsset.objects.filter(slug=self.slug).exclude(pk=self.pk).exists():
+                self.slug = f"{base_slug}-{counter}"[:220]
+                counter += 1
         super().save(*args, **kwargs)
 
     # Handy accessors

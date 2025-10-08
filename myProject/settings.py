@@ -21,12 +21,16 @@ ALLOWED_HOSTS = [
     'hammer-production-315f.up.railway.app',
     'localhost',
     '127.0.0.1',
-    # maybe also your domain if you add a custom domain later
+    'http://www.hammer-services.com',
+    'hammer-services.com',
+
 ]
 
 CSRF_TRUSTED_ORIGINS = [
     'https://hammer-production-315f.up.railway.app',
-    # include your custom domain with https if applied
+    'https://www.hammer-services.com',
+    'https://hammer-services.com',
+    
 ]
 
 

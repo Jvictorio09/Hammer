@@ -1,14 +1,16 @@
-<!-- Mission / Brand Promise -->
-<section class="relative overflow-hidden py-20 text-white" id="mission">
+<!-- Mission + Partners in one black-overlay hero -->
+<section id="mission" class="relative overflow-hidden text-white">
+  <!-- BG image + overlay -->
   <div class="absolute inset-0 bg-[url('https://res.cloudinary.com/dstlxtvar/image/upload/f_auto,q_auto/v1759765286/uploads/copy-of-img_0750-enhanced-nr.jpg')] bg-cover bg-center"></div>
   <div class="absolute inset-0 bg-black/70"></div>
 
-  <div class="relative max-w-5xl mx-auto px-6 text-center">
+  <!-- CONTENT -->
+  <div class="relative max-w-5xl mx-auto px-6 pt-20 pb-10 text-center">
     <h2 class="reveal-up text-3xl md:text-4xl font-extrabold">
       We build spaces that shape lives.
     </h2>
     <p class="reveal-up mt-4 text-white/90">
-      Hammer is Dubai’s partner for luxury design & build — bold environments delivered with quiet precision.
+      Hammer is Dubai’s partner for luxury design &amp; build — bold environments delivered with quiet precision.
       Every decision protects your time, your privacy and your investment.
     </p>
     <div class="reveal-up mt-8">
@@ -22,33 +24,124 @@
       </a>
     </div>
   </div>
+
+  <!-- PARTNERS inside the black block -->
+  <div class="relative">
+    <div class="mission-partners-container">
+      <div class="mission-partners-head">
+        <h3>Trusted by leading brands &amp; developers</h3>
+        <div class="mission-partners-divider"></div>
+        <a href="{% url 'projects_index' %}" class="mission-partners-link">View Projects →</a>
+      </div>
+
+      <!-- Marquee -->
+      <div class="mission-partners-marquee" aria-label="Partner logos marquee">
+        <div class="mission-partners-track">
+          <!-- Set #1 -->
+          <span class="mission-logo-cell"><img src="https://res.cloudinary.com/dstlxtvar/image/upload/v1759735368/ETISALAT_m7lbre.png" alt="Etisalat" loading="lazy"></span>
+          <span class="mission-logo-cell"><img src="https://res.cloudinary.com/dstlxtvar/image/upload/v1759735368/JUMEIRAH_GOLF_ESTATES_oqssei.png" alt="Jumeirah Golf Estates" loading="lazy"></span>
+          <span class="mission-logo-cell"><img src="https://res.cloudinary.com/dstlxtvar/image/upload/v1759735368/DUBAI_PROPERTIES_vytwn6.png" alt="Dubai Properties" loading="lazy"></span>
+          <span class="mission-logo-cell"><img src="https://res.cloudinary.com/dstlxtvar/image/upload/v1759735368/DUBAI_MUNICIPALITY_wl80rc.png" alt="Dubai Municipality" loading="lazy"></span>
+          <span class="mission-logo-cell"><img src="https://res.cloudinary.com/dstlxtvar/image/upload/v1759735368/DUBAI_HOLDINGS_gaj4mj.png" alt="Dubai Holdings" loading="lazy"></span>
+          <span class="mission-logo-cell"><img src="https://res.cloudinary.com/dstlxtvar/image/upload/v1759735368/DUBAI_HILLS_wskbo3.png" alt="Dubai Hills" loading="lazy"></span>
+          <span class="mission-logo-cell"><img src="https://res.cloudinary.com/dstlxtvar/image/upload/v1759735367/TECOM_GROUP_pedwql.png" alt="TECOM Group" loading="lazy"></span>
+          <span class="mission-logo-cell"><img src="https://res.cloudinary.com/dstlxtvar/image/upload/v1759735367/DAMAC_vmbuiw.png" alt="DAMAC" loading="lazy"></span>
+          <span class="mission-logo-cell"><img src="https://res.cloudinary.com/dstlxtvar/image/upload/v1759735367/DAMAC_HILLS_mr57ti.png" alt="DAMAC Hills" loading="lazy"></span>
+          <span class="mission-logo-cell"><img src="https://res.cloudinary.com/dstlxtvar/image/upload/v1759735368/EMAAR_oxdsdu.svg" alt="EMAAR" loading="lazy"></span>
+          <span class="mission-logo-cell"><img src="https://res.cloudinary.com/dstlxtvar/image/upload/v1759735366/MERAAS_y2rrba.svg" alt="Meraas" loading="lazy"></span>
+          <span class="mission-logo-cell"><img src="https://res.cloudinary.com/dstlxtvar/image/upload/v1759735366/NAKHEEL_gcikbo.svg" alt="Nakheel" loading="lazy"></span>
+          <span class="mission-logo-cell"><img src="https://res.cloudinary.com/dstlxtvar/image/upload/v1759735366/CONCORDIA_DMCC_xdddg2.png" alt="Concordia DMCC" loading="lazy"></span>
+          <span class="mission-logo-cell"><img src="https://res.cloudinary.com/dstlxtvar/image/upload/v1759735366/MICROSOFT_om7jd3.png" alt="Microsoft" loading="lazy"></span>
+          <span class="mission-logo-cell"><img src="https://res.cloudinary.com/dstlxtvar/image/upload/v1759735367/AL_MEYDAN_mw8jbb.png" alt="Al Meydan" loading="lazy"></span>
+          <span class="mission-logo-cell"><img src="https://res.cloudinary.com/dstlxtvar/image/upload/v1759735367/AL_ANSARI_nhomza.jpg" alt="Al Ansari" loading="lazy"></span>
+          <span class="mission-logo-cell"><img src="https://res.cloudinary.com/dstlxtvar/image/upload/v1759735369/MAJID_AL_FUTTAIM_lr0vf6.jpg" alt="Majid Al Futtaim" loading="lazy"></span>
+
+          <!-- Set #2 (duplicate for perfect loop) -->
+          <span class="mission-logo-cell" aria-hidden="true"><img src="https://res.cloudinary.com/dstlxtvar/image/upload/v1759735368/ETISALAT_m7lbre.png" alt="" loading="lazy"></span>
+          <span class="mission-logo-cell" aria-hidden="true"><img src="https://res.cloudinary.com/dstlxtvar/image/upload/v1759735368/JUMEIRAH_GOLF_ESTATES_oqssei.png" alt="" loading="lazy"></span>
+          <span class="mission-logo-cell" aria-hidden="true"><img src="https://res.cloudinary.com/dstlxtvar/image/upload/v1759735368/DUBAI_PROPERTIES_vytwn6.png" alt="" loading="lazy"></span>
+          <span class="mission-logo-cell" aria-hidden="true"><img src="https://res.cloudinary.com/dstlxtvar/image/upload/v1759735368/DUBAI_MUNICIPALITY_wl80rc.png" alt="" loading="lazy"></span>
+          <span class="mission-logo-cell" aria-hidden="true"><img src="https://res.cloudinary.com/dstlxtvar/image/upload/v1759735368/DUBAI_HOLDINGS_gaj4mj.png" alt="" loading="lazy"></span>
+          <span class="mission-logo-cell" aria-hidden="true"><img src="https://res.cloudinary.com/dstlxtvar/image/upload/v1759735368/DUBAI_HILLS_wskbo3.png" alt="" loading="lazy"></span>
+          <span class="mission-logo-cell" aria-hidden="true"><img src="https://res.cloudinary.com/dstlxtvar/image/upload/v1759735367/TECOM_GROUP_pedwql.png" alt="" loading="lazy"></span>
+          <span class="mission-logo-cell" aria-hidden="true"><img src="https://res.cloudinary.com/dstlxtvar/image/upload/v1759735367/DAMAC_vmbuiw.png" alt="" loading="lazy"></span>
+          <span class="mission-logo-cell" aria-hidden="true"><img src="https://res.cloudinary.com/dstlxtvar/image/upload/v1759735367/DAMAC_HILLS_mr57ti.png" alt="" loading="lazy"></span>
+          <span class="mission-logo-cell" aria-hidden="true"><img src="https://res.cloudinary.com/dstlxtvar/image/upload/v1759735368/EMAAR_oxdsdu.svg" alt="" loading="lazy"></span>
+          <span class="mission-logo-cell" aria-hidden="true"><img src="https://res.cloudinary.com/dstlxtvar/image/upload/v1759735366/MERAAS_y2rrba.svg" alt="" loading="lazy"></span>
+          <span class="mission-logo-cell" aria-hidden="true"><img src="https://res.cloudinary.com/dstlxtvar/image/upload/v1759735366/NAKHEEL_gcikbo.svg" alt="" loading="lazy"></span>
+          <span class="mission-logo-cell" aria-hidden="true"><img src="https://res.cloudinary.com/dstlxtvar/image/upload/v1759735366/CONCORDIA_DMCC_xdddg2.png" alt="" loading="lazy"></span>
+          <span class="mission-logo-cell" aria-hidden="true"><img src="https://res.cloudinary.com/dstlxtvar/image/upload/v1759735366/MICROSOFT_om7jd3.png" alt="" loading="lazy"></span>
+          <span class="mission-logo-cell" aria-hidden="true"><img src="https://res.cloudinary.com/dstlxtvar/image/upload/v1759735367/AL_MEYDAN_mw8jbb.png" alt="" loading="lazy"></span>
+          <span class="mission-logo-cell" aria-hidden="true"><img src="https://res.cloudinary.com/dstlxtvar/image/upload/v1759735367/AL_ANSARI_nhomza.jpg" alt="" loading="lazy"></span>
+          <span class="mission-logo-cell" aria-hidden="true"><img src="https://res.cloudinary.com/dstlxtvar/image/upload/v1759735369/MAJID_AL_FUTTAIM_lr0vf6.jpg" alt="" loading="lazy"></span>
+        </div>
+      </div>
+    </div>
+  </div>
 </section>
 
 <style>
-/* Shimmer */
-@keyframes shimmer {
-  0% { transform: translateX(-100%); }
-  100% { transform: translateX(100%); }
-}
-.animate-shimmer {
-  background-size: 200% 100%;
-  animation: shimmer 2.5s infinite;
-}
+/* ===== Shimmer (CTA) ===== */
+@keyframes shimmer { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
+.animate-shimmer { background-size: 200% 100%; animation: shimmer 2.5s infinite; }
 
-/* Reveal animation */
-.reveal-up {
-  opacity:0; transform: translateY(20px);
-  transition: all .7s cubic-bezier(.22,1,.36,1);
+/* ===== Reveal animation (scoped to #mission) ===== */
+#mission .reveal-up{ opacity:0; transform: translateY(20px); transition: all .7s cubic-bezier(.22,1,.36,1); }
+#mission .reveal-up.in{ opacity:1; transform: translateY(0); }
+
+/* ===== Partners styling (scoped) ===== */
+#mission .mission-partners-container{
+  max-width: 100%;
+  margin: 0 auto;
+  padding: 0 1.5rem 2.5rem;   /* side padding + bottom breathing room */
 }
-.reveal-up.in {
-  opacity:1; transform: translateY(0);
+#mission .mission-partners-head{
+  display:grid; grid-template-columns:auto 1fr auto; align-items:center; gap:1rem;
+  margin: 0 0 1.5rem;
+}
+#mission .mission-partners-head h3{ font-weight:600; font-size:1.05rem; }
+#mission .mission-partners-divider{ height:1px; background: rgba(255,255,255,.15); }
+#mission .mission-partners-link{ font-weight:600; font-size:.9rem; color:#fff; text-decoration:none; }
+#mission .mission-partners-link:hover{ color:#18AFAB; }
+
+/* Marquee track (white-on-black ready) */
+#mission .mission-partners-marquee{ overflow:hidden; position:relative; min-height:3.25rem; }
+#mission .mission-partners-track{
+  display:inline-flex; align-items:center; white-space:nowrap; width:max-content;
+  animation: mission-marquee 38s linear infinite; will-change: transform;
+}
+#mission .mission-logo-cell{
+  width:8rem; height:2.75rem; display:inline-flex; align-items:center; justify-content:center; flex:0 0 8rem;
+}
+#mission .mission-logo-cell img{
+  display:block; max-height:100%; max-width:100%; object-fit:contain;
+  filter: grayscale(1) brightness(1.15);          /* pop on black */
+  opacity:.95; transition: filter .25s ease, transform .25s ease, opacity .25s ease;
+}
+#mission .mission-logo-cell:hover img{ filter: grayscale(0) brightness(1); transform: translateY(-2px); }
+
+/* Pause on hover */
+#mission .mission-partners-marquee:hover .mission-partners-track{ animation-play-state: paused; }
+
+/* Seamless loop */
+@keyframes mission-marquee{ 0%{ transform: translateX(0); } 100%{ transform: translateX(-50%); } }
+
+/* Responsive tweaks */
+@media (max-width:1024px){
+  #mission .mission-logo-cell{ width:7rem; height:2.5rem; }
+}
+@media (max-width:640px){
+  #mission .mission-logo-cell{ width:6rem; height:2.25rem; }
+  #mission .mission-partners-container{ padding: 0 1rem 2rem; }
 }
 </style>
 
 <script>
 /* IntersectionObserver for reveal */
 (function(){
-  const targets = document.querySelectorAll('#mission .reveal-up');
+  const root = document.getElementById('mission');
+  if(!root) return;
+  const targets = root.querySelectorAll('.reveal-up');
   if(!('IntersectionObserver' in window)){ targets.forEach(el=>el.classList.add('in')); return; }
   const io = new IntersectionObserver((entries, obs)=>{
     entries.forEach(e=>{

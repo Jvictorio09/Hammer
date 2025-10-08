@@ -27,6 +27,9 @@ urlpatterns = [
 
     # Insights
     path("insights/<slug:slug>/", views.insight_detail, name="insight_detail"),
+    
+    # Case Studies
+    path("case-studies/<slug:slug>/", views.case_study_detail, name="case_study_detail"),
 
     # (Optional) your static test page
     path("test-look/", views.landscape, name="landscape_test"),
