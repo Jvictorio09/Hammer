@@ -21,7 +21,7 @@ ALLOWED_HOSTS = [
     'hammer-production-315f.up.railway.app',
     'localhost',
     '127.0.0.1',
-    'http://www.hammer-services.com',
+    'www.hammer-services.com',
     'hammer-services.com',
 
 ]

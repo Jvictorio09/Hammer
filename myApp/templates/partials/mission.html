@@ -1,8 +1,8 @@
 <!-- Mission + Partners in one black-overlay hero -->
 <section id="mission" class="relative overflow-hidden text-white">
   <!-- BG image + overlay -->
-  <div class="absolute inset-0 bg-[url('https://res.cloudinary.com/dstlxtvar/image/upload/f_auto,q_auto/v1759765286/uploads/copy-of-img_0750-enhanced-nr.jpg')] bg-cover bg-center"></div>
-  <div class="absolute inset-0 bg-black/70"></div>
+  
+  <div class="absolute inset-0 bg-black/100"></div>
 
   <!-- CONTENT -->
   <div class="relative max-w-5xl mx-auto px-6 pt-20 pb-10 text-center">
@@ -90,50 +90,110 @@
 #mission .reveal-up.in{ opacity:1; transform: translateY(0); }
 
 /* ===== Partners styling (scoped) ===== */
-#mission .mission-partners-container{
+/* ===== Refined Partner Logos inside mission block ===== */
+#mission .mission-partners-container {
   max-width: 100%;
   margin: 0 auto;
-  padding: 0 1.5rem 2.5rem;   /* side padding + bottom breathing room */
+  padding: 0 1.5rem 3rem;
 }
-#mission .mission-partners-head{
-  display:grid; grid-template-columns:auto 1fr auto; align-items:center; gap:1rem;
-  margin: 0 0 1.5rem;
-}
-#mission .mission-partners-head h3{ font-weight:600; font-size:1.05rem; }
-#mission .mission-partners-divider{ height:1px; background: rgba(255,255,255,.15); }
-#mission .mission-partners-link{ font-weight:600; font-size:.9rem; color:#fff; text-decoration:none; }
-#mission .mission-partners-link:hover{ color:#18AFAB; }
 
-/* Marquee track (white-on-black ready) */
-#mission .mission-partners-marquee{ overflow:hidden; position:relative; min-height:3.25rem; }
-#mission .mission-partners-track{
-  display:inline-flex; align-items:center; white-space:nowrap; width:max-content;
-  animation: mission-marquee 38s linear infinite; will-change: transform;
+#mission .mission-partners-head {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.75rem;
 }
-#mission .mission-logo-cell{
-  width:8rem; height:2.75rem; display:inline-flex; align-items:center; justify-content:center; flex:0 0 8rem;
-}
-#mission .mission-logo-cell img{
-  display:block; max-height:100%; max-width:100%; object-fit:contain;
-  filter: grayscale(1) brightness(1.15);          /* pop on black */
-  opacity:.95; transition: filter .25s ease, transform .25s ease, opacity .25s ease;
-}
-#mission .mission-logo-cell:hover img{ filter: grayscale(0) brightness(1); transform: translateY(-2px); }
 
-/* Pause on hover */
-#mission .mission-partners-marquee:hover .mission-partners-track{ animation-play-state: paused; }
-
-/* Seamless loop */
-@keyframes mission-marquee{ 0%{ transform: translateX(0); } 100%{ transform: translateX(-50%); } }
-
-/* Responsive tweaks */
-@media (max-width:1024px){
-  #mission .mission-logo-cell{ width:7rem; height:2.5rem; }
+#mission .mission-partners-head h3 {
+  font-weight: 600;
+  font-size: 1.1rem;
 }
-@media (max-width:640px){
-  #mission .mission-logo-cell{ width:6rem; height:2.25rem; }
-  #mission .mission-partners-container{ padding: 0 1rem 2rem; }
+#mission .mission-partners-divider {
+  height: 1px;
+  background: rgba(255,255,255,.15);
 }
+#mission .mission-partners-link {
+  font-weight: 600;
+  font-size: .9rem;
+  color: #fff;
+  text-decoration: none;
+}
+#mission .mission-partners-link:hover {
+  color: #18AFAB;
+}
+
+/* ==== Logos ==== */
+#mission .mission-partners-marquee {
+  overflow: hidden;
+  position: relative;
+  min-height: 4rem; /* more room for taller logos */
+}
+
+#mission .mission-partners-track {
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
+  width: max-content;
+  animation: mission-marquee 38s linear infinite;
+  will-change: transform;
+}
+
+#mission .mission-logo-cell {
+  width: 9rem; /* bigger than before */
+  height: 3.5rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 9rem;
+  /* no background, no border */
+  background: transparent;
+  border: none;
+}
+
+#mission .mission-logo-cell img {
+  display: block;
+  max-height: 100%;
+  max-width: 100%;
+  object-fit: contain;
+  filter: none; /* no grayscale */
+  opacity: 1;
+  transition: transform .25s ease, opacity .25s ease;
+}
+
+#mission .mission-logo-cell:hover img {
+  transform: translateY(-3px);
+  opacity: 0.9;
+}
+
+/* smooth pause on hover */
+#mission .mission-partners-marquee:hover .mission-partners-track {
+  animation-play-state: paused;
+}
+
+/* loop */
+@keyframes mission-marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+/* responsive tweaks */
+@media (max-width: 1024px) {
+  #mission .mission-logo-cell {
+    width: 8rem;
+    height: 3rem;
+  }
+}
+@media (max-width: 640px) {
+  #mission .mission-logo-cell {
+    width: 7rem;
+    height: 2.75rem;
+  }
+  #mission .mission-partners-container {
+    padding: 0 1rem 2.5rem;
+  }
+}
+
 </style>
 
 <script>

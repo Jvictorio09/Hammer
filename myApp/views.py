@@ -361,32 +361,34 @@ def insight_detail(request, slug):
 from django.core.paginator import Paginator, InvalidPage
 from django.shortcuts import render, get_object_or_404
 from django.db.models import Prefetch
-from .models import Service, ServiceProjectImage
+from .models import Service, ServiceProjectImage, CaseStudy
 
 def projects_index(request, service_slug=None):
     """
-    Projects gallery aggregated from ServiceProjectImage.
+    Projects gallery aggregated from CaseStudy.
     - Optional filter by service via /projects/<service_slug>/
     - Simple pagination with ?page=#
+    - Uses same sorting pattern as services: sort_order, title
     """
     services = (
         Service.objects.only("id", "title", "slug")
-        .order_by("title")
+        .filter(is_active=True)
+        .order_by("sort_order", "title")
     )
 
     current_service = None
-    images_qs = (
-        ServiceProjectImage.objects.select_related("service")
-        .only("id", "service_id", "thumb_url", "full_url", "caption", "sort_order")
-        .order_by("service_id", "sort_order", "id")
+    case_studies_qs = (
+        CaseStudy.objects.select_related("service")
+        .only("id", "service_id", "title", "thumb_url", "full_url", "summary", "is_featured", "sort_order")
+        .order_by("-is_featured", "sort_order", "title")
     )
 
     if service_slug:
         current_service = get_object_or_404(services, slug=service_slug)
-        images_qs = images_qs.filter(service=current_service)
+        case_studies_qs = case_studies_qs.filter(service=current_service)
 
     # paginate (12 per page)
-    paginator = Paginator(images_qs, 12)
+    paginator = Paginator(case_studies_qs, 12)
     page_number = request.GET.get("page") or 1
     try:
         page_obj = paginator.page(page_number)

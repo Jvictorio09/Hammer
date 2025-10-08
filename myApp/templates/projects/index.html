@@ -171,7 +171,7 @@
   <!-- HERO -->
   <header class="hero">
     <img class="hero-media" id="projHeroMedia"
-         src="{% static 'images/projects-hero.jpg' %}"
+         src="https://res.cloudinary.com/dstlxtvar/image/upload/f_auto,q_auto/v1759895767/uploads/tddmnpakiqymumuvzl6v.png"
          alt="Projects hero">
     <div class="hero-ov"></div>
     <div class="hero-inner max-w-7xl mx-auto">
@@ -211,7 +211,7 @@
 
         <img class="media"
              src="{{ p.full_url }}"
-             alt="{{ p.caption|default:'Project' }}"
+             alt="{{ p.title|default:'Project' }}"
              loading="lazy" decoding="async"
              fetchpriority="{% if forloop.first %}high{% else %}auto{% endif %}"
              sizes="(min-width:1280px) 1200px, 92vw">
@@ -219,8 +219,8 @@
         <div class="num">{{ forloop.counter|stringformat:"02d" }}</div>
         <div class="copy max-w-5xl mx-auto px-6 md:px-10">
           {% if p.service %}<span class="tag">{{ p.service.title }}</span>{% endif %}
-          <h2>{{ p.caption|default:"Untitled Project" }}</h2>
-          {% if p.subcopy %}<p class="sub">{{ p.subcopy }}</p>{% endif %}
+          <h2>{{ p.title|default:"Untitled Project" }}</h2>
+          {% if p.summary %}<p class="sub">{{ p.summary }}</p>{% endif %}
         </div>
 
     {% if p.service %}</a>{% endif %}
