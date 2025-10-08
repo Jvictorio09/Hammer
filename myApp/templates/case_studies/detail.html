@@ -1,26 +1,65 @@
 {% extends "base.html" %}
 {% load static %}
 
+
 {% block title %}{{ case_study.title }} | {{ case_study.service.title }} | Hammer Group{% endblock %}
 {% block meta_description %}{{ case_study.summary|default:"Case study showcasing our work in "|add:case_study.service.title|truncatechars:160 }}{% endblock %}
 
 <style>
-:root { --lux-gold: #c7a770; }
+:root {
+  --lux-gold: #c7a770;
+  --ink: #0f1220;
+}
+/* Gentle editorial polish */
+.cs-dropcap p:first-of-type::first-letter{
+  float:left; margin:.1em .25em 0 0; font-size:3.25rem; line-height:.85; font-weight:600; color:#111;
+}
+.cs-lead {
+  font-size:1.125rem; line-height:1.8;
+}
+.cs-body p { margin: 1.15em 0; }
+.cs-body h3 {
+  font-size: .95rem; letter-spacing:.08em; text-transform:uppercase;
+  color: #6b7280; font-weight:700; margin:2.25rem 0 .75rem;
+}
+.cs-callout {
+  border:1px solid rgba(17,24,39,.1);
+  background: linear-gradient(180deg,#fff, #f9fafb);
+  border-radius: 1rem; padding:1rem 1.25rem;
+}
+.cs-quote {
+  position:relative; border-left:3px solid var(--lux-gold);
+  padding:1rem 1.25rem; background:linear-gradient(180deg,#fff, #faf7f1);
+  border-radius:.75rem;
+}
+.cs-quote:before{
+  content:"“"; position:absolute; left:.5rem; top:-.75rem; font-size:3rem; color:rgba(199,167,112,.25);
+}
+.cs-bullets li{
+  display:flex; gap:.6rem; align-items:flex-start;
+}
+.cs-bullets li .dot{
+  margin-top:.55rem; width:.45rem; height:.45rem; border-radius:999px; background:var(--lux-gold);
+  box-shadow:0 0 0 3px rgba(199,167,112,.18);
+}
+.cs-gallery-masonry { column-fill:balance; }
+.cs-hero-img { transform:scale(1.02); will-change:transform; transition:transform .6s ease; }
+@media (min-width:1024px){ .cs-hero-pad{ padding-top:9.5rem; padding-bottom:6.5rem; } }
 </style>
 
 {% block content %}
 <main class="bg-white text-gray-900 selection:bg-gray-900 selection:text-white">
 
-  {# ================= HERO: editorial cover ================= #}
+  {# ================= HERO ================= #}
   <header class="relative isolate overflow-hidden">
     {% if case_study.hero_image_url %}
       <img src="{{ case_study.hero_image_url }}" alt="{{ case_study.title }}"
-           class="absolute inset-0 h-full w-full object-cover" />
+           class="cs-hero-img absolute inset-0 h-full w-full object-cover" />
     {% else %}
       <div class="absolute inset-0 bg-gradient-to-br from-[#0f1220] to-[#1c2233]"></div>
     {% endif %}
-    <div class="absolute inset-0 bg-black/40"></div>
-    <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-28 pb-24 md:pt-36 md:pb-28">
+    <div class="absolute inset-0 bg-gradient-to-b from-black/50 via-black/35 to-black/20"></div>
+    <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-28 pb-20 md:pt-36 md:pb-24 cs-hero-pad">
       <nav class="mb-6 text-sm text-white/80">
         <a href="{% url 'home' %}" class="hover:text-white">Home</a>
         <span class="mx-2 text-white/60">/</span>
@@ -52,10 +91,10 @@
     </div>
   </header>
 
-  {# ================= ARTICLE LAYOUT ================= #}
+  {# ================= ARTICLE ================= #}
   <article class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-    <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 -mt-10 md:-mt-12">
-      {# ---- Sticky editorial sidebar ---- #}
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 mt-6 md:mt-8">
+      {# ---- Sticky sidebar ---- #}
       <aside class="lg:col-span-4">
         <div class="lg:sticky lg:top-24 space-y-6">
           <section class="rounded-2xl border border-gray-200 bg-white p-6">
@@ -109,10 +148,8 @@
           </section>
 
           {% if case_study.summary %}
-          <blockquote class="rounded-2xl bg-gradient-to-br from-gray-50 to-white border border-gray-200 p-6 shadow-sm">
-            <span aria-hidden="true" class="block text-[44px] leading-none opacity-25 -mt-2" style="color:var(--lux-gold)">&ldquo;</span>
-            <p class="text-gray-900 text-base leading-relaxed -mt-6">{{ case_study.summary }}</p>
-            <span aria-hidden="true" class="block text-[44px] leading-none opacity-25 text-right -mb-6" style="color:var(--lux-gold)">&rdquo;</span>
+          <blockquote class="cs-quote">
+            <p class="text-gray-900 text-base leading-relaxed">{{ case_study.summary }}</p>
           </blockquote>
           {% endif %}
         </div>
@@ -120,31 +157,15 @@
 
       {# ---- Editorial body ---- #}
       <div class="lg:col-span-8">
-        <!-- Lead with drop cap -->
-        <div class="prose prose-lg max-w-none text-gray-800
-                    [&>p:first-of-type]:first-letter:float-left
-                    [&>p:first-of-type]:first-letter:mr-3
-                    [&>p:first-of-type]:first-letter:text-6xl
-                    [&>p:first-of-type]:first-letter:font-semibold
-                    [&>p:first-of-type]:first-letter:leading-[.8]
-                    [&>p:first-of-type]:first-letter:text-gray-900">
-          <div id="cs-lead" class="whitespace-pre-line leading-relaxed"></div>
-        </div>
+        <div class="cs-body cs-dropcap">
+          <div id="cs-lead" class="cs-lead"></div>
 
-        <!-- Spec cards -->
-        <div class="mt-8 grid sm:grid-cols-2 gap-6">
-          <article class="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-            <h3 class="text-xs font-semibold tracking-wider uppercase text-gray-500 mb-4">Challenges</h3>
-            <ul id="cs-ch" class="space-y-2.5 text-gray-900"></ul>
-          </article>
-          <article class="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-            <h3 class="text-xs font-semibold tracking-wider uppercase text-gray-500 mb-4">What we did</h3>
-            <ul id="cs-do" class="space-y-2.5 text-gray-900"></ul>
-          </article>
-        </div>
+          <div id="cs-dynamic">
+            {# JS will populate H3 headings + bullet lists + paragraphs here #}
+          </div>
 
-        <!-- Outro -->
-        <p id="cs-outro" class="mt-8 text-gray-800 text-lg leading-relaxed"></p>
+          <div id="cs-outro" class="mt-8 text-gray-800 text-lg leading-relaxed"></div>
+        </div>
 
         {# Feature strip #}
         <section class="mt-10 md:mt-12">
@@ -158,27 +179,44 @@
 
     {# Hidden source for parser — NOTE: text/plain, not JSON #}
     <script type="text/plain" id="cs-desc-raw">{{ case_study.description|escape }}</script>
+
+    {# If you’re using JSONField gallery_urls in CaseStudy, expose it. #}
+    {% if case_study.gallery_urls %}
+      {{ case_study.gallery_urls|json_script:"gallery-json" }}
+    {% endif %}
   </article>
 
   {# ================= GALLERY ================= #}
-  {% if gallery_images %}
+  {% if gallery_images or case_study.gallery_urls %}
   <section class="mt-16 md:mt-24 bg-[#0f1220] text-white relative">
-    <div class="absolute inset-0 opacity-[0.08] pointer-events-none" style="background-image: radial-gradient(600px 220px at 20% 10%, #c7a77033, transparent 60%), radial-gradient(500px 200px at 80% 90%, #c7a77033, transparent 60%);"></div>
+    <div class="absolute inset-0 opacity-[0.08] pointer-events-none"
+         style="background-image: radial-gradient(600px 220px at 20% 10%, #c7a77033, transparent 60%), radial-gradient(500px 200px at 80% 90%, #c7a77033, transparent 60%);"></div>
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14 md:py-20 relative">
       <h2 class="text-3xl md:text-4xl font-semibold text-center">Project Gallery</h2>
       <p class="mt-2 text-center text-white/80">Highlights from design + build</p>
 
-      <div class="mt-10 lg:columns-3 lg:gap-6 [column-fill:_balance] space-y-4 lg:space-y-6">
-        {% for image in gallery_images %}
-        <figure class="break-inside-avoid relative overflow-hidden rounded-2xl bg-white/5 ring-1 ring-white/10 hover:ring-white/20 transition cursor-zoom-in"
-                onclick="openLightbox({{ forloop.counter0 }})">
-          <img src="{{ image.thumb_url }}" alt="{{ image.caption|default:'Project image' }}"
-               class="w-full h-auto object-cover transition duration-500 group-hover:scale-[1.02]" loading="lazy" />
-          {% if image.caption %}
-            <figcaption class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent p-3 text-sm">{{ image.caption }}</figcaption>
-          {% endif %}
-        </figure>
-        {% endfor %}
+      <div class="mt-10 lg:columns-3 lg:gap-6 cs-gallery-masonry space-y-4 lg:space-y-6">
+        {% if gallery_images %}
+          {% for image in gallery_images %}
+          <figure class="break-inside-avoid relative overflow-hidden rounded-2xl bg-white/5 ring-1 ring-white/10 hover:ring-white/20 transition cursor-zoom-in"
+                  onclick="openLightbox({{ forloop.counter0 }})">
+            <img src="{{ image.thumb_url }}" alt="{{ image.caption|default:'Project image' }}"
+                 class="w-full h-auto object-cover transition duration-500 group-hover:scale-[1.02]" loading="lazy" />
+            {% if image.caption %}
+              <figcaption class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent p-3 text-sm">{{ image.caption }}</figcaption>
+            {% endif %}
+          </figure>
+          {% endfor %}
+        {% else %}
+          {# Render from JSONField (gallery_urls: [{thumb, full, caption}]) #}
+          <template id="tmpl-gallery-card">
+            <figure class="break-inside-avoid relative overflow-hidden rounded-2xl bg-white/5 ring-1 ring-white/10 hover:ring-white/20 transition cursor-zoom-in">
+              <img class="w-full h-auto object-cover transition duration-500 group-hover:scale-[1.02]" loading="lazy" />
+              <figcaption class="caption absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent p-3 text-sm hidden"></figcaption>
+            </figure>
+          </template>
+          <div id="gallery-json-render" class="contents"></div>
+        {% endif %}
       </div>
     </div>
   </section>
@@ -260,11 +298,33 @@
     });
   }
 
-  // Lightbox
-  const images = [
-    {% for image in gallery_images %}
-      { full: "{{ image.full_url }}", caption: "{{ image.caption|default:''|escapejs }}" }{% if not forloop.last %},{% endif %}
-    {% endfor %}
+  // Light parallax on hero (subtle, no jank)
+  (function(){
+    const hero = document.querySelector('.cs-hero-img');
+    if (!hero) return;
+    let ticking = false;
+    const onScroll = () => {
+      if (ticking) return;
+      window.requestAnimationFrame(() => {
+        const y = window.scrollY || 0;
+        const scale = 1.02 + Math.min(y/3000, 0.02);
+        hero.style.transform = `scale(${scale.toFixed(3)})`;
+        ticking = false;
+      });
+      ticking = true;
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+  })();
+
+  // Lightbox (works for both Server-rendered & JSON gallery)
+  let images = [
+    {% if gallery_images %}
+      {% for image in gallery_images %}
+        { full: "{{ image.full_url }}", caption: "{{ image.caption|default:''|escapejs }}" }{% if not forloop.last %},{% endif %}
+      {% endfor %}
+    {% else %}
+      // Will fill from gallery_json if present
+    {% endif %}
   ];
   let currentIndex = 0;
   function openLightbox(index){ currentIndex=index; updateLightbox(); const lb=document.getElementById('lightbox'); lb.classList.remove('hidden'); document.body.style.overflow='hidden'; }
@@ -274,96 +334,165 @@
   function updateLightbox(){ const img=document.getElementById('lightbox-img'); const cap=document.getElementById('lightbox-caption'); if(img) img.src=images[currentIndex]?.full||''; if(cap) cap.textContent=images[currentIndex]?.caption||''; }
   document.addEventListener('keydown',(e)=>{ const lb=document.getElementById('lightbox'); if(!lb||lb.classList.contains('hidden')) return; if(e.key==='Escape') closeLightbox(); if(e.key==='ArrowLeft') prevImage(); if(e.key==='ArrowRight') nextImage(); });
 
-  // Editorial parser — reads RAW TEXT (no JSON.parse), fills lead/challenges/solutions/outro
+  // If gallery is from JSONField, render it client-side
+  (function(){
+    const jsonNode = document.getElementById('gallery-json');
+    const mount = document.getElementById('gallery-json-render');
+    if (!jsonNode || !mount) return;
+    try {
+      const data = JSON.parse(jsonNode.textContent || '[]');
+      if (!Array.isArray(data)) return;
+      images = data.map((d, i) => ({ full: d.full || d.thumb || '', caption: d.caption || '' }));
+      const tmpl = document.getElementById('tmpl-gallery-card');
+      data.forEach((item, idx) => {
+        const node = tmpl.content.cloneNode(true);
+        const img = node.querySelector('img');
+        const cap = node.querySelector('.caption');
+        img.src = item.thumb || item.full || '';
+        img.alt = item.caption || 'Project image';
+        node.firstElementChild.onclick = () => openLightbox(idx);
+        if (item.caption) { cap.textContent = item.caption; cap.classList.remove('hidden'); }
+        mount.appendChild(node);
+      });
+    } catch (e) {}
+  })();
+
+  // ================= Editorial parser =================
+  // Reads RAW TEXT (no JSON.parse) and renders:
+  // - Lead paragraph (dropcap)
+  // - Headings: CHALLENGES, WHAT WE DID / OUR SOLUTION / DELIVERED, RESULTS, MATERIALS
+  // - Bullets: lines starting with —, –, -, •
+  // - Pull-quotes: lines starting with ">"
+  // - Normal paragraphs otherwise
   (function(){
     const src = document.getElementById('cs-desc-raw');
     if (!src) return;
-    const text = String(src.textContent || '').trim();
+    const raw = String(src.textContent || '').replace(/\r\n/g, '\n').trim();
 
-    // Helpers
-    const findIdx = (labelRe) => {
-      const m = text.match(labelRe);
-      return m ? m.index : -1;
+    const H = {
+      CHALLENGES: /\b(THE\s+CHALLENGE|CHALLENGES)\s*:?\s*/i,
+      DID: /\b(WHAT\s+WE\s+DID|OUR\s+SOLUTION|DELIVERED)\s*:?\s*/i,
+      RESULTS: /\b(RESULTS|IMPACT|OUTCOME)\s*:?\s*/i,
+      MATERIALS: /\b(MATERIALS|SYSTEMS|SPEC)\s*:?\s*/i,
     };
-    const sliceAfter = (labelRe) => {
-      const m = text.match(labelRe);
-      if (!m) return '';
-      return text.slice(m.index + m[0].length).trim();
-    };
+    const bullet = /^\s*[—–\-•]\s+/;
+    const pull = /^\s*\>\s?/;
 
-    // Indices for sections (support variations)
-    const chRe  = /\b(THE\s+CHALLENGE|CHALLENGES)\s*:?\s*/i;
-    const didRe = /\b(WHAT\s+WE\s+DID|OUR\s+SOLUTION|DELIVERED)\s*:?\s*/i;
+    const sanitize = (s) =>
+      s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 
-    const idxCh  = findIdx(chRe);
-    const idxDid = findIdx(didRe);
+    // naive inline bold/italic (safe since we escape first)
+    const inlineFormat = (s) =>
+      s.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+       .replace(/\*([^*]+)\*/g, '<em>$1</em>');
 
-    let lead = '';
-    let challengesBlock = '';
-    let didBlock = '';
-    let outro = '';
+    const leadEl = document.getElementById('cs-lead');
+    const bodyEl = document.getElementById('cs-dynamic');
+    const outroEl = document.getElementById('cs-outro');
 
-    if (idxCh >= 0) {
-      lead = text.slice(0, idxCh).trim();
-      const afterCh = sliceAfter(chRe);
-      if (idxDid >= 0) {
-        challengesBlock = text.slice(idxCh + (text.match(chRe)?.[0].length || 0), idxDid).trim();
-        didBlock = sliceAfter(didRe);
-        // outro is anything after a blank line following the didBlock bullets
-        const parts = didBlock.split(/\n\s*\n/);
-        if (parts.length > 1) {
-          didBlock = parts[0].trim();
-          outro = parts.slice(1).join('\n\n').trim();
-        }
-      } else {
-        // No "What we did" block, everything after ch is outro unless bullets exist
-        const parts = afterCh.split(/\n\s*\n/);
-        if (parts.length > 1) {
-          challengesBlock = parts[0].trim();
-          outro = parts.slice(1).join('\n\n').trim();
-        } else {
-          challengesBlock = afterCh;
-        }
-      }
-    } else {
-      // No challenge header — treat first paragraph as lead, rest as outro
-      const parts = text.split(/\n\s*\n/);
-      lead = parts.shift() || '';
-      outro = parts.join('\n\n').trim();
+    // Split into chunks around known headings (keep the headings)
+    const marks = [];
+    for (const [key, re] of Object.entries(H)) {
+      const m = raw.match(re);
+      if (m) marks.push({ key, idx: m.index, len: m[0].length });
+    }
+    marks.sort((a,b)=>a.idx-b.idx);
+
+    let lead = raw, rest = '';
+    if (marks.length){
+      lead = raw.slice(0, marks[0].idx).trim();
+      rest = raw.slice(marks[0].idx);
     }
 
-    // Bullet extraction — accepts —, –, -, or •
-    const bulletLine = /^\s*[—–\-•]\s+/;
-    const toItems = (block) => block.split(/\r?\n/).filter(l => bulletLine.test(l))
-      .map(l => l.replace(bulletLine, '').trim())
-      .filter(Boolean);
+    // Render lead
+    if (leadEl && lead) {
+      leadEl.innerHTML = inlineFormat(sanitize(lead));
+    }
 
-    const challenges = toItems(challengesBlock);
-    const did = toItems(didBlock);
+    // Parse the rest by walking headings
+    function sectionSlice(src, startIdx){
+      const here = marks[startIdx];
+      const next = marks[startIdx+1];
+      const start = here.idx + here.len;
+      const end = next ? next.idx : src.length;
+      return { key: here.key, text: src.slice(start, end).trim() };
+    }
 
-    // Fill DOM (fallbacks)
-    const leadEl = document.getElementById('cs-lead');
-    const chEl   = document.getElementById('cs-ch');
-    const doEl   = document.getElementById('cs-do');
-    const outEl  = document.getElementById('cs-outro');
+    function renderBullets(lines){
+      const ul = document.createElement('ul');
+      ul.className = 'cs-bullets space-y-2.5';
+      lines.forEach(t=>{
+        const li = document.createElement('li');
+        const dot = document.createElement('span');
+        dot.className = 'dot';
+        const span = document.createElement('span');
+        span.className = 'leading-relaxed';
+        span.innerHTML = inlineFormat(sanitize(t.replace(bullet,'')));
+        li.appendChild(dot); li.appendChild(span);
+        ul.appendChild(li);
+      });
+      return ul;
+    }
 
-    const setLead = (txt) => { if (leadEl) leadEl.textContent = txt; };
-    const setOutro = (txt) => { if (outEl)  outEl.textContent  = txt; };
+    function renderParagraph(t){
+      const p = document.createElement('p');
+      p.innerHTML = inlineFormat(sanitize(t));
+      return p;
+    }
 
-    const li = (t) => `
-      <li class="flex gap-3">
-        <span aria-hidden="true" class="mt-2 h-2 w-2 shrink-0 rounded-full" style="background:var(--lux-gold,#c7a770)"></span>
-        <span class="leading-relaxed">${t.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</span>
-      </li>`;
+    function renderQuote(t){
+      const q = document.createElement('blockquote');
+      q.className = 'cs-callout';
+      const p = document.createElement('p');
+      p.innerHTML = inlineFormat(sanitize(t.replace(pull,'')));
+      q.appendChild(p);
+      return q;
+    }
 
-    if (lead) setLead(lead);
-    if (chEl && challenges.length) chEl.innerHTML = challenges.map(li).join('');
-    if (doEl && did.length)        doEl.innerHTML = did.map(li).join('');
-    if (outro) setOutro(outro);
+    function renderSection(title){
+      const h = document.createElement('h3');
+      h.textContent = title;
+      return h;
+    }
 
-    // TOTAL FALLBACK: if nothing parsed, just dump the original text as body
-    if (!lead && !challenges.length && !did.length && !outro) {
-      setLead(text);
+    if (bodyEl && rest){
+      // Walk each section
+      for (let i=0;i<marks.length;i++){
+        const { key, text } = sectionSlice(raw, i);
+        let title = key === 'CHALLENGES' ? 'Challenges'
+                 : key === 'DID' ? 'What we did'
+                 : key === 'RESULTS' ? 'Results'
+                 : key === 'MATERIALS' ? 'Materials'
+                 : key;
+        bodyEl.appendChild(renderSection(title));
+
+        const lines = text.split('\n').map(s=>s.trim()).filter(Boolean);
+        const bullets = lines.filter(l=>bullet.test(l));
+        const quotes  = lines.filter(l=>pull.test(l));
+        const paras   = lines.filter(l=>!bullet.test(l) && !pull.test(l));
+
+        if (bullets.length) bodyEl.appendChild(renderBullets(bullets));
+        quotes.forEach(q=> bodyEl.appendChild(renderQuote(q)));
+        // Group paragraphs into one soft block for rhythm
+        if (paras.length){
+          const wrap = document.createElement('div');
+          paras.forEach(p=> wrap.appendChild(renderParagraph(p)));
+          bodyEl.appendChild(wrap);
+        }
+      }
+    }
+
+    // Outro: anything after the last blank line in the original DID/RESULTS area is handled already;
+    // if you want a hard outro, keep original behavior:
+    if (outroEl && !outroEl.textContent){
+      // minimal heuristic: last two paragraphs of raw as outro if no explicit RESULTS
+      if (!H.RESULTS.test(raw)){
+        const blocks = raw.split(/\n\s*\n/).map(s=>s.trim()).filter(Boolean);
+        if (blocks.length>1){
+          const last = blocks.slice(-1)[0];
+          outroEl.innerHTML = inlineFormat(sanitize(last));
+        }
+      }
     }
   })();
 </script>

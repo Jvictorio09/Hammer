@@ -715,7 +715,7 @@ details[open] .faq-content{ height:auto; }      /* fallback if JS off */
       #expand-gallery .item.active .cap{ opacity:1; font-size:1rem; }
     }
 
-    /* Nice scrollbar for iOS/desktop (optional) */
+    /* Nice scrollbar (optional) */
     #expand-gallery .gallery::-webkit-scrollbar{ height:8px; }
     #expand-gallery .gallery::-webkit-scrollbar-thumb{ background:#e5e7eb; border-radius:8px; }
   </style>
@@ -727,99 +727,107 @@ details[open] .faq-content{ height:auto; }      /* fallback if JS off */
   </div>
 
   <div id="gallery" class="gallery" aria-label="Case study gallery">
+    {# Only render real items; no placeholders. If none render, JS removes section. #}
     {% for cs in service.case_studies.all %}
       {% if cs.full_url %}
       <a href="{{ cs.get_absolute_url }}"
-         class="item{% if forloop.first %} active{% endif %}"
+         class="item"
          title="View {{ cs.title }}"
          data-project="{{ cs.slug }}"
-         role="button" aria-pressed="{% if forloop.first %}true{% else %}false{% endif %}">
+         role="button" aria-pressed="false">
         <figure>
           <img
             src="{{ cs.full_url }}"
             alt="{{ cs.title }}"
-            loading="{% if forloop.first %}eager{% else %}lazy{% endif %}">
+            loading="lazy"
+            sizes="(min-width:1024px) 70vw, 92vw">
           <figcaption class="cap">
             <span class="font-semibold">{{ cs.title }}</span>
             {% if cs.summary %}
               <span class="block text-xs opacity-90 mt-1">{{ cs.summary|truncatewords:12 }}</span>
             {% endif %}
-            <span class="hint"><svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg> View project</span>
+            <span class="hint">
+              <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+              </svg>
+              View project
+            </span>
           </figcaption>
         </figure>
       </a>
       {% endif %}
-    {% empty %}
-      {% for i in "1,2,3,4"|cut:","|make_list %}
-        <div class="item{% if forloop.first %} active{% endif %}">
-          <figure>
-            <img src="https://picsum.photos/2400/1400?random={{ i }}" alt="Placeholder {{ i }}">
-            <figcaption class="cap">Project {{ i }}</figcaption>
-          </figure>
-        </div>
-      {% endfor %}
     {% endfor %}
   </div>
 
   <script>
-    (function(){
-      const gallery = document.getElementById('gallery');
-      if(!gallery) return;
+  (function(){
+    const section = document.getElementById('expand-gallery');
+    const gallery = document.getElementById('gallery');
+    if (!gallery || !section) return;
 
-      const items = Array.from(gallery.querySelectorAll('.item'));
-      if(items.length === 0) return;
+    // Only keep items with a real <img src>
+    const items = Array.from(gallery.querySelectorAll('.item')).filter(el => {
+      const img = el.querySelector('img');
+      return img && img.getAttribute('src') && img.getAttribute('src').trim() !== '';
+    });
 
-      function setActive(target){
-        items.forEach(i=>{
-          i.classList.remove('active');
-          i.setAttribute('aria-pressed','false');
-        });
-        target.classList.add('active');
-        target.setAttribute('aria-pressed','true');
-      }
+    // If nothing valid, remove the entire section (no gap)
+    if (items.length === 0) {
+      section.remove();
+      return;
+    }
 
-      // Click to expand (desktop) + keep link behavior on second click / Enter
-      items.forEach(item=>{
-        item.addEventListener('click', (e)=>{
-          const isDesktop = window.innerWidth > 768;
-          const alreadyActive = item.classList.contains('active');
+    // Ensure one (the first) is active even if template couldn't mark it
+    function setActive(target){
+      items.forEach(i=>{
+        i.classList.remove('active');
+        i.setAttribute('aria-pressed','false');
+      });
+      target.classList.add('active');
+      target.setAttribute('aria-pressed','true');
+    }
+    setActive(items[0]); // initial spotlight
 
-          if(isDesktop){
-            if(!alreadyActive){
-              e.preventDefault(); // first click only spotlights
-              setActive(item);
-            } // else: let it navigate
-          }else{
-            // Mobile: spotlight and center; navigation still works on second tap
-            if(!alreadyActive){
-              e.preventDefault();
-              setActive(item);
-              item.scrollIntoView({behavior:'smooth', inline:'center', block:'nearest'});
-            }
+    // Click to expand (desktop), second click navigates
+    items.forEach(item=>{
+      item.addEventListener('click', (e)=>{
+        const isDesktop = window.innerWidth > 768;
+        const alreadyActive = item.classList.contains('active');
+
+        if (isDesktop){
+          if (!alreadyActive){
+            e.preventDefault(); // first click only spotlights
+            setActive(item);
           }
-        });
-
-        // Keyboard: Enter navigates, Space toggles spotlight
-        item.addEventListener('keydown', (e)=>{
-          if(e.key === ' '){ e.preventDefault(); setActive(item); }
-          if(e.key === 'Enter'){ /* allow native link nav */ }
-        });
+        } else {
+          // Mobile: spotlight and center; navigation on second tap
+          if (!alreadyActive){
+            e.preventDefault();
+            setActive(item);
+            item.scrollIntoView({behavior:'smooth', inline:'center', block:'nearest'});
+          }
+        }
       });
 
-      // Mobile: highlight the card most centered in view while swiping
-      const mql = window.matchMedia('(max-width:768px)');
-      if(mql.matches){
-        const observer = new IntersectionObserver((entries)=>{
-          entries.forEach(entry=>{
-            if(entry.isIntersecting && entry.intersectionRatio > 0.6){
-              setActive(entry.target);
-            }
-          });
-        }, { threshold:[0.6] });
-        items.forEach(i=>observer.observe(i));
-      }
-    })();
+      // Keyboard: Space toggles spotlight; Enter navigates
+      item.addEventListener('keydown', (e)=>{
+        if (e.key === ' ') { e.preventDefault(); setActive(item); }
+      });
+    });
+
+    // Mobile auto-spotlight while swiping
+    const mql = window.matchMedia('(max-width:768px)');
+    if (mql.matches){
+      const observer = new IntersectionObserver((entries)=>{
+        entries.forEach(entry=>{
+          if (entry.isIntersecting && entry.intersectionRatio > 0.6){
+            setActive(entry.target);
+          }
+        });
+      }, { threshold:[0.6] });
+      items.forEach(i=>observer.observe(i));
+    }
+  })();
   </script>
 </section>
 

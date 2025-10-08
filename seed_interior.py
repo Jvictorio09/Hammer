@@ -1,26 +1,19 @@
 #!/usr/bin/env python3
 """
-Seed Case Studies for 'Landscape Design & Build' from local folders → Cloudinary → DB.
+Seed 'Interior Design & Fit-Out' Case Studies from local folders → Cloudinary → DB.
 
-Usage (examples):
-  python seed_landscape.py --settings myProject.settings ^
-    --service-slug landscape-design-build ^
-    --root "E:\\New Downloads\\Hammer\\Landscape" ^
-    --cloud-folder hammer/landscape ^
-    --dry-run
-
-  python seed_landscape.py --settings myProject.settings ^
-    --service-slug landscape-design-build ^
-    --root "E:\\New Downloads\\Hammer\\Landscape" ^
-    --cloud-folder hammer/landscape ^
+Usage:
+  python seed_interior.py --settings myProject.settings ^
+    --service-slug interior-design-fitout ^
+    --root "E:\\New Downloads\\Hammer\\3D Render Interior" ^
+    --cloud-folder hammer/interior ^
     --wipe
 
 Notes:
 - Idempotent: existing Case Studies update instead of duplicating.
-- Only seeds folders: Tilal Al Ghaf, Murooj, Jumeirah Park (typo 'Jumeriah park' tolerated).
+- Discovers all subfolders and uploads images recursively.
 - If --wipe is set, removes only Case Studies (+ gallery images) for the target service.
 """
-
 
 import os
 import sys
@@ -32,19 +25,19 @@ from pathlib import Path
 from typing import Optional, List, Tuple
 
 # -----------------------------------------------------------------------------
-# Django bootstrap (mirror your style)
+# Django bootstrap
 # -----------------------------------------------------------------------------
 BASE_DIR = Path(__file__).resolve().parent
 if str(BASE_DIR) not in sys.path:
     sys.path.insert(0, str(BASE_DIR))
 
-parser = argparse.ArgumentParser(description="Seed Landscape Case Studies from folders")
+parser = argparse.ArgumentParser(description="Seed Interior Case Studies from folders")
 parser.add_argument("--settings", help="Django settings module (e.g., myProject.settings)")
 parser.add_argument("--service-id", type=int, help="Service ID to attach case studies to")
 parser.add_argument("--service-slug", help="Service slug to attach case studies to")
 parser.add_argument("--service-title", help="Service title (fallback if id/slug missing)")
-parser.add_argument("--root", required=True, help=r'Root folder, e.g. "E:\New Downloads\Hammer\Landscape"')
-parser.add_argument("--cloud-folder", default="hammer/landscape", help="Cloudinary folder prefix")
+parser.add_argument("--root", required=True, help=r'Root folder, e.g., "E:\New Downloads\Hammer\3D Render Interior"')
+parser.add_argument("--cloud-folder", default="hammer/interior", help="Cloudinary folder prefix")
 parser.add_argument("--wipe", action="store_true", help="Delete existing Case Studies for this service first")
 parser.add_argument("--dry-run", action="store_true", help="Print actions; no uploads, no DB writes")
 args = parser.parse_args()
@@ -58,48 +51,61 @@ import django  # noqa: E402
 django.setup()
 
 from django.db import transaction  # noqa: E402
-
 from myApp.models import (  # noqa: E402
     Service,
     CaseStudy,
 )
 
-# Gallery is stored in CaseStudy.gallery_urls as JSONField (no separate model needed)
-
 # -----------------------------------------------------------------------------
 # Config / Targets
 # -----------------------------------------------------------------------------
-# Lowercased keys for robust matching.
+# Normalized folder names → metadata
 TARGETS = {
-    "tilal al ghaf": {
-        "title": "Tilal Al Ghaf",
-        "summary": "A modern oasis in the heart of the city, featuring a private courtyard pool framed by elegant cactus arrangements and olive trees.",
-        "description": "A modern oasis in the heart of the city, the Tilal Al Ghaf landscape project features a private courtyard pool framed by elegant cactus arrangements and olive trees. Subtle lighting highlights the textures of natural elements, creating a warm, inviting atmosphere perfect for relaxing evenings and intimate gatherings.",
-        "completion_date": date(2025, 6, 27),
-        "location": "Dubai",
+    "greg- the villa": {
+        "title": "The Villa — Contemporary Elegance",
+        "summary": "Refined living spaces with minimalist lines, natural materials, and timeless finishes.",
+        "description": "A modern villa interior where clean geometry meets warm materiality. Floor-to-ceiling apertures invite natural light across open-plan living zones, while bespoke joinery and neutral palettes create a backdrop for curated art and quiet luxury.",
+        "completion_date": date(2025, 7, 15),
+        "location": "Dubai, UAE",
         "is_featured": True,
     },
-    "murooj": {
-        "title": "Murooj Al Furjan",
-        "summary": "Luxury landscape design in Dubai with a modern pool, pergola, and lush greenery.",
-        "description": "Luxury landscape design in Dubai with a modern pool, pergola, and lush greenery. Created by Hammer Landscape & Pools for stylish outdoor living.",
-        "completion_date": date(2025, 9, 3),
+    "home office": {
+        "title": "Executive Home Office",
+        "summary": "Sophisticated workspace blending productivity with residential comfort.",
+        "description": "A tailored home office designed for focus and creativity. Custom millwork, task lighting, and ergonomic planning meet residential warmth—paneling, layered textures, and considered acoustics for video calls and deep work.",
+        "completion_date": date(2025, 8, 10),
         "location": "Dubai, UAE",
         "is_featured": False,
     },
-    "jumeirah park": {
-        "title": "Jumeirah Park",
-        "summary": "Family-friendly landscape with clean hardscape, night lighting, and resilient planting.",
-        "description": "A thoughtfully designed outdoor space featuring clean hardscape, strategic night lighting, and climate-resilient planting. Perfect for family living and entertaining in Dubai's environment.",
-        "completion_date": date(2025, 9, 4),
+    "jordan apartment": {
+        "title": "Jordan Residence",
+        "summary": "Contemporary apartment with flowing spaces and residential intimacy.",
+        "description": "A modern apartment balancing openness with privacy. Circulation flows between living, dining, and private quarters through subtle threshold moments. Material choices—soft stone, warm timber, linen textiles—echo the comfort of home.",
+        "completion_date": date(2025, 6, 20),
+        "location": "Amman, Jordan",
+        "is_featured": True,
+    },
+    "jumeira park": {
+        "title": "Jumeirah Park Family Villa",
+        "summary": "Family-friendly interiors with durable finishes and flexible zoning.",
+        "description": "A villa interior designed for everyday family life. Durable surfaces, smart storage, and flexible furniture layouts accommodate play, study, and entertaining. Neutral foundations allow personality to evolve over time.",
+        "completion_date": date(2025, 9, 5),
+        "location": "Dubai, UAE",
+        "is_featured": False,
+    },
+    "random int. render": {
+        "title": "Signature Interiors Collection",
+        "summary": "Curated interior moments showcasing diverse spatial typologies and material vocabularies.",
+        "description": "A collection of interior vignettes—foyers, dining rooms, family living—each exploring different aesthetic directions. From formal to casual, these spaces demonstrate versatility in planning, materiality, and lighting design.",
+        "completion_date": date(2025, 8, 25),
         "location": "Dubai, UAE",
         "is_featured": False,
     },
 }
 
-# Common misspellings/variations (left side will be normalized to the right).
+# Common variations
 TARGET_ALIASES = {
-    "jumeriah park": "jumeirah park",
+    "jumeirah park": "jumeira park",
 }
 
 # -----------------------------------------------------------------------------
@@ -141,7 +147,6 @@ def ensure_cloudinary():
     except Exception:
         raise RuntimeError("cloudinary is required. Install with: pip install cloudinary")
 
-    # Validate credentials early, fail fast
     has_url = bool(os.getenv("CLOUDINARY_URL"))
     has_parts = all([
         os.getenv("CLOUDINARY_CLOUD_NAME"),
@@ -209,7 +214,6 @@ def cloudinary_upload(data_bytes: bytes, public_id: str, folder: Optional[str], 
     import cloudinary
     import cloudinary.uploader
 
-    # Configure (CLOUDINARY_URL or discrete envs)
     cloudinary.config(
         cloud_name=os.getenv("CLOUDINARY_CLOUD_NAME"),
         api_key=os.getenv("CLOUDINARY_API_KEY"),
@@ -219,7 +223,6 @@ def cloudinary_upload(data_bytes: bytes, public_id: str, folder: Optional[str], 
 
     full_public_id = f"{folder}/{public_id}" if folder else public_id
 
-    # Upload original (already pre-compressed). Delivery transforms are added via URL (no re-uploads).
     resp = cloudinary.uploader.upload(
         io.BytesIO(data_bytes),
         public_id=full_public_id,
@@ -228,8 +231,8 @@ def cloudinary_upload(data_bytes: bytes, public_id: str, folder: Optional[str], 
         use_filename=True,
         unique_filename=False,
         folder=folder or None,
-        quality="auto:good",  # delivery optimization
-        format="jpg",         # canonicalize photos to jpg
+        quality="auto:good",
+        format="jpg",
     )
     return resp
 
@@ -237,7 +240,6 @@ def cloudinary_upload(data_bytes: bytes, public_id: str, folder: Optional[str], 
 def cloudinary_variant(base_url: str, width: int, height: int, crop="fill", gravity="auto") -> str:
     """
     Build a **delivery URL** by injecting a Cloudinary transformation (no re-upload).
-    Example: adds /c_fill,g_auto,w_<w>,h_<h>,f_auto,q_auto:good after /upload/.
     """
     if "/upload/" not in base_url:
         return base_url
@@ -247,7 +249,7 @@ def cloudinary_variant(base_url: str, width: int, height: int, crop="fill", grav
 
 def discover_projects(root: Path):
     """
-    Scan root for target subfolders and RECURSIVELY find all image files (including subfolders).
+    Scan root for target subfolders and RECURSIVELY find all image files.
     Returns list of (folder_name, project_config, folder_path, image_paths[])
     """
     found = []
@@ -279,11 +281,12 @@ def upsert(instance, data: dict, fields: List[str]) -> bool:
         instance.save()
     return changed
 
+
 # -----------------------------------------------------------------------------
 # Seeder
 # -----------------------------------------------------------------------------
 @transaction.atomic
-def seed_landscape(service: Service, root: Path, cloud_folder: str, dry_run: bool, wipe: bool):
+def seed_interior(service: Service, root: Path, cloud_folder: str, dry_run: bool, wipe: bool):
     ensure_pillow()
     ensure_cloudinary()
 
@@ -309,7 +312,7 @@ def seed_landscape(service: Service, root: Path, cloud_folder: str, dry_run: boo
         completion_date = config["completion_date"]
         location = config["location"]
         is_featured = config["is_featured"]
-        
+
         print(f"\n--- {title}  ({folder_name}) ---")
         print(f"    Found {len(image_paths)} images (including subfolders)")
 
@@ -331,34 +334,37 @@ def seed_landscape(service: Service, root: Path, cloud_folder: str, dry_run: boo
         hero_thumb_url = cloudinary_variant(base_hero_url, width=800, height=450)
 
         # Upsert Case Study
-        cs_obj, _ = CaseStudy.objects.get_or_create(service=service, title=title)
-        changed = upsert(
-            cs_obj,
-            {
-                "hero_image_url": hero_full_url,
-                "thumb_url": hero_thumb_url,
-                "full_url": hero_full_url,
-                "summary": summary,
-                "description": description,
-                "completion_date": completion_date,
-                "scope": "Design + Build",
-                "size_label": "—",
-                "timeline_label": "—",
-                "status_label": "Completed",
-                "tags_csv": "Landscape, Pool, Lighting",
-                "is_featured": is_featured,
-                "sort_order": idx,
-                "cta_url": "",
-                "location": location,
-                "project_type": "landscape",
-            },
-            [
-                "hero_image_url","thumb_url","full_url","summary","description",
-                "completion_date","scope","size_label","timeline_label","status_label",
-                "tags_csv","is_featured","sort_order","cta_url","location","project_type",
-            ],
-        )
-        print(f" {'[~] Updated' if changed else '[=] Kept   '} Case Study • {cs_obj.title}")
+        if not dry_run:
+            cs_obj, _ = CaseStudy.objects.get_or_create(service=service, title=title)
+            changed = upsert(
+                cs_obj,
+                {
+                    "hero_image_url": hero_full_url,
+                    "thumb_url": hero_thumb_url,
+                    "full_url": hero_full_url,
+                    "summary": summary,
+                    "description": description,
+                    "completion_date": completion_date,
+                    "scope": "Design + Fit-Out",
+                    "size_label": "—",
+                    "timeline_label": "—",
+                    "status_label": "Completed",
+                    "tags_csv": "Interior, Design, Fit-Out, 3D Render",
+                    "is_featured": is_featured,
+                    "sort_order": idx,
+                    "cta_url": "",
+                    "location": location,
+                    "project_type": "interior",
+                },
+                [
+                    "hero_image_url","thumb_url","full_url","summary","description",
+                    "completion_date","scope","size_label","timeline_label","status_label",
+                    "tags_csv","is_featured","sort_order","cta_url","location","project_type",
+                ],
+            )
+            print(f" {'[~] Updated' if changed else '[=] Kept   '} Case Study • {cs_obj.title}")
+        else:
+            print(f" [dry] Would create/update Case Study • {title}")
 
         # Gallery: build JSON array for gallery_urls field
         gallery_items = []
@@ -374,7 +380,7 @@ def seed_landscape(service: Service, root: Path, cloud_folder: str, dry_run: boo
 
             thumb_url = cloudinary_variant(base_url, width=800, height=450)
             full_url = cloudinary_variant(base_url, width=1600, height=900)
-            
+
             gallery_items.append({
                 "thumb": thumb_url,
                 "full": full_url,
@@ -385,7 +391,7 @@ def seed_landscape(service: Service, root: Path, cloud_folder: str, dry_run: boo
         if not dry_run:
             cs_obj.gallery_urls = gallery_items
             cs_obj.save()
-        
+
         print(f"     ↳ {'(dry-run) ' if dry_run else ''}Seeded {len(image_paths)} gallery images to gallery_urls")
 
 
@@ -410,7 +416,7 @@ if __name__ == "__main__":
 
     root_path = Path(args.root)
     try:
-        seed_landscape(
+        seed_interior(
             service=svc,
             root=root_path,
             cloud_folder=args.cloud_folder,
@@ -421,4 +427,5 @@ if __name__ == "__main__":
         print(f"[!] Seeding failed: {e}")
         sys.exit(1)
 
-    print("\n✔ Landscape Case Studies seed complete.")
+    print("\n✔ Interior Case Studies seed complete.")
+

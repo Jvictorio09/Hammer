@@ -39,7 +39,7 @@
   .hero{
     position: relative;
     isolation: isolate;                 /* keeps overlays inside */
-    min-height: 52vh;                   /* tweak as you like */
+    min-height: 70vh;                   /* increased to showcase the beautiful image */
     display: grid;
     align-items: center;
     color: #fff;                        /* white text on image */
@@ -50,7 +50,7 @@
     position:absolute; inset:0; z-index:-2;
     background-image: var(--hero-img);
     background-size: cover;
-    background-position: center center; /* try 'center 35%' if you need a focal point */
+    background-position: center 40%; /* adjusted for 3:2 image - shows more of the middle/upper portion */
     background-repeat: no-repeat;
     filter: none;
     transform: scale(1.02);             /* tiny zoom to avoid edge gaps on mobile */
@@ -63,9 +63,12 @@
     /* if your image is already dark, reduce the final stop to .45 */
   }
 
-  /* Optional: taller hero on desktop */
+  /* Optional: taller hero on desktop - optimized for 3:2 aspect ratio images */
   @media (min-width: 1024px){
-    .hero{ min-height: 64vh; }
+    .hero{ min-height: 90vh; }
+  }
+  @media (min-width: 1536px){
+    .hero{ min-height: 95vh; /* ultrawide: show even more of the beautiful image */ }
   }
 
   /* Respect users who prefer less motion (disables the tiny zoom) */
@@ -129,7 +132,7 @@
 
 <!-- HERO -->
 <section class="hero hero--image grain" aria-label="About Hammer hero"
-         style="--hero-img: url('{{ hero_image_url|default:"https://images.unsplash.com/photo-1493666438817-866a91353ca9?q=80&w=2000&auto=format&fit=crop" }}');">
+         style="--hero-img: url('{{ hero_image_url|default:"https://res.cloudinary.com/dstlxtvar/image/upload/v1759765286/uploads/copy-of-img_0750-enhanced-nr.jpg" }}');">
   <div class="hero__overlay"></div>
   <div class="container hero__inner">
     <p class="eyebrow">About Hammer</p>
@@ -345,7 +348,6 @@
     cards.forEach(c => io.observe(c));
   })();
 </script>
-
 <section id="svcShowcase" class="section relative">
   <style>
     #svcShowcase{
@@ -372,16 +374,18 @@
       content:"";position:absolute;inset:0;border-radius:inherit;padding:1px;
       background:linear-gradient(135deg,#e9eef3,rgba(24,175,171,.25));
       -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
-      -webkit-mask-composite:xor;mask-composite:exclude;pointer-events:none;z-index:2;
+      -webkit-mask-composite:xor;mask-composite:exclude;pointer-events:none;z-index:3;
     }
-    #svcShowcase .panel-inner{position:relative;aspect-ratio:4/3}
+    #svcShowcase .panel-inner{position:relative;aspect-ratio:4/3;background:#eef2f6}
     #svcShowcase .panel img{
       position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:inherit;
-      transition:opacity .45s ease,transform .45s ease;will-change:opacity,transform;
+      opacity:0;transform:scale(1.02);transition:opacity .32s ease,transform .45s ease;
+      will-change:opacity,transform; z-index:1; pointer-events:none;
     }
-    #svcShowcase .fade-in{opacity:1;transform:scale(1)}
-    #svcShowcase .fade-out{opacity:0;transform:scale(1.02)}
-    #svcShowcase .imgFallback{position:absolute;inset:0;display:grid;place-items:center;color:#9aa7b5}
+    #svcShowcase .panel img.is-top{ z-index:2; }
+    #svcShowcase .panel img.show{
+      opacity:1; transform:scale(1);
+    }
     #svcShowcase .stack{border-radius:var(--radius);background:var(--bg);box-shadow:var(--shadow);overflow:hidden}
     #svcShowcase .row{background:var(--card);position:relative}
     #svcShowcase .row + .row{border-top:1px solid var(--ring)}
@@ -426,32 +430,31 @@
   <div class="wrap">
     <header class="head">
       <span class="eyebrow">SERVICES</span>
-      <h2>What we do</h2>
-      <p class="sub">Find out which one of our services fit the needs of your project</p>
+      <h2>Comprehensive Design & Build Solutions</h2>
+      <p class="sub">From concept to completion, we deliver end-to-end luxury solutions across interior design, joinery, marble fabrication, landscaping, and facility management—all under one roof.</p>
     </header>
 
     <div class="grid">
       <!-- Left sticky image -->
-      <aside class="panel">
+      <aside class="panel" aria-live="polite">
         <div class="panel-inner">
           {% with first=services_db|first %}
-            {% if first and first.first_media_url %}
-              <img id="svcImgA" class="fade-in" src="{{ first.first_media_url }}" alt="{{ first.title }}"
-                   loading="eager" fetchpriority="high" sizes="(min-width:1100px) 620px, 92vw">
-            {% else %}
-              <div id="svcImgA" class="imgFallback">No image yet</div>
-            {% endif %}
+            {% firstof first.hero_media_url "" as first_src %}
           {% endwith %}
-          <img id="svcImgB" class="fade-out" src="" alt="" style="opacity:0">
+          {% comment %} Always render two IMG tags with safe placeholders {% endcomment %}
+          {% with ph="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 3'%3E%3Crect width='4' height='3' fill='%23eef2f6'/%3E%3C/svg%3E" %}
+            <img id="svcImgA" class="show is-top" src="{{ first_src|default:ph }}" alt="" loading="eager" fetchpriority="high" sizes="(min-width:1100px) 620px, 92vw">
+            <img id="svcImgB" class="" src="{{ ph }}" alt="" loading="lazy" sizes="(min-width:1100px) 620px, 92vw">
+          {% endwith %}
         </div>
       </aside>
 
       <!-- Right accordion -->
       <div class="stack" id="svcAcc">
         {% for s in services_db %}
-          {% firstof s.hero_subcopy s.pinned_body_1 s.pinned_body_2 "We’ll tailor this service to your budget, timeline and taste." as svc_desc %}
+          {% firstof s.hero_subcopy s.pinned_body_1 s.pinned_body_2 "Premium design and build solutions tailored to your vision, budget, and timeline—delivered with precision and care by our integrated team." as svc_desc %}
           <div class="row"
-               data-img="{{ s.first_media_url|default:'' }}"
+               data-img="{{ s.hero_media_url|default:'' }}"
                data-title="{{ s.title|escape }}"
                aria-expanded="{% if forloop.first %}true{% else %}false{% endif %}">
             <button class="btn" type="button" aria-controls="svc-pane-{{ forloop.counter }}">
@@ -468,68 +471,119 @@
                 <p class="desc">{{ svc_desc|striptags|truncatechars:260 }}</p>
               {% endif %}
               <a class="cta" href="{% url 'service_detail' s.slug %}">
-                Explore service →
+                Learn more →
               </a>
             </div>
           </div>
         {% empty %}
-          <div class="row"><div class="panel-body" style="max-height:none;padding:1rem">No active services yet.</div></div>
+          <div class="row"><div class="panel-body" style="max-height:none;padding:1rem">Our services are being updated. Please check back soon for our comprehensive design and build solutions.</div></div>
         {% endfor %}
       </div>
     </div>
   </div>
 
   <script>
-  (function(){
-    const acc  = document.getElementById('svcAcc');
-    const rows = acc ? [...acc.querySelectorAll('.row')] : [];
-    const imgA = document.getElementById('svcImgA');
-    const imgB = document.getElementById('svcImgB');
-    if (!acc || !rows.length || !imgA) return;
-
-    rows.forEach(r => { const s=r.dataset.img; if(s){ const i=new Image(); i.src=s; } });
-
-    function setMaxHeight(body, expand){
-      if(!body) return;
-      body.style.maxHeight = expand ? (body.scrollHeight + 'px') : '0px';
-    }
-    function swapImage(src, alt){
-      if(!src || !(imgA instanceof HTMLImageElement) || !(imgB instanceof HTMLImageElement)) return;
-      const aVisible = imgA.classList.contains('fade-in');
-      const top=aVisible?imgB:imgA, bottom=aVisible?imgA:imgB;
-      top.src=src; top.alt=alt||''; top.classList.remove('fade-out'); top.classList.add('fade-in');
-      bottom.classList.remove('fade-in'); bottom.classList.add('fade-out');
-    }
-
-    rows.forEach(row=>{
-      const btn=row.querySelector('.btn');
-      const body=row.querySelector('.panel-body');
-      btn.addEventListener('click',()=>{
-        const isOpen=row.getAttribute('aria-expanded')==='true';
-        rows.forEach(r=>{
-          if(r!==row){
-            r.setAttribute('aria-expanded','false');
-            setMaxHeight(r.querySelector('.panel-body'), false);
+    (function(){
+      const acc  = document.getElementById('svcAcc');
+      const rows = acc ? Array.from(acc.querySelectorAll('.row')) : [];
+      const imgA = document.getElementById('svcImgA');
+      const imgB = document.getElementById('svcImgB');
+      if (!acc || !rows.length || !imgA || !imgB) return;
+    
+      // Preload all images
+      rows.forEach(r => { const s=r.dataset.img; if(s){ const i=new Image(); i.src=s; } });
+    
+      // Accordion height helper
+      function setMaxHeight(body, expand){
+        if(!body) return;
+        body.style.maxHeight = expand ? (body.scrollHeight + 'px') : '0px';
+      }
+    
+      // Guard against rapid clicks
+      let swapToken = 0;
+      let topIsA = true;
+      let currentShown = (imgA.getAttribute('src') || '');
+    
+      function preload(src){
+        const pic = new Image();
+        pic.decoding = 'async';
+        pic.src = src;
+        if (pic.decode) return pic.decode().then(()=>src).catch(()=>src);
+        return new Promise(res => pic.onload = () => res(src));
+      }
+    
+      function swapImage(src, alt){
+        if (!src || src === currentShown) return;
+        const token = ++swapToken;
+        preload(src).then(readySrc => {
+          if (token !== swapToken) return;
+          const top    = topIsA ? imgB : imgA;
+          const bottom = topIsA ? imgA : imgB;
+    
+          top.src = readySrc;
+          if (alt) top.alt = alt;
+    
+          top.classList.add('show','is-top');
+          bottom.classList.remove('is-top');
+          requestAnimationFrame(()=>{
+            bottom.classList.remove('show');
+            topIsA = !topIsA;
+            currentShown = readySrc;
+          });
+        });
+      }
+    
+      // ✅ NEW: force the first (expanded) row’s image to display immediately
+      (function initFirstImage(){
+        const openRow = rows.find(r => r.getAttribute('aria-expanded') === 'true') || rows[0];
+        if (!openRow) return;
+        const src = openRow.dataset.img;
+        const alt = openRow.dataset.title || '';
+        if (src){
+          // Put it on A synchronously so there’s no gray box on first paint
+          imgA.src = src;
+          imgA.alt = alt;
+          imgA.classList.add('show','is-top');
+          imgB.classList.remove('show','is-top');
+          currentShown = src;
+          preload(src); // warm cache
+        }
+      })();
+    
+      // Click handlers
+      rows.forEach(row=>{
+        const btn=row.querySelector('.btn');
+        const body=row.querySelector('.panel-body');
+        btn.addEventListener('click',()=>{
+          const isOpen=row.getAttribute('aria-expanded')==='true';
+          rows.forEach(r=>{
+            if(r!==row){
+              r.setAttribute('aria-expanded','false');
+              setMaxHeight(r.querySelector('.panel-body'), false);
+            }
+          });
+          row.setAttribute('aria-expanded', String(!isOpen));
+          setMaxHeight(body, !isOpen);
+          if(!isOpen){
+            const src=row.dataset.img, alt=row.dataset.title||'';
+            if(src) swapImage(src, alt);
           }
         });
-        row.setAttribute('aria-expanded', String(!isOpen));
-        setMaxHeight(body, !isOpen);
-        if(!isOpen){
-          const src=row.dataset.img, alt=row.dataset.title||''; if(src) swapImage(src, alt);
-        }
       });
-    });
-
-    window.addEventListener('resize',()=>{
-      rows.forEach(r=>{
-        if(r.getAttribute('aria-expanded')==='true'){
-          setMaxHeight(r.querySelector('.panel-body'), true);
-        }
+    
+      // Keep open panel heights correct on resize
+      window.addEventListener('resize',()=>{
+        rows.forEach(r=>{
+          if(r.getAttribute('aria-expanded')==='true'){
+            setMaxHeight(r.querySelector('.panel-body'), true);
+          }
+        });
       });
-    });
-  })();
-  </script>
+    })();
+    </script>
+    
 </section>
+
 
 
 

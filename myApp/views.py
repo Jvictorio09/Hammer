@@ -208,6 +208,21 @@ from .models import Service, CaseStudy
 def home(request):
     services = Service.objects.filter(is_active=True).order_by("sort_order", "title")
 
+    # Get first case study for each service
+    case_studies_by_service = {}
+    services_with_projects = []
+    
+    for service in services:
+        first_case_study = (
+            CaseStudy.objects
+            .filter(service=service)
+            .order_by("sort_order", "title")
+            .first()
+        )
+        if first_case_study:
+            case_studies_by_service[service.slug] = first_case_study
+            services_with_projects.append(service)
+
     # Choose the first featured case study; fallback to any case study; fallback to None.
     featured_cs = (
         CaseStudy.objects.select_related("service")
@@ -217,13 +232,19 @@ def home(request):
         or CaseStudy.objects.select_related("service").order_by("sort_order", "title").first()
     )
 
-    # Optional: build filter labels from service titles
-    filters = ["All"] + list(services.values_list("title", flat=True))
+    # Build filter data for services that have case studies
+    project_filters = []
+    for service in services_with_projects:
+        project_filters.append({
+            'title': service.title,
+            'slug': service.slug
+        })
 
     return render(request, "index.html", {
         "services": services,
         "featured_cs": featured_cs,
-        "project_filters": filters,
+        "project_filters": project_filters,
+        "case_studies_by_service": case_studies_by_service,
     })
 
 

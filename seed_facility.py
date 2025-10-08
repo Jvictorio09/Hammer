@@ -1,21 +1,28 @@
 #!/usr/bin/env python3
 """
-Seed a complete 'Facility Management & Aftercare' Service page with rich, production-level content.
+Seed 'Facility Management & Aftercare' Service from local images → Cloudinary → DB.
 
 Usage:
-  python seed_facility.py --settings myProject.settings
-  python seed_facility.py --settings myProject.settings --wipe
-  python seed_facility.py --settings myProject.settings --title "Facility Management & Aftercare" --slug "facility-management"
+  python seed_facility.py --settings myProject.settings ^
+    --service-slug facility-management ^
+    --root "E:\\New Downloads\\Hammer\\Facility Management" ^
+    --cloud-folder hammer/facility ^
+    --wipe
 
 Notes:
-- Idempotent: existing rows are updated in place (unless --wipe).
-- Content emphasizes Hard + Soft Services, uptime, compliance, and transparent reporting.
+- Idempotent: existing rows are updated (unless --wipe).
+- Seeds "service showcases" as CaseStudy objects (team in action, not completed projects).
+- Images are distributed equally across the 6 showcases.
 """
 
 import os
 import sys
+import io
 import argparse
+import hashlib
+from datetime import date
 from pathlib import Path
+from typing import List, Tuple, Optional
 
 # -----------------------------------------------------------------------------
 # Django bootstrap
@@ -24,11 +31,14 @@ BASE_DIR = Path(__file__).resolve().parent
 if str(BASE_DIR) not in sys.path:
     sys.path.insert(0, str(BASE_DIR))
 
-parser = argparse.ArgumentParser(description="Seed Facility Management Service + related content")
-parser.add_argument("--settings", help="Django settings module (e.g. myProject.settings)")
-parser.add_argument("--title", default="Facility Management & Aftercare")
-parser.add_argument("--slug", default="facility-management")
-parser.add_argument("--wipe", action="store_true", help="Delete existing related rows before seeding")
+parser = argparse.ArgumentParser(description="Seed Facility Management & Aftercare Service")
+parser.add_argument("--settings", help="Django settings module (e.g., myProject.settings)")
+parser.add_argument("--service-id", type=int, help="Service ID to update")
+parser.add_argument("--service-slug", help="Service slug to update")
+parser.add_argument("--root", required=True, help=r'Root folder, e.g., "E:\New Downloads\Hammer\Facility Management"')
+parser.add_argument("--cloud-folder", default="hammer/facility", help="Cloudinary folder prefix")
+parser.add_argument("--wipe", action="store_true", help="Delete existing related rows first")
+parser.add_argument("--dry-run", action="store_true", help="Print actions; no uploads, no DB writes")
 args = parser.parse_args()
 
 if args.settings:
@@ -40,355 +50,472 @@ import django  # noqa: E402
 django.setup()
 
 from django.db import transaction  # noqa: E402
-from django.utils import timezone  # noqa: E402
-
 from myApp.models import (  # noqa: E402
     Service,
-    ServiceFeature,
-    ServiceEditorialImage,
-    ServiceProjectImage,
     ServiceCapability,
-    ServiceProcessStep,
     ServiceMetric,
+    ServiceProcessStep,
     ServiceFAQ,
-    ServicePartnerBrand,
-    ServiceTestimonial,
-    Insight,
+    CaseStudy,
 )
 
 # -----------------------------------------------------------------------------
-# Content (Hard + Soft services; uptime + cleanliness)
+# Image Utilities
 # -----------------------------------------------------------------------------
+def ensure_pillow():
+    try:
+        import PIL  # noqa
+    except Exception:
+        raise RuntimeError("Pillow is required. Install with: pip install Pillow")
 
-HERO_MEDIA = "https://images.unsplash.com/photo-1581091870622-7b1c1ae0f15b?q=80&w=2000&auto=format&fit=crop"
 
-SERVICE_DEFAULTS = dict(
-    eyebrow="Facilities",
-    hero_headline="Facility Management & Aftercare in Dubai",
-    hero_subcopy=(
-        "Aftercare should never be an afterthought. Hammer’s dedicated hard- and soft-services teams protect your "
-        "most valuable assets—keeping power, water and HVAC systems reliable while maintaining clean, safe spaces "
-        "for people to work and thrive."
-    ),
-    hero_media_url=HERO_MEDIA,
-    pinned_heading="Our Capability",
-    pinned_title="Uptime, cleanliness, and compliance—delivered by one accountable team.",
-    pinned_body_1=(
-        "From MEP and HVAC to daily housekeeping, we plan preventive maintenance, respond 24/7, and report with "
-        "transparency. Assets are tracked, tasks are sequenced, and SLAs are visible in plain language."
-    ),
-    pinned_body_2="Engineers, supervisors and soft-services leads under a single contract and weekly cadence.",
-    insights_heading="Insights",
-    insights_subcopy="Guides on PPM, energy optimization and compliance for Dubai facilities.",
-    stat_projects="120+ sites",
-    stat_years="20+ yrs",
-    stat_specialists="100+ technicians",
-    seo_meta_title="Facility Management & Aftercare in Dubai | Hammer Group",
-    seo_meta_description=(
-        "Hard & soft facility management in Dubai—HVAC, MEP, electrical, plumbing, cleaning and hygiene—"
-        "with preventive maintenance, 24/7 response and transparent SLA reporting."
-    ),
-    canonical_path="/services/facility-management/",
-)
+def ensure_cloudinary():
+    try:
+        import cloudinary  # noqa
+        import cloudinary.uploader  # noqa
+    except Exception:
+        raise RuntimeError("cloudinary is required. Install with: pip install cloudinary")
 
-CAPABILITIES = [
-    {
-        "title": "Hard Services (MEP/HVAC/Electrical/Plumbing)",
-        "blurb": "Planned preventive maintenance, breakdown response and lifecycle replacements across critical systems.",
-        "icon_class": "fa-solid fa-gears",
-    },
-    {
-        "title": "Soft Services (Cleaning & Hygiene)",
-        "blurb": "Daily schedules, periodic deep cleans and high-touch sanitation with measurable quality checks.",
-        "icon_class": "fa-solid fa-broom",
-    },
-    {
-        "title": "PPM Planning & CMMS",
-        "blurb": "Digitized asset registers, task libraries, QR tagging and audit trails for every intervention.",
-        "icon_class": "fa-solid fa-clipboard-check",
-    },
-    {
-        "title": "Energy & Performance",
-        "blurb": "HVAC tuning, BMS coordination and retrofit recommendations to cut consumption and downtime.",
-        "icon_class": "fa-solid fa-bolt",
-    },
-    {
-        "title": "HSE & Compliance",
-        "blurb": "Permits-to-work, RAMS, statutory inspections and authority coordination built into the plan.",
-        "icon_class": "fa-solid fa-shield-heart",
-    },
-    {
-        "title": "24/7 Helpdesk & Response",
-        "blurb": "Tiered SLAs with escalation paths, spare parts strategy and on-call coverage.",
-        "icon_class": "fa-solid fa-headset",
-    },
-]
+    has_url = bool(os.getenv("CLOUDINARY_URL"))
+    has_parts = all([
+        os.getenv("CLOUDINARY_CLOUD_NAME"),
+        os.getenv("CLOUDINARY_API_KEY"),
+        os.getenv("CLOUDINARY_API_SECRET"),
+    ])
+    if not (has_url or has_parts):
+        raise RuntimeError(
+            "Missing Cloudinary credentials. Set CLOUDINARY_URL or "
+            "CLOUDINARY_CLOUD_NAME / CLOUDINARY_API_KEY / CLOUDINARY_API_SECRET."
+        )
 
-# Exactly 4 steps per your note
-PROCESS = [
-    {"step_no": 1, "title": "Mobilization & Asset Audit", "description": "Onboarding, asset register build, condition survey and risk map."},
-    {"step_no": 2, "title": "PPM & Schedules",            "description": "Calendarized hard- and soft-service tasks with documented methods."},
-    {"step_no": 3, "title": "Delivery & Response",         "description": "Daily routines, periodic tasks and 24/7 call-outs with SLA tracking."},
-    {"step_no": 4, "title": "Reporting & Improvement",     "description": "Monthly dashboards, findings, energy insights and continuous improvement."},
-]
 
-METRICS = [
-    {"value": "99.5%",      "label": "Critical Uptime"},
-    {"value": "24/7",       "label": "Rapid Response"},
-    {"value": "98%",        "label": "SLA Compliance"},
-]
+def slugify(text: str) -> str:
+    import re
+    s = text.strip().lower()
+    s = re.sub(r"[^a-z0-9]+", "-", s)
+    s = re.sub(r"-+", "-", s).strip("-")
+    return s
 
-# Even count → BA pairs (before/after for soft-services + plant rooms)
-EDITORIALS = [
-    {"image_url": "https://images.unsplash.com/photo-1527515637462-cff94eecc1ac?q=80&w=1600&auto=format&fit=crop", "caption": "Lobby — Before"},
-    {"image_url": "https://images.unsplash.com/photo-1505691723518-36a5ac3b2b8f?q=80&w=1600&auto=format&fit=crop", "caption": "Lobby — After"},
-    {"image_url": "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?q=80&w=1600&auto=format&fit=crop", "caption": "Plant Room — Before"},
-    {"image_url": "https://images.unsplash.com/photo-1581093588401-16a1d3f0b7cf?q=80&w=1600&auto=format&fit=crop", "caption": "Plant Room — After"},
-]
 
-# Signature sites (illustrative)
-PROJECTS = [
-    {
-        "thumb_url": "https://images.unsplash.com/photo-1523359346063-d879354c0ea5?q=80&w=800&auto=format&fit=crop",
-        "full_url":  "https://images.unsplash.com/photo-1523359346063-d879354c0ea5?q=80&w=1600&auto=format&fit=crop",
-        "caption":   "Corporate HQ — MEP & Soft Services",
-    },
-    {
-        "thumb_url": "https://images.unsplash.com/photo-1557244053-23d685287bc3?q=80&w=800&auto=format&fit=crop",
-        "full_url":  "https://images.unsplash.com/photo-1557244053-23d685287bc3?q=80&w=1600&auto=format&fit=crop",
-        "caption":   "Healthcare — Cleanliness & Compliance",
-    },
-    {
-        "thumb_url": "https://images.unsplash.com/photo-1506377247377-2a5b3b417ebb?q=80&w=800&auto=format&fit=crop",
-        "full_url":  "https://images.unsplash.com/photo-1506377247377-2a5b3b417ebb?q=80&w=1600&auto=format&fit=crop",
-        "caption":   "Retail Mall — Uptime & Energy",
-    },
-    {
-        "thumb_url": "https://images.unsplash.com/photo-1507209696998-3c532be9b2b1?q=80&w=800&auto=format&fit=crop",
-        "full_url":  "https://images.unsplash.com/photo-1507209696998-3c532be9b2b1?q=80&w=1600&auto=format&fit=crop",
-        "caption":   "Hospitality — Guest Areas",
-    },
-    {
-        "thumb_url": "https://images.unsplash.com/photo-1521791055366-0d553872125f?q=80&w=800&auto=format&fit=crop",
-        "full_url":  "https://images.unsplash.com/photo-1521791055366-0d553872125f?q=80&w=1600&auto=format&fit=crop",
-        "caption":   "Industrial — Critical Systems",
-    },
-]
+def file_md5(p: Path) -> str:
+    h = hashlib.md5()
+    with p.open("rb") as f:
+        for chunk in iter(lambda: f.read(1024 * 1024), b""):
+            h.update(chunk)
+    return h.hexdigest()[:12]
 
-BRANDS = [
-    {"name": "Siemens",   "logo_url": "https://dummyimage.com/240x80/eeeeee/111111&text=Siemens",   "site_url": "https://www.siemens.com/"},
-    {"name": "Honeywell", "logo_url": "https://dummyimage.com/240x80/eeeeee/111111&text=Honeywell", "site_url": "https://www.honeywell.com/"},
-    {"name": "Nilfisk",   "logo_url": "https://dummyimage.com/240x80/eeeeee/111111&text=Nilfisk",   "site_url": "https://www.nilfisk.com/"},
-]
 
-TESTIMONIALS = [
-    {
-        "author": "A. Khan",
-        "role_company": "Facilities Director, Corporate HQ",
-        "quote": "Uptime and cleanliness improved within the first quarter—backed by clear dashboards.",
-        "headshot_url": "https://i.pravatar.cc/120?img=17",
-    },
-    {
-        "author": "L. Ortega",
-        "role_company": "Operations Manager, Healthcare",
-        "quote": "PPM discipline is excellent. Audits are smooth and escalations are fast and professional.",
-        "headshot_url": "https://i.pravatar.cc/120?img=23",
-    },
-]
+def load_and_precompress(path: Path, max_side=1920, jpeg_q=82, max_file_size=8*1024*1024) -> Tuple[bytes, str]:
+    from PIL import Image, ImageOps
 
-FAQS = [
-    {
-        "question": "Do you manage both hard and soft services under one contract?",
-        "answer": "Yes. MEP/HVAC/electrical/plumbing plus cleaning and hygiene are coordinated by one team with a single SLA set.",
-    },
-    {
-        "question": "What’s included in your PPM plan?",
-        "answer": "Calendarized tasks per asset category, method statements, spares strategy, and statutory inspections with proof of completion.",
-    },
-    {
-        "question": "Can you operate in live environments?",
-        "answer": "Absolutely. We phase works, protect finishes, and schedule noisy tasks off-peak to keep business moving.",
-    },
-    {
-        "question": "How do we see performance?",
-        "answer": "Monthly reports show completed tasks, response times, SLA compliance, incidents and improvement actions.",
-    },
-]
+    im = Image.open(path)
+    im = ImageOps.exif_transpose(im)
 
-# Feature chips to ensure the overview has content even on day one
-FEATURES_FOR_FALLBACK = [
-    {"icon_class": "fa-solid fa-toolbox",          "label": "Reactive & Planned"},
-    {"icon_class": "fa-solid fa-qrcode",           "label": "QR Asset Tags"},
-    {"icon_class": "fa-solid fa-gauge-high",       "label": "Energy Tuning"},
-    {"icon_class": "fa-solid fa-user-shield",      "label": "HSE First"},
-]
+    if im.mode not in ("RGB", "RGBA"):
+        im = im.convert("RGB")
 
-INSIGHTS = [
-    {
-        "title": "PPM vs. Reactive: why uptime wins",
-        "cover_image_url": "https://picsum.photos/1200/700?random=95001",
-        "tag": "Operations",
-        "excerpt": "Preventive maintenance reduces failures, extends asset life and cuts total cost of ownership.",
-        "read_minutes": 4,
-        "body": "Start with criticality analysis. Build a realistic calendar, then enforce closeout and feedback loops to refine frequencies over time…",
-    },
-    {
-        "title": "Cleanliness that clients notice",
-        "cover_image_url": "https://picsum.photos/1200/700?random=95002",
-        "tag": "Soft Services",
-        "excerpt": "High-touch points, smart scheduling and visible standards raise satisfaction scores.",
-        "read_minutes": 3,
-        "body": "Blend daily routes with periodic deep cleans, measure what matters, and share simple scorecards that everyone can read at a glance…",
-    },
-]
+    w, h = im.size
+    if max(w, h) > max_side:
+        if w >= h:
+            new_w = max_side
+            new_h = int(h * (max_side / w))
+        else:
+            new_h = max_side
+            new_w = int(w * (max_side / h))
+        im = im.resize((new_w, new_h), Image.LANCZOS)
 
-# -----------------------------------------------------------------------------
-# Helpers
-# -----------------------------------------------------------------------------
-def upsert(instance, data: dict, fields: list[str]) -> bool:
-    """Update instance fields from data. Return True if any field changed."""
+    has_alpha = (im.mode == "RGBA")
+    
+    if not has_alpha:
+        im = im.convert("RGB")
+        # Try initial quality, then reduce if file is too large
+        quality = jpeg_q
+        for attempt in range(3):
+            buf = io.BytesIO()
+            im.save(buf, format="JPEG", quality=quality, optimize=True, progressive=True)
+            data = buf.getvalue()
+            if len(data) <= max_file_size:
+                return data, "jpg"
+            # File too large, reduce quality and try again
+            quality = max(60, quality - 15)
+        # If still too large after 3 attempts, resize more aggressively
+        new_w = int(im.width * 0.75)
+        new_h = int(im.height * 0.75)
+        im = im.resize((new_w, new_h), Image.LANCZOS)
+        buf = io.BytesIO()
+        im.save(buf, format="JPEG", quality=75, optimize=True, progressive=True)
+        return buf.getvalue(), "jpg"
+    else:
+        buf = io.BytesIO()
+        im.save(buf, format="PNG", optimize=True)
+        return buf.getvalue(), "png"
+
+
+def cloudinary_upload(data_bytes: bytes, public_id: str, folder: Optional[str], overwrite=True) -> dict:
+    import cloudinary
+    import cloudinary.uploader
+
+    cloudinary.config(
+        cloud_name=os.getenv("CLOUDINARY_CLOUD_NAME"),
+        api_key=os.getenv("CLOUDINARY_API_KEY"),
+        api_secret=os.getenv("CLOUDINARY_API_SECRET"),
+        secure=True,
+    )
+
+    full_public_id = f"{folder}/{public_id}" if folder else public_id
+
+    resp = cloudinary.uploader.upload(
+        io.BytesIO(data_bytes),
+        public_id=full_public_id,
+        overwrite=overwrite,
+        resource_type="image",
+        use_filename=True,
+        unique_filename=False,
+        folder=folder or None,
+        quality="auto:good",
+        format="jpg",
+    )
+    return resp
+
+
+def cloudinary_variant(base_url: str, width: int, height: int, crop="fill", gravity="auto") -> str:
+    if "/upload/" not in base_url:
+        return base_url
+    trans = f"c_{crop},g_{gravity},w_{width},h_{height},f_auto,q_auto:good"
+    return base_url.replace("/upload/", f"/upload/{trans}/", 1)
+
+
+def discover_images(root: Path) -> List[Path]:
+    imgs = []
+    for ext in ("*.jpg", "*.jpeg", "*.png", "*.webp", "*.JPG", "*.JPEG", "*.PNG", "*.WEBP"):
+        imgs.extend(sorted(root.glob(ext)))
+    return imgs
+
+
+def upsert(instance, data: dict, fields: list) -> bool:
     changed = False
     for f in fields:
-        new = data.get(f)
-        if new is not None and getattr(instance, f) != new:
-            setattr(instance, f, new)
-            changed = True
+        if hasattr(instance, f):
+            old = getattr(instance, f, None)
+            new = data.get(f, old)
+            if old != new:
+                setattr(instance, f, new)
+                changed = True
     if changed:
         instance.save()
     return changed
 
+
 # -----------------------------------------------------------------------------
-# Seeder
+# Service Showcases Metadata
 # -----------------------------------------------------------------------------
-@transaction.atomic
-def seed(title: str, slug: str, wipe: bool = False):
-    svc, created = Service.objects.get_or_create(
-        slug=slug,
-        defaults={"title": title, **SERVICE_DEFAULTS},
-    )
-    if not created:
-        changed = upsert(
-            svc,
-            {"title": title, **SERVICE_DEFAULTS},
-            [
-                "title",
-                "eyebrow",
-                "hero_headline",
-                "hero_subcopy",
-                "hero_media_url",
-                "pinned_heading",
-                "pinned_title",
-                "pinned_body_1",
-                "pinned_body_2",
-                "insights_heading",
-                "insights_subcopy",
-                "stat_projects",
-                "stat_years",
-                "stat_specialists",
-                "seo_meta_title",
-                "seo_meta_description",
-                "canonical_path",
-            ],
-        )
-        print(f"[i] Service exists: {svc.title} ({'updated' if changed else 'no change'})")
+SHOWCASES_META = [
+    {
+        "title": "24/7 Emergency Response Team",
+        "summary": "Rapid response team available around the clock for critical facility issues.",
+        "description": "Our dedicated emergency response team is available 24/7 to handle urgent facility issues. From MEP failures to critical system breakdowns, we deploy trained technicians within 2 hours to minimize downtime and protect your assets.",
+        "tags_csv": "Emergency, 24/7, Response, MEP",
+        "is_featured": True,
+        "sort_order": 1,
+    },
+    {
+        "title": "MEP Systems Management",
+        "summary": "Expert maintenance of mechanical, electrical, and plumbing systems.",
+        "description": "Comprehensive MEP system management ensures 98% uptime. Our certified technicians perform preventive maintenance, inspections, and repairs on HVAC, electrical panels, fire safety systems, and plumbing infrastructure to keep your facility running smoothly.",
+        "tags_csv": "MEP, HVAC, Electrical, Plumbing",
+        "is_featured": True,
+        "sort_order": 2,
+    },
+    {
+        "title": "Soft Services Excellence",
+        "summary": "Professional cleaning, waste management, and facility hygiene services.",
+        "description": "Our soft services team maintains immaculate commercial spaces through systematic cleaning protocols, waste management, pest control, and hygiene services. Trained staff use eco-friendly products and follow international standards for workplace safety and cleanliness.",
+        "tags_csv": "Cleaning, Hygiene, Waste Management, Soft Services",
+        "is_featured": False,
+        "sort_order": 3,
+    },
+    {
+        "title": "Pool & Landscape Care",
+        "summary": "Ongoing pool maintenance and landscape upkeep for lasting beauty.",
+        "description": "Specialized pool technicians perform chemical balancing, filtration checks, and equipment servicing. Landscape teams handle irrigation, pruning, seasonal planting, and pest control to preserve outdoor investments year-round.",
+        "tags_csv": "Pool, Landscape, Maintenance, Irrigation",
+        "is_featured": False,
+        "sort_order": 4,
+    },
+    {
+        "title": "Preventive Maintenance Program",
+        "summary": "Scheduled inspections and maintenance to prevent costly breakdowns.",
+        "description": "Our preventive maintenance program identifies issues before they become emergencies. Scheduled inspections, filter replacements, lubrication, calibration, and system testing extend equipment lifespan and reduce unexpected downtime.",
+        "tags_csv": "Preventive, Maintenance, Inspections, Planning",
+        "is_featured": False,
+        "sort_order": 5,
+    },
+    {
+        "title": "Quality Control & Inspections",
+        "summary": "Rigorous quality checks and detailed reporting for accountability.",
+        "description": "Every service is followed by quality control inspections and detailed reporting. Digital checklists, photo documentation, and performance metrics ensure transparency and continuous improvement across all facility operations.",
+        "tags_csv": "Quality, Inspections, Reporting, Accountability",
+        "is_featured": False,
+        "sort_order": 6,
+    },
+]
+
+
+# -----------------------------------------------------------------------------
+# Main Seeder
+# -----------------------------------------------------------------------------
+def main():
+    ensure_pillow()
+    ensure_cloudinary()
+
+    # Locate Service
+    svc = None
+    if args.service_id:
+        svc = Service.objects.filter(id=args.service_id).first()
+    elif args.service_slug:
+        svc = Service.objects.filter(slug=args.service_slug).first()
     else:
-        print(f"[+] Created service: {svc.title}")
+        svc = Service.objects.filter(slug="facility-management").first()
 
-    if wipe:
-        print("[!] Wiping existing related rows…")
-        svc.capabilities.all().delete()
-        svc.process_steps.all().delete()
-        svc.metrics.all().delete()
-        svc.project_images.all().delete()
-        svc.editorial_images.all().delete()
-        svc.partner_brands.all().delete()
-        svc.testimonials.all().delete()
-        svc.faqs.all().delete()
-        svc.features.all().delete()
-        svc.insights.all().delete()
+    if not svc:
+        print("[!] No Service found. Create 'Facility Management' service first or use --service-slug.")
+        sys.exit(1)
 
-    # Capabilities
-    for i, c in enumerate(CAPABILITIES, start=1):
-        obj, _ = ServiceCapability.objects.get_or_create(service=svc, title=c["title"])
-        changed = upsert(obj, {**c, "sort_order": i}, ["blurb", "icon_class", "sort_order"])
-        print(f" {'[~] Updated' if changed else '[=] Kept  '} Capability • {obj.title}")
+    root = Path(args.root)
+    if not root.exists():
+        print(f"[!] Root folder not found: {root}")
+        sys.exit(1)
 
-    # Process steps (exactly 4)
-    for i, s in enumerate(PROCESS, start=1):
-        obj, _ = ServiceProcessStep.objects.get_or_create(service=svc, step_no=s["step_no"], title=s["title"])
-        changed = upsert(obj, {**s, "sort_order": i}, ["description", "sort_order"])
-        print(f" {'[~] Updated' if changed else '[=] Kept  '} Step {obj.step_no:02d} • {obj.title}")
+    # Discover all images
+    all_images = discover_images(root)
+    if not all_images:
+        print(f"[!] No images found in: {root}")
+        sys.exit(1)
 
-    # Metrics
-    for i, m in enumerate(METRICS, start=1):
-        obj, _ = ServiceMetric.objects.get_or_create(service=svc, label=m["label"])
-        changed = upsert(obj, {"value": m["value"], "sort_order": i}, ["value", "sort_order"])
-        print(f" {'[~] Updated' if changed else '[=] Kept  '} Metric • {obj.value} {obj.label}")
+    print(f"[i] Seeding Facility Management for Service: {getattr(svc, 'title', svc.id)}")
+    print(f"[i] Found {len(all_images)} images total")
+    print(f"[i] Distributing equally across {len(SHOWCASES_META)} showcases")
 
-    # Projects
-    for i, p in enumerate(PROJECTS, start=1):
-        obj, _ = ServiceProjectImage.objects.get_or_create(service=svc, full_url=p["full_url"])
-        changed = upsert(obj, {**p, "sort_order": i}, ["thumb_url", "caption", "sort_order"])
-        print(f" {'[~] Updated' if changed else '[=] Kept  '} Project • {obj.caption or obj.full_url}")
+    # Distribute images equally
+    images_per_showcase = len(all_images) // len(SHOWCASES_META)
+    remainder = len(all_images) % len(SHOWCASES_META)
+    
+    distributed = []
+    idx = 0
+    for i, meta in enumerate(SHOWCASES_META):
+        count = images_per_showcase + (1 if i < remainder else 0)
+        showcase_images = all_images[idx:idx + count]
+        distributed.append((meta, showcase_images))
+        idx += count
 
-    # Editorials (for BA)
-    for i, e in enumerate(EDITORIALS, start=1):
-        obj, _ = ServiceEditorialImage.objects.get_or_create(service=svc, image_url=e["image_url"])
-        changed = upsert(obj, {**e, "sort_order": i}, ["caption", "sort_order"])
-        print(f" {'[~] Updated' if changed else '[=] Kept  '} Editorial • {obj.caption or obj.image_url}")
+    with transaction.atomic():
+        if args.wipe:
+            print("[!] Wiping existing related rows…")
+            svc.capabilities.all().delete()
+            svc.metrics.all().delete()
+            svc.process_steps.all().delete()
+            svc.faqs.all().delete()
+            svc.case_studies.all().delete()
 
-    # Brands
-    for i, b in enumerate(BRANDS, start=1):
-        obj, _ = ServicePartnerBrand.objects.get_or_create(service=svc, name=b["name"])
-        changed = upsert(obj, {**b, "sort_order": i}, ["logo_url", "site_url", "sort_order"])
-        print(f" {'[~] Updated' if changed else '[=] Kept  '} Brand • {obj.name}")
+        # Update Service hero/description
+        if not args.dry_run:
+            changed = upsert(
+                svc,
+                {
+                    "title": "Facility Management & Aftercare",
+                    "hero_headline": "Aftercare Should Not Be an Afterthought",
+                    "hero_subcopy": "Hammer has a dedicated team of experts in soft and hard services focused on maintaining your commercial space's most valuable assets—from MEP systems to everyday cleanliness.",
+                    "eyebrow": "Facility Management",
+                },
+                ["title", "hero_headline", "hero_subcopy", "eyebrow"],
+            )
+            print(f" {'[~] Updated' if changed else '[=] Kept   '} Service")
+        else:
+            print(" [dry] Would update Service metadata")
 
-    # Testimonials
-    for i, t in enumerate(TESTIMONIALS, start=1):
-        obj, _ = ServiceTestimonial.objects.get_or_create(service=svc, author=t["author"], quote=t["quote"])
-        changed = upsert(obj, {**t, "sort_order": i}, ["role_company", "headshot_url", "sort_order"])
-        who = f"{obj.author} ({obj.role_company})" if obj.role_company else obj.author
-        print(f" {'[~] Updated' if changed else '[=] Kept  '} Testimonial • {who}")
+        # Metrics
+        METRICS = [
+            {"value": "< 2 Hours", "label": "Emergency Response Time", "sort_order": 1},
+            {"value": "98%", "label": "Systems Uptime", "sort_order": 2},
+            {"value": "500+", "label": "Properties Under Management", "sort_order": 3},
+            {"value": "24/7", "label": "Support Availability", "sort_order": 4},
+        ]
+        for m in METRICS:
+            if args.dry_run:
+                print(f" [dry] Would seed Metric • {m['label']}")
+            else:
+                obj, _ = ServiceMetric.objects.get_or_create(service=svc, label=m["label"])
+                changed = upsert(obj, m, ["value", "label", "sort_order"])
+                print(f" {'[~] Updated' if changed else '[=] Kept   '} Metric • {obj.label}")
 
-    # FAQs
-    for i, q in enumerate(FAQS, start=1):
-        obj, _ = ServiceFAQ.objects.get_or_create(service=svc, question=q["question"])
-        changed = upsert(obj, {"answer": q.get("answer", ""), "sort_order": i}, ["answer", "sort_order"])
-        print(f" {'[~] Updated' if changed else '[=] Kept  '} FAQ • {obj.question[:60]}")
+        # Capabilities
+        CAPABILITIES = [
+            {
+                "title": "Hard Services",
+                "blurb": "MEP systems, HVAC, electrical, plumbing, fire safety, and structural maintenance.",
+                "icon_class": "fa-solid fa-wrench",
+                "sort_order": 1,
+            },
+            {
+                "title": "Soft Services",
+                "blurb": "Cleaning, waste management, security, reception, pest control, and hygiene services.",
+                "icon_class": "fa-solid fa-broom",
+                "sort_order": 2,
+            },
+            {
+                "title": "Pool & Landscape Maintenance",
+                "blurb": "Chemical balancing, filtration, equipment servicing, irrigation, and seasonal planting.",
+                "icon_class": "fa-solid fa-water",
+                "sort_order": 3,
+            },
+            {
+                "title": "Emergency Response",
+                "blurb": "24/7 rapid deployment for critical issues, system failures, and urgent repairs.",
+                "icon_class": "fa-solid fa-clock",
+                "sort_order": 4,
+            },
+            {
+                "title": "Preventive Maintenance",
+                "blurb": "Scheduled inspections, testing, and servicing to prevent costly breakdowns.",
+                "icon_class": "fa-solid fa-clipboard-check",
+                "sort_order": 5,
+            },
+            {
+                "title": "Quality & Reporting",
+                "blurb": "Digital checklists, photo documentation, and performance metrics for transparency.",
+                "icon_class": "fa-solid fa-chart-line",
+                "sort_order": 6,
+            },
+        ]
+        for c in CAPABILITIES:
+            if args.dry_run:
+                print(f" [dry] Would seed Capability • {c['title']}")
+            else:
+                obj, _ = ServiceCapability.objects.get_or_create(service=svc, title=c["title"])
+                changed = upsert(obj, c, ["title", "blurb", "icon_class", "sort_order"])
+                print(f" {'[~] Updated' if changed else '[=] Kept   '} Capability • {obj.title}")
 
-    # Overview features
-    for i, f in enumerate(FEATURES_FOR_FALLBACK, start=1):
-        obj, _ = ServiceFeature.objects.get_or_create(service=svc, label=f["label"])
-        changed = upsert(obj, {**f, "sort_order": i}, ["icon_class", "sort_order"])
-        print(f" {'[~] Updated' if changed else '[=] Kept  '} Feature • {obj.label}")
+        # Process Steps
+        STEPS = [
+            {"step_no": 1, "title": "Site Assessment", "description": "Comprehensive audit of systems, staffing needs, and service frequency requirements."},
+            {"step_no": 2, "title": "Custom Plan", "description": "Tailored maintenance schedule, SLA definition, and cost breakdown with transparent pricing."},
+            {"step_no": 3, "title": "Scheduled Service", "description": "Trained teams execute daily, weekly, and monthly tasks with minimal disruption."},
+            {"step_no": 4, "title": "Quality Checks", "description": "Supervisors conduct inspections, photo documentation, and performance reviews."},
+            {"step_no": 5, "title": "Reporting & Optimization", "description": "Monthly reports, service logs, and continuous improvement recommendations."},
+        ]
+        for s in STEPS:
+            if args.dry_run:
+                print(f" [dry] Would seed Process Step {s['step_no']}")
+            else:
+                obj, _ = ServiceProcessStep.objects.get_or_create(service=svc, step_no=s["step_no"])
+                changed = upsert(obj, s, ["step_no", "title", "description"])
+                print(f" {'[~] Updated' if changed else '[=] Kept   '} Process Step {obj.step_no}")
 
-    # Insights
-    for i, item in enumerate(INSIGHTS, start=1):
-        obj, _ = Insight.objects.get_or_create(service=svc, title=item["title"])
-        payload = {
-            "cover_image_url": item.get("cover_image_url", ""),
-            "tag": item.get("tag", ""),
-            "excerpt": item.get("excerpt", ""),
-            "body": item.get("body", ""),
-            "read_minutes": item.get("read_minutes", 4),
-            "published": True,
-            "published_at": obj.published_at or timezone.now(),
-        }
-        changed = upsert(
-            obj,
-            payload,
-            ["cover_image_url", "tag", "excerpt", "body", "read_minutes", "published", "published_at"],
-        )
-        print(f" {'[~] Updated' if changed else '[=] Kept  '} Insight • {obj.title}")
+        # FAQs
+        FAQS = [
+            {"question": "What's included in your facility management services?", "answer": "We provide comprehensive hard services (MEP, HVAC, electrical, plumbing, fire safety) and soft services (cleaning, waste management, security, pest control). Pool and landscape maintenance are also available as add-ons or standalone services.", "sort_order": 1},
+            {"question": "How quickly do you respond to emergencies?", "answer": "Our 24/7 emergency response team deploys within 2 hours for critical issues like MEP failures, flooding, electrical outages, or safety hazards. We maintain standby crews and stock commonly needed parts to minimize downtime.", "sort_order": 2},
+            {"question": "Do you handle permits and compliance inspections?", "answer": "Yes. We coordinate civil defense inspections, health & safety audits, and authority compliance. Our team prepares documentation, schedules visits, and ensures your facility meets all regulatory requirements.", "sort_order": 3},
+            {"question": "Can I customize the service frequency?", "answer": "Absolutely. We tailor schedules to your needs—daily cleaning, weekly HVAC checks, monthly pool servicing, or quarterly deep maintenance. You only pay for what you need.", "sort_order": 4},
+            {"question": "How do you ensure quality and accountability?", "answer": "Every service includes digital checklists, photo documentation, and timestamped logs. Supervisors conduct quality inspections, and you receive monthly performance reports with metrics, issues resolved, and improvement recommendations.", "sort_order": 5},
+            {"question": "What happens if a technician is unavailable?", "answer": "We maintain backup staffing and cross-train teams to ensure continuity. If a scheduled technician is unavailable, a qualified replacement is deployed. For specialized tasks (e.g., pool chemistry), we have certified alternates on standby.", "sort_order": 6},
+        ]
+        for faq in FAQS:
+            if args.dry_run:
+                print(f" [dry] Would seed FAQ • {faq['question'][:50]}...")
+            else:
+                obj, _ = ServiceFAQ.objects.get_or_create(service=svc, question=faq["question"])
+                changed = upsert(obj, faq, ["question", "answer", "sort_order"])
+                print(f" {'[~] Updated' if changed else '[=] Kept   '} FAQ • {obj.question[:50]}...")
 
-    return svc
+        # Service Showcases with distributed images
+        for meta, showcase_images in distributed:
+            print(f"\n--- {meta['title']} ---")
+            print(f"    Assigned {len(showcase_images)} images")
 
-# -----------------------------------------------------------------------------
-# Main
-# -----------------------------------------------------------------------------
+            if not showcase_images:
+                print("    [!] No images assigned, skipping")
+                continue
+
+            # Use first image as hero
+            hero_src = showcase_images[0]
+            public_base = f"{slugify(meta['title'])}/{file_md5(hero_src)}"
+
+            if args.dry_run:
+                print(f" [dry] HERO would upload: {hero_src.name} → {public_base}")
+                base_hero_url = f"(dry-run)/{public_base}.jpg"
+            else:
+                data, ext = load_and_precompress(hero_src)
+                resp = cloudinary_upload(data, public_id=public_base, folder=args.cloud_folder)
+                base_hero_url = resp["secure_url"]
+
+            hero_full_url = cloudinary_variant(base_hero_url, width=1600, height=900)
+            hero_thumb_url = cloudinary_variant(base_hero_url, width=800, height=450)
+
+            # Create/update CaseStudy
+            if not args.dry_run:
+                cs_obj, _ = CaseStudy.objects.get_or_create(service=svc, title=meta["title"])
+                changed = upsert(
+                    cs_obj,
+                    {
+                        "hero_image_url": hero_full_url,
+                        "thumb_url": hero_thumb_url,
+                        "full_url": hero_full_url,
+                        "summary": meta["summary"],
+                        "description": meta["description"],
+                        "completion_date": date.today(),
+                        "scope": "Service Offering",
+                        "size_label": "—",
+                        "timeline_label": "Ongoing",
+                        "status_label": "Active",
+                        "tags_csv": meta["tags_csv"],
+                        "is_featured": meta["is_featured"],
+                        "sort_order": meta["sort_order"],
+                        "cta_url": "",
+                        "location": "Dubai, UAE",
+                        "project_type": "facility-management",
+                    },
+                    [
+                        "hero_image_url", "thumb_url", "full_url", "summary", "description",
+                        "completion_date", "scope", "size_label", "timeline_label", "status_label",
+                        "tags_csv", "is_featured", "sort_order", "cta_url", "location", "project_type",
+                    ],
+                )
+                print(f" {'[~] Updated' if changed else '[=] Kept   '} Showcase • {cs_obj.title}")
+            else:
+                print(f" [dry] Would create/update Showcase • {meta['title']}")
+
+            # Build gallery
+            gallery_items = []
+            for g_i, img_path in enumerate(showcase_images, start=1):
+                public_img = f"{slugify(meta['title'])}/{file_md5(img_path)}"
+                if args.dry_run:
+                    print(f" [dry] GALLERY would upload: {img_path.name} → {public_img}")
+                    base_url = f"(dry-run)/{public_img}.jpg"
+                else:
+                    data, ext = load_and_precompress(img_path)
+                    resp = cloudinary_upload(data, public_id=public_img, folder=args.cloud_folder)
+                    base_url = resp["secure_url"]
+
+                thumb_url = cloudinary_variant(base_url, width=800, height=450)
+                full_url = cloudinary_variant(base_url, width=1600, height=900)
+
+                gallery_items.append({
+                    "thumb": thumb_url,
+                    "full": full_url,
+                    "caption": f"{meta['title']} — View {g_i}",
+                })
+
+            # Save gallery to JSONField
+            if not args.dry_run:
+                cs_obj.gallery_urls = gallery_items
+                cs_obj.save()
+
+            print(f"     ↳ {'(dry-run) ' if args.dry_run else ''}Seeded {len(showcase_images)} gallery images")
+
+    print("\n[✓] Done seeding Facility Management & Aftercare.")
+
+
 if __name__ == "__main__":
-    svc = seed(args.title, args.slug, wipe=args.wipe)
-    print("\n✔ Seed complete.")
-    print(f"→ Visit {svc.canonical_path or f'/services/{svc.slug}/'}")
-    print("Tip: Keep editorial images in even counts so the Before/After panel renders as clean pairs.")
-    print("Tip: Prefer transparent PNG/SVG brand logos for the cleanest row.")
+    main()
+

@@ -209,7 +209,12 @@
               <div class="grid md:grid-cols-2 gap-4">
                 <div>
                   <label class="block text-xs font-medium text-gray-700 mb-1">Image URL</label>
-                  {{ form.image_url }}
+                  <div class="flex items-center gap-2">
+                    {{ form.image_url }}
+                    <button type="button" class="gallery-btn-image px-2 py-2 text-xs font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-lg hover:bg-gray-200 transition">
+                      📷
+                    </button>
+                  </div>
                 </div>
                 <div>
                   <label class="block text-xs font-medium text-gray-700 mb-1">Caption</label>
@@ -338,10 +343,18 @@
                 <!-- Gallery Images Section -->
                 <div class="border-t border-gray-200 pt-4">
                   <div class="flex items-center justify-between mb-3">
-                    <h4 class="text-xs font-medium text-gray-700">Gallery Images</h4>
-                    <button type="button" class="gallery-upload-btn text-xs font-medium px-3 py-1.5 rounded-lg border border-gray-300 hover:bg-gray-50">
-                      📷 Upload Gallery
-                    </button>
+                    <div>
+                      <h4 class="text-xs font-medium text-gray-700">Gallery Images</h4>
+                      <p class="text-xs text-gray-500 mt-1">Upload images and they'll be pre-selected. Click Edit to manage.</p>
+                    </div>
+                    <div class="flex items-center gap-2">
+                      <button type="button" class="gallery-edit-btn text-xs font-medium px-3 py-1.5 rounded-lg border border-gray-300 hover:bg-gray-50">
+                        ✏️ Edit Gallery
+                      </button>
+                      <button type="button" class="gallery-upload-btn text-xs font-medium px-3 py-1.5 rounded-lg border border-gray-300 hover:bg-gray-50">
+                        📷 Upload Gallery
+                      </button>
+                    </div>
                   </div>
                   <div class="gallery-preview grid grid-cols-3 gap-2 min-h-[60px] p-2 border border-gray-200 rounded-lg bg-gray-50">
                     <div class="text-xs text-gray-500 text-center py-4 col-span-3">No gallery images</div>
@@ -407,6 +420,12 @@
             <div>
               <label class="block text-xs font-medium text-gray-700 mb-1">Icon Class</label>
               {{ form.icon_class }}
+              <button type="button" class="mt-2 px-3 py-1.5 text-xs bg-teal-50 text-teal-700 rounded-lg hover:bg-teal-100 transition-colors" onclick="openIconPicker(this.closest('div').querySelector('input'))">
+                <i class="fa-solid fa-icons mr-1"></i> Choose Icon
+              </button>
+              <div class="mt-2 text-xs text-gray-500">
+                Current: <i class="{{ form.icon_class.value|default:'fa-solid fa-circle' }} text-teal-600"></i>
+              </div>
             </div>
           </div>
           <div class="mt-3">
@@ -517,6 +536,76 @@
 </form>
 
 <script>
+// Image compression utility
+async function compressImage(file, maxSizeMB = 8) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let width = img.width;
+        let height = img.height;
+        
+        // Calculate new dimensions while maintaining aspect ratio
+        const maxDimension = 4096; // Max dimension for large images
+        if (width > maxDimension || height > maxDimension) {
+          if (width > height) {
+            height = (height / width) * maxDimension;
+            width = maxDimension;
+          } else {
+            width = (width / height) * maxDimension;
+            height = maxDimension;
+          }
+        }
+        
+        canvas.width = width;
+        canvas.height = height;
+        
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+        
+        // Try different quality levels to get under the target size
+        let quality = 0.9;
+        const tryCompress = () => {
+          canvas.toBlob(
+            (blob) => {
+              if (!blob) {
+                reject(new Error('Compression failed'));
+                return;
+              }
+              
+              const sizeMB = blob.size / 1024 / 1024;
+              console.log(`Compressed to ${sizeMB.toFixed(2)}MB at quality ${quality}`);
+              
+              // If still too large and quality can be reduced further, try again
+              if (sizeMB > maxSizeMB && quality > 0.5) {
+                quality -= 0.1;
+                tryCompress();
+              } else {
+                // Create a File object from the blob
+                const compressedFile = new File([blob], file.name, {
+                  type: 'image/jpeg',
+                  lastModified: Date.now()
+                });
+                resolve(compressedFile);
+              }
+            },
+            'image/jpeg',
+            quality
+          );
+        };
+        
+        tryCompress();
+      };
+      img.onerror = () => reject(new Error('Failed to load image'));
+      img.src = e.target.result;
+    };
+    reader.onerror = () => reject(new Error('Failed to read file'));
+    reader.readAsDataURL(file);
+  });
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   // ----------------- Tabs -----------------
   const tabBtns = Array.from(document.querySelectorAll('.tab-btn'));
@@ -683,8 +772,13 @@ document.addEventListener('DOMContentLoaded', () => {
       <div class="grid md:grid-cols-2 gap-4">
         <div><label class="block text-xs font-medium text-gray-700 mb-1">Title</label>
           <input type="text" name="capabilities-${capCount}-title" class="w-full rounded-xl border border-gray-300 px-3 py-2"></div>
-        <div><label class="block text-xs font-medium text-gray-700 mb-1">Icon Class</label>
-          <input type="text" name="capabilities-${capCount}-icon_class" class="w-full rounded-xl border border-gray-300 px-3 py-2"></div>
+        <div>
+          <label class="block text-xs font-medium text-gray-700 mb-1">Icon Class</label>
+          <input type="text" name="capabilities-${capCount}-icon_class" class="w-full rounded-xl border border-gray-300 px-3 py-2">
+          <button type="button" class="mt-2 px-3 py-1.5 text-xs bg-teal-50 text-teal-700 rounded-lg hover:bg-teal-100 transition-colors" onclick="openIconPicker(this.previousElementSibling)">
+            <i class="fa-solid fa-icons mr-1"></i> Choose Icon
+          </button>
+        </div>
       </div>
       <div class="mt-3"><label class="block text-xs font-medium text-gray-700 mb-1">Description</label>
         <input type="text" name="capabilities-${capCount}-blurb" class="w-full rounded-xl border border-gray-300 px-3 py-2"></div>
@@ -976,18 +1070,41 @@ document.addEventListener('DOMContentLoaded', () => {
       // Show progress
       uploadProgress.classList.remove('hidden');
       uploadBar.style.width = '0%';
-      uploadStatus.textContent = `Uploading ${files.length} image${files.length > 1 ? 's' : ''}...`;
-      
-      // Create FormData
-      const formData = new FormData();
-      for (let i = 0; i < files.length; i++) {
-        formData.append('files', files[i]);
-      }
-      
-      // Add CSRF token
-      const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+      uploadStatus.textContent = `Processing ${files.length} image${files.length > 1 ? 's' : ''}...`;
       
       try {
+        // Compress large images
+        const maxSizeMB = 8;
+        const processedFiles = [];
+        let compressedCount = 0;
+        
+        for (let i = 0; i < files.length; i++) {
+          const file = files[i];
+          if (file.size > maxSizeMB * 1024 * 1024) {
+            uploadStatus.textContent = `Compressing image ${i + 1}/${files.length}...`;
+            const compressed = await compressImage(file, maxSizeMB);
+            processedFiles.push(compressed);
+            compressedCount++;
+          } else {
+            processedFiles.push(file);
+          }
+        }
+        
+        if (compressedCount > 0) {
+          uploadStatus.textContent = `Compressed ${compressedCount} image${compressedCount > 1 ? 's' : ''}. Uploading...`;
+        } else {
+          uploadStatus.textContent = `Uploading ${files.length} image${files.length > 1 ? 's' : ''}...`;
+        }
+        
+        // Create FormData with processed files
+        const formData = new FormData();
+        for (let i = 0; i < processedFiles.length; i++) {
+          formData.append('files', processedFiles[i]);
+        }
+        
+        // Add CSRF token
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        
         uploadBar.style.width = '50%';
         
         const response = await fetch('/dashboard/gallery/api/upload/', {
@@ -1006,15 +1123,18 @@ document.addEventListener('DOMContentLoaded', () => {
           uploadStatus.textContent = `Successfully uploaded ${result.images.length} image${result.images.length > 1 ? 's' : ''}!`;
           uploadStatus.classList.add('text-green-600');
           
-          // Display uploaded images
+          // Display uploaded images with pre-selection
           uploadedImages.innerHTML = '';
           result.images.forEach(image => {
             const imgEl = document.createElement('div');
-            imgEl.className = 'relative group cursor-pointer rounded-lg overflow-hidden border border-gray-200 hover:border-green-500 transition';
+            imgEl.className = 'relative group cursor-pointer rounded-lg overflow-hidden border-2 border-blue-500 bg-blue-50 transition';
             imgEl.innerHTML = `
               <img src="${image.thumb_url || image.web_url}" alt="${image.title}" class="w-full h-24 object-cover">
-              <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition flex items-center justify-center">
-                <span class="text-white text-xs opacity-0 group-hover:opacity-100">Click to use</span>
+              <div class="absolute inset-0 bg-blue-500 bg-opacity-20 transition flex items-center justify-center">
+                <span class="text-white text-xs font-medium">Pre-selected</span>
+                <div class="absolute top-1 right-1 w-5 h-5 bg-blue-600 text-white text-xs rounded-full flex items-center justify-center">
+                  ✓
+                </div>
               </div>
             `;
             imgEl.addEventListener('click', () => {
@@ -1025,10 +1145,38 @@ document.addEventListener('DOMContentLoaded', () => {
               modal.classList.add('hidden');
             });
             uploadedImages.appendChild(imgEl);
+            
+            // Pre-select uploaded images for gallery selection
+            const imageUrl = image.web_url || image.secure_url;
+            // Note: selectedImages and updateButton will be available when the modal is properly set up
           });
           
-          // Reload gallery to show new images
-          loadGalleryImages();
+          // Reload gallery to show new images and pre-select them
+          loadGalleryImages().then(() => {
+            // Pre-select the newly uploaded images
+            result.images.forEach(image => {
+              const imageUrl = image.web_url || image.secure_url;
+              const galleryGrid = modal.querySelector('#galleryGrid');
+              if (galleryGrid) {
+                const galleryItems = galleryGrid.querySelectorAll('.relative.group.cursor-pointer');
+                galleryItems.forEach(item => {
+                  const img = item.querySelector('img');
+                  if (img && img.src === imageUrl) {
+                    // Pre-select this image
+                    selectedImages.add(imageUrl);
+                    item.classList.add('ring-2', 'ring-blue-500', 'bg-blue-50');
+                    item.classList.remove('hover:border-gray-400');
+                    // Add checkmark
+                    const checkmark = document.createElement('div');
+                    checkmark.className = 'selection-checkmark absolute top-1 right-1 w-5 h-5 bg-blue-600 text-white text-xs rounded-full flex items-center justify-center';
+                    checkmark.innerHTML = '✓';
+                    item.appendChild(checkmark);
+                  }
+                });
+              }
+            });
+            updateButton();
+          });
           
           // Reset after 3 seconds
           setTimeout(() => {
@@ -1057,11 +1205,11 @@ document.addEventListener('DOMContentLoaded', () => {
     console.log('loadGalleryImages called, galleryGrid:', galleryGrid);
     if (!galleryGrid) {
       console.error('galleryGrid not found!');
-      return;
+      return Promise.resolve();
     }
     
     console.log('Fetching gallery images...');
-    fetch('/dashboard/gallery/api/images/')
+    return fetch('/dashboard/gallery/api/images/')
       .then(response => {
         console.log('Gallery API response:', response.status);
         return response.json();
@@ -1143,6 +1291,251 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  // Function to open gallery with upload tab for Before/After images
+  function openImageGalleryWithUpload(targetInput) {
+    console.log('Opening image gallery with upload for:', targetInput);
+    
+    // Create gallery modal with tabs
+    const modal = document.createElement('div');
+    modal.id = 'imageGalleryModalWithUpload';
+    modal.className = 'fixed inset-0 bg-black bg-opacity-50 z-50';
+    modal.innerHTML = `
+      <div class="flex items-center justify-center min-h-screen p-4">
+        <div class="bg-white rounded-2xl shadow-xl max-w-4xl w-full max-h-[80vh] overflow-hidden">
+          <div class="flex items-center justify-between p-6 border-b border-gray-200">
+            <h3 class="text-lg font-semibold text-gray-900">Select or Upload Image</h3>
+            <button class="closeModalBtn text-gray-400 hover:text-gray-600">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+              </svg>
+            </button>
+          </div>
+          
+          <!-- Tab Navigation -->
+          <div class="flex border-b border-gray-200">
+            <button class="modalTabBtn gallery-tab flex-1 px-6 py-3 text-sm font-medium text-gray-900 border-b-2 border-gray-900 bg-gray-50">
+              📷 Gallery
+            </button>
+            <button class="modalTabBtn upload-tab flex-1 px-6 py-3 text-sm font-medium text-gray-500 border-b-2 border-transparent hover:text-gray-700 hover:bg-gray-50">
+              ⬆️ Upload
+            </button>
+          </div>
+          
+          <!-- Tab Content -->
+          <div class="p-6 overflow-y-auto max-h-[60vh]">
+            <!-- Gallery Tab -->
+            <div class="tab-content gallery-content">
+              <div class="imageGalleryGrid grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                <!-- Images will be loaded here -->
+              </div>
+            </div>
+            
+            <!-- Upload Tab -->
+            <div class="tab-content upload-content hidden">
+              <div class="max-w-md mx-auto">
+                <div class="uploadDropZone border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-gray-400 transition">
+                  <input type="file" class="imageUploadInput hidden" accept="image/*">
+                  <div class="cursor-pointer uploadClickArea">
+                    <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
+                      <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                    <div class="mt-4">
+                      <p class="text-sm font-medium text-gray-900">Upload Image</p>
+                      <p class="text-xs text-gray-500">Click to select or drag and drop</p>
+                      <p class="text-xs text-gray-400 mt-1">Supports: JPG, PNG, WebP (max 10MB)</p>
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="uploadProgress mt-4 hidden">
+                  <div class="bg-gray-200 rounded-full h-2">
+                    <div class="uploadBar bg-blue-600 h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
+                  </div>
+                  <p class="uploadStatus text-sm text-gray-600 mt-2">Uploading...</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+    
+    document.body.appendChild(modal);
+    
+    // Tab switching
+    const galleryTab = modal.querySelector('.gallery-tab');
+    const uploadTab = modal.querySelector('.upload-tab');
+    const galleryContent = modal.querySelector('.gallery-content');
+    const uploadContent = modal.querySelector('.upload-content');
+    
+    galleryTab.addEventListener('click', () => {
+      galleryTab.classList.add('text-gray-900', 'border-gray-900', 'bg-gray-50');
+      galleryTab.classList.remove('text-gray-500', 'border-transparent');
+      uploadTab.classList.remove('text-gray-900', 'border-gray-900', 'bg-gray-50');
+      uploadTab.classList.add('text-gray-500', 'border-transparent');
+      galleryContent.classList.remove('hidden');
+      uploadContent.classList.add('hidden');
+    });
+    
+    uploadTab.addEventListener('click', () => {
+      uploadTab.classList.add('text-gray-900', 'border-gray-900', 'bg-gray-50');
+      uploadTab.classList.remove('text-gray-500', 'border-transparent');
+      galleryTab.classList.remove('text-gray-900', 'border-gray-900', 'bg-gray-50');
+      galleryTab.classList.add('text-gray-500', 'border-transparent');
+      uploadContent.classList.remove('hidden');
+      galleryContent.classList.add('hidden');
+    });
+    
+    // Load gallery images
+    const galleryGrid = modal.querySelector('.imageGalleryGrid');
+    fetch('/dashboard/gallery/api/images/')
+      .then(response => response.json())
+      .then(data => {
+        galleryGrid.innerHTML = '';
+        if (data.images && data.images.length > 0) {
+          data.images.forEach(image => {
+            const imgElement = document.createElement('div');
+            imgElement.className = 'relative group cursor-pointer rounded-lg overflow-hidden border border-gray-200 hover:border-gray-400 transition';
+            imgElement.innerHTML = `
+              <img src="${image.thumb_url || image.web_url || image.secure_url}" 
+                   alt="${image.title}" 
+                   class="w-full h-32 object-cover">
+              <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition">
+                <div class="absolute bottom-2 left-2 right-2 text-white text-xs opacity-0 group-hover:opacity-100 transition">
+                  ${image.title}
+                </div>
+              </div>
+            `;
+            imgElement.addEventListener('click', () => {
+              if (targetInput) {
+                targetInput.value = image.web_url || image.secure_url;
+                targetInput.dispatchEvent(new Event('input', { bubbles: true }));
+              }
+              modal.remove();
+            });
+            galleryGrid.appendChild(imgElement);
+          });
+        } else {
+          galleryGrid.innerHTML = '<p class="text-gray-500 text-center py-8 col-span-full">No images available</p>';
+        }
+      })
+      .catch(error => {
+        console.error('Error loading gallery images:', error);
+        galleryGrid.innerHTML = '<p class="text-gray-500 text-center py-8 col-span-full">Error loading images</p>';
+      });
+    
+    // Upload functionality
+    const fileInput = modal.querySelector('.imageUploadInput');
+    const uploadProgress = modal.querySelector('.uploadProgress');
+    const uploadBar = modal.querySelector('.uploadBar');
+    const uploadStatus = modal.querySelector('.uploadStatus');
+    const dropZone = modal.querySelector('.uploadDropZone');
+    const clickArea = modal.querySelector('.uploadClickArea');
+    
+    clickArea.addEventListener('click', () => fileInput.click());
+    
+    // Drag and drop
+    dropZone.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      dropZone.classList.add('border-blue-400', 'bg-blue-50');
+    });
+    
+    dropZone.addEventListener('dragleave', (e) => {
+      e.preventDefault();
+      dropZone.classList.remove('border-blue-400', 'bg-blue-50');
+    });
+    
+    dropZone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      dropZone.classList.remove('border-blue-400', 'bg-blue-50');
+      const files = e.dataTransfer.files;
+      if (files.length > 0) {
+        fileInput.files = files;
+        fileInput.dispatchEvent(new Event('change'));
+      }
+    });
+    
+    fileInput.addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      
+      uploadProgress.classList.remove('hidden');
+      uploadBar.style.width = '0%';
+      uploadStatus.textContent = 'Compressing image...';
+      uploadStatus.className = 'uploadStatus text-sm text-gray-600 mt-2';
+      
+      try {
+        // Compress image if it's too large
+        const maxSizeMB = 8; // Target 8MB to be safe (max is 10MB)
+        let processedFile = file;
+        
+        if (file.size > maxSizeMB * 1024 * 1024) {
+          uploadStatus.textContent = `Compressing ${(file.size / 1024 / 1024).toFixed(1)}MB image...`;
+          processedFile = await compressImage(file, maxSizeMB);
+          uploadStatus.textContent = `Compressed to ${(processedFile.size / 1024 / 1024).toFixed(1)}MB. Uploading...`;
+        } else {
+          uploadStatus.textContent = 'Uploading...';
+        }
+        
+        uploadBar.style.width = '30%';
+        
+        const formData = new FormData();
+        formData.append('file', processedFile);
+        
+        uploadBar.style.width = '50%';
+        
+        const response = await fetch('/u/editor-image/', {
+          method: 'POST',
+          body: formData,
+          headers: {
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+          }
+        });
+        
+        uploadBar.style.width = '100%';
+        
+        if (!response.ok) {
+          const text = await response.text();
+          throw new Error(`Server error: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        
+        if (data.url) {
+          uploadStatus.textContent = 'Upload successful!';
+          uploadStatus.classList.add('text-green-600');
+          
+          if (targetInput) {
+            targetInput.value = data.web_url || data.url;
+            targetInput.dispatchEvent(new Event('input', { bubbles: true }));
+          }
+          
+          setTimeout(() => {
+            modal.remove();
+          }, 1000);
+        } else {
+          throw new Error(data.error || 'Upload failed');
+        }
+      } catch (error) {
+        console.error('Upload error:', error);
+        uploadStatus.textContent = `Upload failed: ${error.message}`;
+        uploadStatus.classList.add('text-red-600');
+      }
+    });
+    
+    // Close button
+    modal.querySelector('.closeModalBtn').addEventListener('click', () => {
+      modal.remove();
+    });
+    
+    // Close on backdrop click
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) {
+        modal.remove();
+      }
+    });
+  }
+
   function loadImageGalleryImages(modal, targetInput) {
     const galleryGrid = modal.querySelector('#imageGalleryGrid');
     if (!galleryGrid) return;
@@ -1192,7 +1585,7 @@ document.addEventListener('DOMContentLoaded', () => {
       openImageGallery(heroInput);
     } else if (e.target.classList.contains('gallery-btn-image')) {
       const imageInput = e.target.parentElement.querySelector('input[type="url"]');
-      openImageGallery(imageInput);
+      openImageGalleryWithUpload(imageInput);
     } else if (e.target.classList.contains('gallery-btn-thumb')) {
       const thumbInput = e.target.parentElement.querySelector('input[name$="-thumb_url"]');
       openImageGallery(thumbInput);
@@ -1212,7 +1605,38 @@ document.addEventListener('DOMContentLoaded', () => {
   document.querySelector('form').addEventListener('submit', (e)=>{ 
     clearTimeout(timer); 
     if(dirtyEl) dirtyEl.textContent='Saving…'; 
-    timer=setTimeout(()=>setDirty(false),800);
+    timer=setTimeout(()=>{
+      setDirty(false);
+      // Auto-refresh gallery images after successful save
+      setTimeout(() => {
+        const caseStudyForms = document.querySelectorAll('.case-study-form');
+        caseStudyForms.forEach(form => {
+          const galleryPreview = form.querySelector('.gallery-preview');
+          const hiddenInput = form.querySelector('input[name*="gallery_urls"]');
+          
+          if (hiddenInput && hiddenInput.value) {
+            try {
+              const galleryUrls = JSON.parse(hiddenInput.value);
+              if (galleryUrls.length > 0) {
+                // Clear and reload gallery preview
+                galleryPreview.innerHTML = '';
+                galleryUrls.forEach(imageData => {
+                  const previewItem = document.createElement('div');
+                  previewItem.className = 'relative group';
+                  previewItem.innerHTML = `
+                    <img src="${imageData.thumb || imageData.full}" alt="Gallery image" class="w-full h-16 object-cover rounded border border-gray-200" data-full-url="${imageData.full}" data-thumb-url="${imageData.thumb || imageData.full}">
+                    <button type="button" class="remove-gallery-item absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full hover:bg-red-600 transition-all duration-200 hover:scale-110" title="Remove image" style="display: none;">×</button>
+                  `;
+                  galleryPreview.appendChild(previewItem);
+                });
+              }
+            } catch (e) {
+              console.error('Error parsing gallery URLs after save:', e);
+            }
+          }
+        });
+      }, 1000);
+    }, 800);
     
     // Debug: Log form data being submitted
     const formData = new FormData(e.target);
@@ -1243,10 +1667,443 @@ document.addEventListener('DOMContentLoaded', () => {
     console.groupEnd();
   });
   
-  // Gallery upload for case studies - simple approach
+  // Gallery upload for case studies
+  console.log('🔧 Setting up gallery upload event listener...');
+  
+  // ============================================
+  // BEFORE/AFTER IMAGE UPLOAD
+  // ============================================
   document.addEventListener('click', function(e) {
+    if (e.target.classList.contains('beforeafter-upload-btn') || e.target.closest('.beforeafter-upload-btn')) {
+      e.preventDefault();
+      const btn = e.target.classList.contains('beforeafter-upload-btn') ? e.target : e.target.closest('.beforeafter-upload-btn');
+      const imageForm = btn.closest('.image-form');
+      const urlInput = imageForm.querySelector('input[name*="image_url"]');
+      
+      console.log('📸 Before/After upload button clicked');
+      
+      // Create file input
+      const fileInput = document.createElement('input');
+      fileInput.type = 'file';
+      fileInput.accept = 'image/*';
+      fileInput.style.display = 'none';
+      
+      fileInput.addEventListener('change', async function() {
+        const file = this.files[0];
+        if (!file) return;
+        
+        console.log('📁 File selected:', file.name, `(${(file.size / 1024 / 1024).toFixed(1)}MB)`);
+        
+        // Show loading state
+        btn.disabled = true;
+        
+        try {
+          // Compress image if it's too large
+          const maxSizeMB = 8;
+          let processedFile = file;
+          
+          if (file.size > maxSizeMB * 1024 * 1024) {
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1"></i> Compressing...';
+            processedFile = await compressImage(file, maxSizeMB);
+            console.log('📦 Compressed to:', `${(processedFile.size / 1024 / 1024).toFixed(1)}MB`);
+          }
+          
+          btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1"></i> Uploading...';
+          
+          const formData = new FormData();
+          formData.append('file', processedFile);
+          
+          const response = await fetch('/u/editor-image/', {
+            method: 'POST',
+            body: formData,
+            headers: {
+              'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            }
+          });
+          
+          if (!response.ok) {
+            throw new Error(`Server error: ${response.status}`);
+          }
+          
+          const data = await response.json();
+          
+          if (data.url) {
+            console.log('✅ Upload successful:', data.url);
+            urlInput.value = data.web_url || data.url;
+            urlInput.dispatchEvent(new Event('input', { bubbles: true }));
+            
+            // Update preview
+            const preview = imageForm.querySelector('.imagePreview');
+            if (preview) {
+              preview.src = data.web_url || data.url;
+              preview.style.opacity = '1';
+              const emptyState = imageForm.querySelector('.imageEmpty');
+              if (emptyState) emptyState.style.display = 'none';
+            }
+            
+            btn.innerHTML = '<i class="fa-solid fa-check mr-1"></i> Uploaded!';
+            btn.classList.remove('bg-teal-600', 'hover:bg-teal-700');
+            btn.classList.add('bg-green-600');
+            
+            setTimeout(() => {
+              btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up mr-1"></i> Upload Image';
+              btn.classList.remove('bg-green-600');
+              btn.classList.add('bg-teal-600', 'hover:bg-teal-700');
+              btn.disabled = false;
+            }, 2000);
+          } else {
+            throw new Error(data.error || 'Upload failed');
+          }
+        } catch (error) {
+          console.error('❌ Upload error:', error);
+          alert('Upload failed: ' + error.message);
+          btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up mr-1"></i> Upload Image';
+          btn.disabled = false;
+        }
+      });
+      
+      fileInput.click();
+    }
+  });
+  
+  // Check if gallery upload buttons exist
+  const galleryButtons = document.querySelectorAll('.gallery-upload-btn');
+  console.log('🔍 Found gallery upload buttons:', galleryButtons.length);
+  galleryButtons.forEach((btn, index) => {
+    console.log(`  Button ${index}:`, btn);
+    console.log(`  Button ${index} text:`, btn.textContent);
+    console.log(`  Button ${index} classes:`, btn.className);
+  });
+  
+  // Check if case study forms exist
+  const caseStudyForms = document.querySelectorAll('.case-study-form');
+  console.log('🔍 Found case study forms:', caseStudyForms.length);
+  caseStudyForms.forEach((form, index) => {
+    const galleryBtn = form.querySelector('.gallery-upload-btn');
+    console.log(`  Form ${index} has gallery button:`, !!galleryBtn);
+    
+    if (galleryBtn) {
+      console.log(`  Form ${index} gallery button text:`, galleryBtn.textContent);
+      console.log(`  Form ${index} gallery button classes:`, galleryBtn.className);
+    }
+    
+    // Add event listeners for both gallery buttons
+    const galleryEditBtn = form.querySelector('.gallery-edit-btn');
+    const galleryUploadBtn = form.querySelector('.gallery-upload-btn');
+    
+    if (galleryEditBtn) {
+      console.log(`  Adding edit listener to form ${index}`);
+      galleryEditBtn.addEventListener('click', function(e) {
+        console.log('🎯 Gallery edit button clicked!');
+        e.preventDefault();
+        e.stopPropagation();
+        
+        const galleryPreview = form.querySelector('.gallery-preview');
+        toggleGalleryEditMode(galleryPreview, galleryEditBtn);
+      });
+    }
+    
+    if (galleryUploadBtn) {
+      console.log(`  Adding upload listener to form ${index}`);
+      galleryUploadBtn.addEventListener('click', function(e) {
+        console.log('🎯 Gallery upload button clicked!');
+        e.preventDefault();
+        e.stopPropagation();
+        
+        const galleryPreview = form.querySelector('.gallery-preview');
+        console.log('Gallery preview found:', galleryPreview);
+        
+        // Create and show gallery modal
+        const modal = createGalleryModal();
+        if (!modal) {
+          console.error('Failed to create gallery modal!');
+          return;
+        }
+        modal.style.zIndex = '9999';
+        document.body.appendChild(modal);
+        modal.classList.remove('hidden');
+        
+        // Set up the modal for this specific case study
+        setupGalleryModal(modal, form, galleryPreview);
+      });
+    }
+    
+    if (!galleryEditBtn && !galleryUploadBtn) {
+      console.log(`  ❌ Form ${index} has NO gallery buttons!`);
+    }
+  });
+  
+  // Function to toggle gallery edit mode
+  function toggleGalleryEditMode(galleryPreview, editBtn) {
+    const isEditMode = galleryPreview.classList.contains('edit-mode');
+    
+    if (isEditMode) {
+      // Exit edit mode
+      galleryPreview.classList.remove('edit-mode');
+      editBtn.textContent = '✏️ Edit Gallery';
+      editBtn.classList.remove('bg-blue-600', 'text-white');
+      editBtn.classList.add('border-gray-300', 'hover:bg-gray-50');
+      
+      // Hide all X buttons
+      const removeButtons = galleryPreview.querySelectorAll('.remove-gallery-item');
+      removeButtons.forEach(btn => {
+        btn.style.display = 'none';
+      });
+      
+      console.log('📝 Exited gallery edit mode');
+    } else {
+      // Enter edit mode
+      galleryPreview.classList.add('edit-mode');
+      editBtn.textContent = '✅ Done Editing';
+      editBtn.classList.add('bg-blue-600', 'text-white');
+      editBtn.classList.remove('border-gray-300', 'hover:bg-gray-50');
+      
+      // Show all X buttons and add event listeners
+      const removeButtons = galleryPreview.querySelectorAll('.remove-gallery-item');
+      removeButtons.forEach(btn => {
+        btn.style.display = 'block';
+        
+        // Add click event listener if not already added
+        if (!btn.hasAttribute('data-listener-added')) {
+          btn.addEventListener('click', function(e) {
+            console.log('🗑️ X button clicked!');
+            e.preventDefault();
+            e.stopPropagation();
+            
+            // Visual feedback - make button flash
+            btn.style.background = 'darkred';
+            btn.textContent = '🗑️';
+            setTimeout(() => {
+              btn.style.background = 'red';
+              btn.textContent = '×';
+            }, 200);
+            
+            const itemToRemove = btn.closest('.group');
+            console.log('Item to remove:', itemToRemove);
+            
+            if (itemToRemove) {
+              itemToRemove.remove();
+              console.log('✅ Image removed successfully!');
+              
+              // Update hidden input
+              const caseStudyForm = galleryPreview.closest('.case-study-form');
+              const hiddenInput = caseStudyForm.querySelector('input[name*="gallery_urls"]');
+              if (hiddenInput) {
+                const currentUrls = JSON.parse(hiddenInput.value || '[]');
+                const imgSrc = itemToRemove.querySelector('img').src;
+                const updatedUrls = currentUrls.filter(url => url.full !== imgSrc);
+                hiddenInput.value = JSON.stringify(updatedUrls);
+                console.log('✅ Hidden input updated');
+              }
+              
+              // Show "No gallery images" message if no images left
+              if (galleryPreview.children.length === 0) {
+                galleryPreview.innerHTML = '<div class="text-xs text-gray-500 text-center py-4 col-span-3">No gallery images</div>';
+              }
+            }
+          });
+          
+          btn.setAttribute('data-listener-added', 'true');
+        }
+      });
+      
+      console.log('📝 Entered gallery edit mode');
+    }
+  }
+  
+  // Function to set up gallery modal
+  function setupGalleryModal(modal, caseStudyForm, galleryPreview) {
+    console.log('🔧 Setting up gallery modal...');
+    
+    // Set up tab switching
+    const galleryTab = modal.querySelector('#galleryTab');
+    const uploadTab = modal.querySelector('#uploadTab');
+    const galleryTabContent = modal.querySelector('#galleryTabContent');
+    const uploadTabContent = modal.querySelector('#uploadTabContent');
+    
+    // Switch to gallery tab by default
+    galleryTab.classList.add('text-gray-900', 'border-gray-900', 'bg-gray-50');
+    galleryTab.classList.remove('text-gray-500', 'border-transparent');
+    uploadTab.classList.remove('text-gray-900', 'border-gray-900', 'bg-gray-50');
+    uploadTab.classList.add('text-gray-500', 'border-transparent');
+    galleryTabContent.classList.remove('hidden');
+    uploadTabContent.classList.add('hidden');
+    
+    // Add tab switching functionality
+    galleryTab.addEventListener('click', () => {
+      galleryTab.classList.add('text-gray-900', 'border-gray-900', 'bg-gray-50');
+      galleryTab.classList.remove('text-gray-500', 'border-transparent');
+      uploadTab.classList.remove('text-gray-900', 'border-gray-900', 'bg-gray-50');
+      uploadTab.classList.add('text-gray-500', 'border-transparent');
+      galleryTabContent.classList.remove('hidden');
+      uploadTabContent.classList.add('hidden');
+    });
+    
+    uploadTab.addEventListener('click', () => {
+      uploadTab.classList.add('text-gray-900', 'border-gray-900', 'bg-gray-50');
+      uploadTab.classList.remove('text-gray-500', 'border-transparent');
+      galleryTab.classList.remove('text-gray-900', 'border-gray-900', 'bg-gray-50');
+      galleryTab.classList.add('text-gray-500', 'border-transparent');
+      uploadTabContent.classList.remove('hidden');
+      galleryTabContent.classList.add('hidden');
+    });
+    
+    // Load gallery images
+    loadGalleryImages();
+    
+    // Add close button functionality
+    const closeBtn = modal.querySelector('#closeGallery');
+    if (closeBtn) {
+      closeBtn.addEventListener('click', function() {
+        modal.remove();
+      });
+    }
+    
+    // Handle image selection for this case study - support multiple selection
+    const selectedImages = new Set();
+    
+    // Function to update the "Add Selected" button
+    const updateButton = () => {
+      const btn = modal.querySelector('#addSelectedImages');
+      if (btn) {
+        const count = selectedImages.size;
+        btn.textContent = `Add Selected Images (${count})`;
+        btn.disabled = count === 0;
+        btn.className = count > 0 
+          ? 'px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700' 
+          : 'px-4 py-2 bg-gray-400 text-white rounded-lg cursor-not-allowed';
+      }
+    };
+    
+    // Add click handler to the gallery grid specifically
+    const galleryGrid = modal.querySelector('#galleryGrid');
+    if (galleryGrid) {
+      galleryGrid.addEventListener('click', function(e) {
+        // Check if clicked on a gallery image (either the img or its container)
+        const galleryItem = e.target.closest('.relative.group.cursor-pointer');
+        if (galleryItem) {
+          const img = galleryItem.querySelector('img');
+          if (img) {
+            const fullUrl = img.src; // Use the full URL from the image src
+            const imageId = fullUrl; // Use URL as unique identifier
+            
+            console.log('Image clicked:', imageId);
+            
+            // Toggle selection with enhanced visual feedback
+            if (selectedImages.has(imageId)) {
+              selectedImages.delete(imageId);
+              galleryItem.classList.remove('ring-2', 'ring-blue-500', 'bg-blue-50');
+              galleryItem.classList.add('hover:border-gray-400');
+              // Remove checkmark
+              const checkmark = galleryItem.querySelector('.selection-checkmark');
+              if (checkmark) checkmark.remove();
+              console.log('Image deselected:', imageId);
+            } else {
+              selectedImages.add(imageId);
+              galleryItem.classList.add('ring-2', 'ring-blue-500', 'bg-blue-50');
+              galleryItem.classList.remove('hover:border-gray-400');
+              // Add checkmark
+              const checkmark = document.createElement('div');
+              checkmark.className = 'selection-checkmark absolute top-1 right-1 w-5 h-5 bg-blue-600 text-white text-xs rounded-full flex items-center justify-center';
+              checkmark.innerHTML = '✓';
+              galleryItem.appendChild(checkmark);
+              console.log('Image selected:', imageId);
+            }
+            
+            // Update button
+            updateButton();
+          }
+        }
+      });
+    }
+    
+    // Add "Add Selected" button to modal
+    const modalContent = modal.querySelector('.p-6');
+    const addSelectedBtn = document.createElement('div');
+    addSelectedBtn.className = 'mt-4 text-center';
+    addSelectedBtn.innerHTML = `
+      <button type="button" id="addSelectedImages" class="px-4 py-2 bg-gray-400 text-white rounded-lg cursor-not-allowed">
+        Add Selected Images (0)
+      </button>
+    `;
+    modalContent.appendChild(addSelectedBtn);
+    
+    // Update button initially
+    updateButton();
+    
+    // Handle "Add Selected" button click
+    modal.querySelector('#addSelectedImages').addEventListener('click', function() {
+      if (selectedImages.size === 0) return;
+      
+      // Get current gallery URLs - find the hidden input for gallery_urls
+      const hiddenInput = caseStudyForm.querySelector('input[name*="gallery_urls"]');
+      let currentUrls = [];
+      if (hiddenInput && hiddenInput.value) {
+        try {
+          currentUrls = JSON.parse(hiddenInput.value);
+        } catch (e) {
+          currentUrls = [];
+        }
+      }
+      
+      // Add selected images
+      selectedImages.forEach(imageUrl => {
+        const newImage = {full: imageUrl, thumb: imageUrl};
+        currentUrls.push(newImage);
+        
+        // Add to gallery preview
+        const previewItem = document.createElement('div');
+        previewItem.className = 'relative group';
+        previewItem.innerHTML = `
+          <img src="${imageUrl}" alt="Gallery image" class="w-full h-16 object-cover rounded border border-gray-200" data-full-url="${imageUrl}" data-thumb-url="${imageUrl}">
+          <button type="button" class="remove-gallery-item absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full hover:bg-red-600 transition-all duration-200 hover:scale-110" title="Remove image" style="display: none;">×</button>
+        `;
+        
+        // Remove "No gallery images" message if it exists
+        const noImagesMsg = galleryPreview.querySelector('.text-gray-500');
+        if (noImagesMsg) noImagesMsg.remove();
+        
+        galleryPreview.appendChild(previewItem);
+      });
+      
+      // Update hidden input
+      if (hiddenInput) {
+        hiddenInput.value = JSON.stringify(currentUrls);
+      }
+      
+      modal.remove();
+    });
+    
+    // Handle gallery item removal
+    galleryPreview.addEventListener('click', function(e) {
+      if (e.target.classList.contains('remove-gallery-item')) {
+        console.log('🗑️ Remove button clicked!');
+        const itemToRemove = e.target.closest('.group');
+        console.log('Item to remove:', itemToRemove);
+        itemToRemove.remove();
+        
+        // Update hidden input
+        const hiddenInput = caseStudyForm.querySelector('input[name*="gallery_urls"]');
+        if (hiddenInput) {
+          const currentUrls = JSON.parse(hiddenInput.value || '[]');
+          const imgSrc = itemToRemove.querySelector('img').src;
+          const updatedUrls = currentUrls.filter(url => url.full !== imgSrc);
+          hiddenInput.value = JSON.stringify(updatedUrls);
+        }
+        
+        // Show "No gallery images" message if no images left
+        if (galleryPreview.children.length === 0) {
+          galleryPreview.innerHTML = '<div class="text-xs text-gray-500 text-center py-4 col-span-3">No gallery images</div>';
+        }
+      }
+    });
+  }
+  
+  document.addEventListener('click', function(e) {
+    console.log('🖱️ Click detected on:', e.target);
+    console.log('🖱️ Target classes:', e.target.className);
     if (e.target.classList.contains('gallery-upload-btn')) {
-      console.log('Gallery upload button clicked!');
+      console.log('🎯 Gallery upload button clicked!');
       
       const caseStudyForm = e.target.closest('.case-study-form');
       const galleryPreview = caseStudyForm.querySelector('.gallery-preview');
@@ -1321,6 +2178,19 @@ document.addEventListener('DOMContentLoaded', () => {
       // Handle image selection for this case study - support multiple selection
       const selectedImages = new Set();
       
+      // Function to update the "Add Selected" button
+      const updateButton = () => {
+        const btn = modal.querySelector('#addSelectedImages');
+        if (btn) {
+          const count = selectedImages.size;
+          btn.textContent = `Add Selected Images (${count})`;
+          btn.disabled = count === 0;
+          btn.className = count > 0 
+            ? 'px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700' 
+            : 'px-4 py-2 bg-gray-400 text-white rounded-lg cursor-not-allowed';
+        }
+      };
+      
       // Add click handler to the gallery grid specifically
       const galleryGrid = modal.querySelector('#galleryGrid');
       if (galleryGrid) {
@@ -1336,14 +2206,24 @@ document.addEventListener('DOMContentLoaded', () => {
               
               console.log('Image clicked:', imageId);
               
-              // Toggle selection
+              // Toggle selection with enhanced visual feedback
               if (selectedImages.has(imageId)) {
                 selectedImages.delete(imageId);
                 galleryItem.classList.remove('ring-2', 'ring-blue-500', 'bg-blue-50');
+                galleryItem.classList.add('hover:border-gray-400');
+                // Remove checkmark
+                const checkmark = galleryItem.querySelector('.selection-checkmark');
+                if (checkmark) checkmark.remove();
                 console.log('Image deselected:', imageId);
               } else {
                 selectedImages.add(imageId);
                 galleryItem.classList.add('ring-2', 'ring-blue-500', 'bg-blue-50');
+                galleryItem.classList.remove('hover:border-gray-400');
+                // Add checkmark
+                const checkmark = document.createElement('div');
+                checkmark.className = 'selection-checkmark absolute top-1 right-1 w-5 h-5 bg-blue-600 text-white text-xs rounded-full flex items-center justify-center';
+                checkmark.innerHTML = '✓';
+                galleryItem.appendChild(checkmark);
                 console.log('Image selected:', imageId);
               }
               
@@ -1354,15 +2234,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
       }
       
-      // Update button text when selection changes
-      const updateButton = () => {
-        const btn = modal.querySelector('#addSelectedImages');
-        if (btn) {
-          const count = selectedImages.size;
-          btn.textContent = `Add Selected Images (${count})`;
-          btn.disabled = count === 0;
-        }
-      };
+      // updateButton function is already defined above
       
       // Add "Add Selected" button to modal
       const modalContent = modal.querySelector('.p-6');
@@ -1403,7 +2275,7 @@ document.addEventListener('DOMContentLoaded', () => {
           previewItem.className = 'relative group';
           previewItem.innerHTML = `
             <img src="${imageUrl}" alt="Gallery image" class="w-full h-16 object-cover rounded border border-gray-200" data-full-url="${imageUrl}" data-thumb-url="${imageUrl}">
-            <button type="button" class="remove-gallery-item absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full hover:bg-red-600">×</button>
+            <button type="button" class="remove-gallery-item absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full hover:bg-red-600 transition-all duration-200 hover:scale-110" title="Remove image">×</button>
           `;
           
           // Remove "No gallery images" message if it exists
@@ -1424,7 +2296,9 @@ document.addEventListener('DOMContentLoaded', () => {
       // Handle gallery item removal
       galleryPreview.addEventListener('click', function(e) {
         if (e.target.classList.contains('remove-gallery-item')) {
+          console.log('🗑️ Remove button clicked!');
           const itemToRemove = e.target.closest('.group');
+          console.log('Item to remove:', itemToRemove);
           itemToRemove.remove();
           
           // Update hidden input
@@ -1468,7 +2342,7 @@ document.addEventListener('DOMContentLoaded', function() {
             previewItem.className = 'relative group';
             previewItem.innerHTML = `
               <img src="${imageData.thumb || imageData.full}" alt="Gallery image" class="w-full h-16 object-cover rounded border border-gray-200" data-full-url="${imageData.full}" data-thumb-url="${imageData.thumb || imageData.full}">
-              <button type="button" class="remove-gallery-item absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full hover:bg-red-600">×</button>
+              <button type="button" class="remove-gallery-item absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full hover:bg-red-600 transition-all duration-200 hover:scale-110" title="Remove image" style="display: none;">×</button>
             `;
             galleryPreview.appendChild(previewItem);
           });
@@ -1478,6 +2352,149 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     }
   });
+});
+
+// ============================================
+// ICON PICKER FOR SERVICE CAPABILITIES
+// ============================================
+
+// Common service icons (Font Awesome 6 solid icons)
+const SERVICE_ICONS = [
+  { class: 'fa-solid fa-hammer', label: 'Hammer' },
+  { class: 'fa-solid fa-wrench', label: 'Wrench' },
+  { class: 'fa-solid fa-screwdriver-wrench', label: 'Tools' },
+  { class: 'fa-solid fa-paintbrush', label: 'Paint Brush' },
+  { class: 'fa-solid fa-brush', label: 'Brush' },
+  { class: 'fa-solid fa-paint-roller', label: 'Paint Roller' },
+  { class: 'fa-solid fa-tree', label: 'Tree' },
+  { class: 'fa-solid fa-seedling', label: 'Plant' },
+  { class: 'fa-solid fa-water', label: 'Water' },
+  { class: 'fa-solid fa-droplet', label: 'Droplet' },
+  { class: 'fa-solid fa-person-swimming', label: 'Pool' },
+  { class: 'fa-solid fa-building', label: 'Building' },
+  { class: 'fa-solid fa-house', label: 'House' },
+  { class: 'fa-solid fa-chair', label: 'Furniture' },
+  { class: 'fa-solid fa-couch', label: 'Couch' },
+  { class: 'fa-solid fa-bed', label: 'Bed' },
+  { class: 'fa-solid fa-kitchen-set', label: 'Kitchen' },
+  { class: 'fa-solid fa-door-open', label: 'Door' },
+  { class: 'fa-solid fa-stairs', label: 'Stairs' },
+  { class: 'fa-solid fa-lightbulb', label: 'Light' },
+  { class: 'fa-solid fa-bolt', label: 'Electric' },
+  { class: 'fa-solid fa-plug', label: 'Plug' },
+  { class: 'fa-solid fa-fire-flame-simple', label: 'Fire' },
+  { class: 'fa-solid fa-temperature-half', label: 'HVAC' },
+  { class: 'fa-solid fa-wind', label: 'Air' },
+  { class: 'fa-solid fa-toolbox', label: 'Toolbox' },
+  { class: 'fa-solid fa-trowel-bricks', label: 'Masonry' },
+  { class: 'fa-solid fa-ruler-combined', label: 'Measure' },
+  { class: 'fa-solid fa-compass-drafting', label: 'Design' },
+  { class: 'fa-solid fa-pencil', label: 'Draw' },
+  { class: 'fa-solid fa-broom', label: 'Cleaning' },
+  { class: 'fa-solid fa-spray-can', label: 'Spray' },
+  { class: 'fa-solid fa-hand-sparkles', label: 'Clean Hands' },
+  { class: 'fa-solid fa-clipboard-check', label: 'Checklist' },
+  { class: 'fa-solid fa-chart-line', label: 'Analytics' },
+  { class: 'fa-solid fa-clock', label: 'Time' },
+  { class: 'fa-solid fa-calendar', label: 'Schedule' },
+  { class: 'fa-solid fa-shield-halved', label: 'Security' },
+  { class: 'fa-solid fa-certificate', label: 'Certificate' },
+  { class: 'fa-solid fa-award', label: 'Award' },
+  { class: 'fa-solid fa-star', label: 'Star' },
+  { class: 'fa-solid fa-check-circle', label: 'Check' },
+  { class: 'fa-solid fa-circle-check', label: 'Verified' },
+];
+
+let currentIconInput = null;
+
+function openIconPicker(inputElement) {
+  currentIconInput = inputElement;
+  
+  // Check if modal already exists
+  let modal = document.getElementById('iconPickerModal');
+  if (!modal) {
+    // Create modal
+    modal = document.createElement('div');
+    modal.id = 'iconPickerModal';
+    modal.className = 'fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4';
+    modal.style.display = 'none';
+    
+    modal.innerHTML = `
+      <div class="bg-white rounded-2xl max-w-3xl w-full max-h-[80vh] overflow-hidden shadow-2xl">
+        <div class="p-6 border-b border-gray-200 flex items-center justify-between bg-gradient-to-r from-teal-50 to-white">
+          <div>
+            <h3 class="text-xl font-bold text-gray-900">Choose an Icon</h3>
+            <p class="text-sm text-gray-600 mt-1">Select an icon for your service capability</p>
+          </div>
+          <button type="button" onclick="closeIconPicker()" class="text-gray-400 hover:text-gray-600 transition-colors">
+            <i class="fa-solid fa-xmark text-2xl"></i>
+          </button>
+        </div>
+        
+        <div class="p-6 overflow-y-auto max-h-[60vh]">
+          <div class="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-3" id="iconGrid">
+            ${SERVICE_ICONS.map(icon => `
+              <button type="button" 
+                      onclick="selectIcon('${icon.class}')" 
+                      class="flex flex-col items-center gap-2 p-4 rounded-xl border-2 border-gray-200 hover:border-teal-500 hover:bg-teal-50 transition-all duration-200 group"
+                      title="${icon.label}">
+                <i class="${icon.class} text-2xl text-gray-700 group-hover:text-teal-600 transition-colors"></i>
+                <span class="text-xs text-gray-600 text-center leading-tight">${icon.label}</span>
+              </button>
+            `).join('')}
+          </div>
+        </div>
+        
+        <div class="p-4 border-t border-gray-200 bg-gray-50 text-center">
+          <p class="text-xs text-gray-500">
+            Can't find what you need? You can manually enter any Font Awesome class in the input field.
+          </p>
+        </div>
+      </div>
+    `;
+    
+    document.body.appendChild(modal);
+    
+    // Close on background click
+    modal.addEventListener('click', function(e) {
+      if (e.target === modal) {
+        closeIconPicker();
+      }
+    });
+  }
+  
+  modal.style.display = 'flex';
+}
+
+function closeIconPicker() {
+  const modal = document.getElementById('iconPickerModal');
+  if (modal) {
+    modal.style.display = 'none';
+  }
+  currentIconInput = null;
+}
+
+function selectIcon(iconClass) {
+  if (currentIconInput) {
+    currentIconInput.value = iconClass;
+    
+    // Update preview if it exists
+    const preview = currentIconInput.closest('div').querySelector('i');
+    if (preview) {
+      preview.className = iconClass + ' text-teal-600';
+    }
+    
+    // Trigger change event
+    currentIconInput.dispatchEvent(new Event('change', { bubbles: true }));
+  }
+  closeIconPicker();
+}
+
+// Close modal on ESC key
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') {
+    closeIconPicker();
+  }
 });
 </script>
 {% endblock %}

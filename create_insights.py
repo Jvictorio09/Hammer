@@ -1,5 +1,5 @@
-# create_insights.py
 from __future__ import annotations
+
 import os
 import sys
 import typing as t
@@ -16,7 +16,7 @@ sys.path.append(BASE_DIR)
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "myProject.settings")
 django.setup()
 
-from myApp.models import Service, Insight
+from myApp.models import Service, Insight  # noqa: E402
 
 
 def unique_slug(base: str) -> str:
@@ -36,7 +36,7 @@ def unique_slug(base: str) -> str:
 
 def html_to_editorjs_blocks(html_content: str) -> dict:
     """
-    Convert a simple HTML subset to Editor.js blocks.
+    Convert HTML content to Editor.js blocks format.
     """
     if not html_content or not html_content.strip():
         return {
@@ -53,566 +53,311 @@ def html_to_editorjs_blocks(html_content: str) -> dict:
         if not line:
             continue
 
-        # Headings
+        # Handle headings
         if line.startswith("<h1>"):
             text = re.sub(r"<[^>]+>", "", line).strip()
-            blocks.append({"id": str(uuid.uuid4()), "type": "header", "data": {"text": text, "level": 1}})
+            if text:
+                blocks.append({
+                    "id": str(uuid.uuid4()),
+                    "type": "header",
+                    "data": {"text": text, "level": 1},
+                })
         elif line.startswith("<h2>"):
             text = re.sub(r"<[^>]+>", "", line).strip()
-            blocks.append({"id": str(uuid.uuid4()), "type": "header", "data": {"text": text, "level": 2}})
+            if text:
+                blocks.append({
+                    "id": str(uuid.uuid4()),
+                    "type": "header",
+                    "data": {"text": text, "level": 2},
+                })
         elif line.startswith("<h3>"):
             text = re.sub(r"<[^>]+>", "", line).strip()
-            blocks.append({"id": str(uuid.uuid4()), "type": "header", "data": {"text": text, "level": 3}})
+            if text:
+                blocks.append({
+                    "id": str(uuid.uuid4()),
+                    "type": "header",
+                    "data": {"text": text, "level": 3},
+                })
+        elif line.startswith("<h4>"):
+            text = re.sub(r"<[^>]+>", "", line).strip()
+            if text:
+                blocks.append({
+                    "id": str(uuid.uuid4()),
+                    "type": "header",
+                    "data": {"text": text, "level": 4},
+                })
+        elif line.startswith("<h5>"):
+            text = re.sub(r"<[^>]+>", "", line).strip()
+            if text:
+                blocks.append({
+                    "id": str(uuid.uuid4()),
+                    "type": "header",
+                    "data": {"text": text, "level": 5},
+                })
+        elif line.startswith("<h6>"):
+            text = re.sub(r"<[^>]+>", "", line).strip()
+            if text:
+                blocks.append({
+                    "id": str(uuid.uuid4()),
+                    "type": "header",
+                    "data": {"text": text, "level": 6},
+                })
 
-        # Blockquotes
+        # Handle blockquotes
         elif line.startswith("<blockquote>"):
             text = re.sub(r"<[^>]+>", "", line).strip()
-            blocks.append({"id": str(uuid.uuid4()), "type": "quote", "data": {"text": text, "caption": ""}})
+            if text:
+                blocks.append({
+                    "id": str(uuid.uuid4()),
+                    "type": "quote",
+                    "data": {"text": text, "caption": ""},
+                })
 
-        # Lists (simplified: one block per <li>)
-        elif line.startswith("<ul>") or line.startswith("<ol>"):
+        # Handle lists (simplified)
+        elif line.startswith("<ul>"):
+            # Simplified approach—nested lists not parsed here
             continue
         elif line.startswith("<li>"):
             text = re.sub(r"<[^>]+>", "", line).strip()
-            blocks.append({"id": str(uuid.uuid4()), "type": "list", "data": {"style": "unordered", "items": [text]}})
+            if text:
+                blocks.append({
+                    "id": str(uuid.uuid4()),
+                    "type": "list",
+                    "data": {"style": "unordered", "items": [text]},
+                })
 
-        # Paragraphs
+        # Handle paragraphs
         elif line.startswith("<p>"):
             text = re.sub(r"<[^>]+>", "", line).strip()
-            blocks.append({"id": str(uuid.uuid4()), "type": "paragraph", "data": {"text": text}})
+            if text:
+                blocks.append({
+                    "id": str(uuid.uuid4()),
+                    "type": "paragraph",
+                    "data": {"text": text},
+                })
 
-        # Fallback: plain text
+        # Fallback: plain text → paragraph
         elif line and not line.startswith("<"):
-            blocks.append({"id": str(uuid.uuid4()), "type": "paragraph", "data": {"text": line}})
+            blocks.append({
+                "id": str(uuid.uuid4()),
+                "type": "paragraph",
+                "data": {"text": line},
+            })
 
-    return {"time": int(timezone.now().timestamp() * 1000), "blocks": blocks, "version": "2.28.2"}
+    return {
+        "time": int(timezone.now().timestamp() * 1000),
+        "blocks": blocks,
+        "version": "2.28.2",
+    }
 
 
-# ---- Hammer Facility Insights (HTML bodies) ----
+# ---- New Hammer Landscape Insights (HTML bodies) ----
+# NOTE: Keep within fields existing on your Insight model:
+# title, slug, tag, read_minutes, excerpt, cover_image_url, body,
+# published, published_at. If your model uses different field names,
+# adjust below accordingly.
+
 POSTS: t.List[dict] = [
     {
-        "title": "Facility Management in Dubai: The Ultimate Preventive Maintenance Checklist for Villas & Commercial Spaces",
-        "tag": "Checklist",
-        "read_minutes": 8,
-        "excerpt": "A Dubai-specific preventive maintenance checklist for villas and commercial properties—HVAC, MEP, pools, life-safety, and envelope care.",
-        "cover_image_url": "https://images.unsplash.com/photo-1581090124361-0f3b7f5b2b54?w=1600&q=80&auto=format&fit=crop",
+        "title": "Transforming Dubai Villas into Outdoor Sanctuaries: Modern Landscape Design Trends for 2025",
+        "tag": "Trends",
+        "read_minutes": 6,
+        "excerpt": (
+            "Discover the latest landscape design trends in Dubai for 2025 — "
+            "from sustainable gardens and water-smart irrigation to biophilic design."
+        ),
+        "cover_image_url": (
+            "https://images.unsplash.com/photo-1519710164239-da123dc03ef4?"
+            "w=1600&q=80&auto=format&fit=crop"
+        ),
         "body": """
-<h1>Facility Management in Dubai: The Ultimate Preventive Maintenance Checklist for Villas & Commercial Spaces</h1>
-<p><em>Meta Description:</em> Cut downtime and costs with this <strong>preventive maintenance checklist for Dubai properties</strong>. From HVAC and MEP to pools and life-safety systems, Hammer Facility’s in-house team keeps villas and commercial spaces running flawlessly.</p>
+<h1>Transforming Dubai Villas into Outdoor Sanctuaries: Modern Landscape Design Trends for 2025</h1>
+<p><em>Meta Description:</em> Discover the latest <strong>landscape design trends in Dubai for 2025</strong> — from sustainable gardens and water-smart irrigation to biophilic design. Create your dream villa landscape with Hammer Landscape.</p>
 
-<h2>Why Preventive Beats Reactive (Every. Single. Time.)</h2>
-<p>In Dubai’s climate, heat + dust + humidity = accelerated wear. Waiting for things to break is the most expensive way to run a property. <strong>Preventive maintenance</strong> extends asset life, reduces emergency call-outs, and stabilizes energy bills—whether you manage a private villa or a multi-tenant commercial site.</p>
+<h2>The Rise of Outdoor Living in Dubai</h2>
+<p>Dubai homeowners are redefining luxury. No longer limited to lavish interiors, the modern villa lifestyle extends seamlessly into the outdoors. Gardens are becoming personal sanctuaries — spaces for morning coffee, family gatherings, or peaceful evenings under the stars.</p>
+<p>As 2025 unfolds, <strong>landscape design in Dubai</strong> is shifting toward natural beauty, sustainability, and sensory experiences that turn every villa into a private resort.</p>
 
-<h3>Quick wins you’ll feel within 90 days:</h3>
-<ul>
-  <li>Fewer breakdowns and tenant complaints</li>
-  <li>Lower energy consumption (clean coils, balanced airflows, correct setpoints)</li>
-  <li>Longer equipment life (bearings, belts, pumps, motors)</li>
-  <li>Safer, compliant operations</li>
-</ul>
+<h2>1. Sustainable Luxury: Greener Choices for a Greener Future</h2>
+<p>In a city known for its innovation, sustainability has become the new standard of elegance. Modern villa landscaping now embraces <strong>eco-friendly materials</strong>, <strong>solar lighting</strong>, and <strong>automated irrigation systems</strong> that conserve water while keeping gardens lush year-round.</p>
+<p>At Hammer Landscape, we design with intention — balancing aesthetics and ecology. Our team uses <strong>permeable paving</strong>, <strong>locally sourced stone</strong>, and <strong>smart plant selection</strong> that thrives in Dubai’s climate without excess maintenance.</p>
+<blockquote>Because true luxury is effortless — and kind to the environment.</blockquote>
 
-<h2>The Master Checklist (Dubai Edition)</h2>
-<p><em>Use this as a baseline. Hammer Facility customizes task lists per asset register, OEM manuals, and occupancy profile.</em></p>
+<h2>2. Water-Wise Gardens that Bloom All Year</h2>
+<p>Water is life — and in Dubai, it’s precious. The trend of <strong>water-wise gardens</strong> combines drought-resistant plants like <em>bougainvillea</em>, <em>desert rose</em>, and ornamental grasses with efficient drip irrigation systems.</p>
+<p>By rethinking how water flows through your outdoor space, you can create a <strong>vibrant, low-maintenance garden</strong> that stays beautiful even under the summer sun.</p>
+<p>Our experts at Hammer Landscape specialize in <strong>hydrozoning</strong> — grouping plants with similar water needs — so every drop counts.</p>
 
-<h3>1) HVAC (Chillers / Package Units / DX Splits / FCUs)</h3>
-<p><strong>Weekly / Monthly</strong></p>
-<ul>
-  <li>Clean or replace filters; log ΔP across filters</li>
-  <li>Inspect condensate drains; clear algae &amp; check traps</li>
-  <li>Wipe return/supply grilles; remove dust buildup</li>
-  <li>Verify thermostat setpoints (villas: 23–24°C typical)</li>
-  <li>Listen for abnormal fan/motor noise; check belt tension</li>
-</ul>
-<p><strong>Quarterly</strong></p>
-<ul>
-  <li>Deep clean coils (evaporator &amp; condenser); straighten fins</li>
-  <li>Check refrigerant pressures vs. OEM charts; inspect for leaks</li>
-  <li>Calibrate sensors (temp, humidity, CO₂ where applicable)</li>
-  <li>Test actuators and VFDs; verify airflow &amp; balancing</li>
-  <li>Inspect insulation for sweating/condensation</li>
-</ul>
-<p><strong>Annually</strong></p>
-<ul>
-  <li>Overhaul FCUs/AHUs (bearings, shafts, dampers)</li>
-  <li>Service chiller/condensing units; oil analysis where applicable</li>
-  <li>Validate BMS sequences (schedules, set-backs, alarms)</li>
-</ul>
+<h2>3. Biophilic Design: Bringing Nature Closer to Home</h2>
+<p>Biophilic design, a major 2025 trend, focuses on connecting humans and nature. Think <strong>vertical green walls</strong>, <strong>shaded pergolas</strong> with climbing vines, and <strong>stone pathways</strong> that lead to tranquil water features.</p>
+<p>These natural elements don’t just look beautiful — they reduce stress, improve air quality, and elevate your overall sense of well-being.</p>
+<p>Imagine walking barefoot across soft grass, surrounded by greenery that feels alive and personal. That’s not just landscaping — that’s <strong>healing design</strong>.</p>
 
-<h3>2) Electrical Systems</h3>
-<p><strong>Monthly</strong></p>
-<ul>
-  <li>Thermal scan of DBs/MCCs (hot spots = loose lugs)</li>
-  <li>Test RCD/RCBO trip operation; verify labeling</li>
-  <li>Check emergency/exit lights; replace failures</li>
-  <li>Inspect UPS/inverter health &amp; battery runtime</li>
-</ul>
-<p><strong>Quarterly</strong></p>
-<ul>
-  <li>Tighten terminations; clean panels; torque to spec</li>
-  <li>Load-test generators (commercial); exercise under load</li>
-</ul>
-<p><strong>Annually</strong></p>
-<ul>
-  <li>Comprehensive earthing test, insulation resistance tests</li>
-  <li>Full single-line diagram review and update after any changes</li>
-</ul>
+<h2>4. Smart Technology Meets Outdoor Elegance</h2>
+<p>Innovation isn’t just for smart homes anymore. From <strong>app-controlled lighting systems</strong> to <strong>climate-responsive irrigation</strong>, Dubai’s villas are embracing intelligent landscapes that adapt to your lifestyle.</p>
+<p>You can now schedule lighting scenes for evening dinners or control fountains and pool features directly from your phone — blending modern convenience with timeless ambiance.</p>
+<p>Hammer Landscape brings this future-ready vision to life, ensuring technology enhances the art of outdoor living, never replaces it.</p>
 
-<h3>3) Plumbing &amp; Water Systems</h3>
-<p><strong>Monthly</strong></p>
-<ul>
-  <li>Inspect pumps (pressure/flow, vibration, seal leaks)</li>
-  <li>Check water tanks (levels, lids, screens, cleanliness)</li>
-  <li>Test mixing valves; verify stable hot-water delivery</li>
-</ul>
-<p><strong>Quarterly</strong></p>
-<ul>
-  <li>Descale aerators and showerheads; clean strainers</li>
-  <li>Flush low-use outlets to maintain water quality</li>
-</ul>
-<p><strong>Annually</strong></p>
-<ul>
-  <li>Tank cleaning &amp; disinfection (per local best practices)</li>
-  <li>Service water heaters/heat exchangers; replace anodes</li>
-</ul>
+<h2>5. Personalized Outdoor Experiences</h2>
+<p>Every villa tells a story — and your landscape should too. Whether it’s a <strong>Zen-inspired courtyard</strong>, a <strong>Mediterranean poolside retreat</strong>, or a <strong>family-friendly garden</strong>, personalization is the final touch that defines 2025 design.</p>
+<p>We collaborate closely with clients to craft spaces that feel uniquely yours — functional, beautiful, and perfectly balanced with Dubai’s modern architectural rhythm.</p>
 
-<h3>4) Pools &amp; Water Features (Villas &amp; Facilities)</h3>
-<p><strong>Daily / Weekly</strong></p>
-<ul>
-  <li>Test &amp; balance pH, chlorine/bromine; record readings</li>
-  <li>Skim, vacuum, backwash filters; inspect baskets</li>
-  <li>Verify pump pressure and leaks; test safety devices</li>
-</ul>
-<p><strong>Monthly / Quarterly</strong></p>
-<ul>
-  <li>Inspect tiles, grouting, expansion joints</li>
-  <li>Clean DE/sand filters thoroughly; check media condition</li>
-  <li>Audit chemical storage and dosing equipment</li>
-</ul>
-<p><strong>Annually</strong></p>
-<ul>
-  <li>Replace filter media as required; pressure-test lines</li>
-  <li>Electrical safety check for submersible lights &amp; pumps</li>
-</ul>
-
-<h3>5) Fire &amp; Life Safety (Commercial; Villas with systems)</h3>
-<p><strong>Monthly</strong></p>
-<ul>
-  <li>Visual check: extinguishers, signage, evacuation plans</li>
-  <li>Test manual call points &amp; sounders (staggered by zone)</li>
-</ul>
-<p><strong>Quarterly</strong></p>
-<ul>
-  <li>Function test smoke/heat detectors; clean &amp; recalibrate</li>
-  <li>Inspect sprinkler valves/gauges; verify pump auto-start</li>
-  <li>Test emergency lighting duration</li>
-</ul>
-<p><strong>Annually</strong></p>
-<ul>
-  <li>Full fire pump performance test</li>
-  <li>Third-party fire system certification (where applicable)</li>
-</ul>
-
-<h3>6) Building Envelope &amp; General</h3>
-<p><strong>Monthly</strong></p>
-<ul>
-  <li>Inspect doors/windows seals; adjust closers &amp; hinges</li>
-  <li>Check roof drains/gutters; remove debris (sand builds up fast)</li>
-  <li>Touch-up sealants/caulks in wet areas</li>
-</ul>
-<p><strong>Quarterly</strong></p>
-<ul>
-  <li>Pressure-wash façades where needed; inspect for hairline cracks</li>
-  <li>Lubricate hinges, locks, rollers; replace worn weatherstrips</li>
-</ul>
-<p><strong>Annually</strong></p>
-<ul>
-  <li>Recoat exterior wood/metal; check waterproofing membranes</li>
-</ul>
-
-<h2>Sample Preventive Maintenance Calendar</h2>
-<table>
-  <thead><tr><th>Frequency</th><th>Tasks (summary)</th></tr></thead>
-  <tbody>
-    <tr><td>Weekly</td><td>HVAC filters &amp; drains; pool chemistry; visual safety checks</td></tr>
-    <tr><td>Monthly</td><td>Electrical panels (thermals), pumps &amp; tanks, emergency lights, envelope checks</td></tr>
-    <tr><td>Quarterly</td><td>Coil deep clean, sensor calibration, fire system testing, filter media audits</td></tr>
-    <tr><td>Bi-Annual</td><td>BMS sequence validation, roof &amp; façade program, major pool filter service</td></tr>
-    <tr><td>Annual</td><td>Chiller/plant service, water tank clean, fire pump test, full electrical testing</td></tr>
-  </tbody>
-</table>
-<blockquote>Pro tip: Run this through a CMMS (computerized maintenance management system). Auto-generated work orders, photo logs, costs, and asset histories make audits painless.</blockquote>
-
-<h2>KPIs to Keep You Efficient</h2>
-<ul>
-  <li>Reactive vs Preventive: target ≤ 20% reactive</li>
-  <li>HVAC availability: ≥ 99% during occupied hours</li>
-  <li>Energy intensity: track kWh/m² vs last year (post-coil clean)</li>
-  <li>First-time fix rate: ≥ 85%</li>
-  <li>Response/Resolution SLAs: e.g., Critical 1–2h / 6–8h</li>
-</ul>
-
-<h2>Villa vs Commercial: What Changes?</h2>
-<ul>
-  <li><strong>Villas:</strong> comfort, pool care, discreet service windows.</li>
-  <li><strong>Commercial:</strong> uptime, after-hours works, tenant coordination, statutory testing, documented audits.</li>
-</ul>
-
-<h2>Why Hammer Facility?</h2>
-<ul>
-  <li>In-house MEP &amp; HVAC team (no finger-pointing between vendors)</li>
-  <li>Preventive plans tailored to your asset register</li>
-  <li>Discreet, uniformed technicians with digital checklists and photo proof</li>
-  <li>Energy-aware maintenance that cuts costs without cutting corners</li>
-</ul>
-
-<h2>Ready to stop firefighting and start optimizing?</h2>
-<p><strong>Let’s build a preventive plan for your property.</strong> <a href="/contact" class="btn btn-primary">Contact Hammer Facility</a> for a site assessment and a customized maintenance calendar.</p>
+<h2>Your Outdoor Sanctuary Awaits</h2>
+<p>If you’ve been dreaming of a serene, resort-style escape right outside your villa doors, 2025 is the year to make it happen.</p>
+<p><strong>Hammer Landscape</strong> brings together design innovation, craftsmanship, and local expertise to transform outdoor spaces into timeless works of art.</p>
+<p>🌿 <strong>Let’s create your sanctuary today.</strong> <a href="/contact" class="btn btn-primary">Contact Hammer Landscape</a> for a consultation and start your villa transformation.</p>
 """,
     },
     {
-        "title": "HVAC & MEP Made Simple: How Proactive Service Cuts Energy Costs by 20%+ in Dubai Properties",
-        "tag": "Energy",
+        "title": "The Secret to a Low-Maintenance Garden in Dubai’s Climate",
+        "tag": "Guides",
         "read_minutes": 7,
-        "excerpt": "Proactive HVAC/MEP care that actually lowers bills—filters, coil cleaning, airflow balancing, hydronic delta-T, and BMS optimization.",
-        "cover_image_url": "https://images.unsplash.com/photo-1517816428104-797678c7cf0d?w=1600&q=80&auto=format&fit=crop",
+        "excerpt": (
+            "Low-maintenance garden ideas for Dubai: desert-friendly plants, smart irrigation, "
+            "and clever design to keep your garden lush with minimal effort."
+        ),
+        "cover_image_url": (
+            "https://images.unsplash.com/photo-1523413651479-597eb2da0ad6?"
+            "w=1600&q=80&auto=format&fit=crop"
+        ),
         "body": """
-<h1>HVAC &amp; MEP Made Simple: How Proactive Service Cuts Energy Costs by 20%+ in Dubai Properties</h1>
-<p><em>Meta Description:</em> Proactive <strong>HVAC maintenance in Dubai</strong> and smart <strong>MEP services</strong> can slash energy bills by 20%+. Learn the real tasks—coil cleaning, airflow balancing, and <strong>BMS optimization</strong>—that keep villas and commercial spaces efficient year-round.</p>
+<h1>The Secret to a Low-Maintenance Garden in Dubai’s Climate</h1>
+<p><em>Meta Description:</em> Looking for <strong>low-maintenance garden ideas in Dubai</strong>? Learn how desert-friendly plants, smart irrigation, and clever design can keep your garden lush year-round with minimal effort — powered by Hammer Landscape.</p>
 
-<h2>Comfort is good. Efficient comfort is better.</h2>
-<p>Dubai’s heat, dust, and humidity put serious pressure on building systems. When HVAC and MEP are treated as “set and forget,” energy bills creep up, uptime dips, and comfort becomes a roulette wheel. The fix? <strong>Proactive service</strong>—measurable actions that keep systems tuned, clean, and perfectly coordinated.</p>
-<p>At <strong>Hammer Facility</strong>, we don’t just maintain equipment; we make it <em>perform</em>. Here’s how we routinely help villas and commercial properties save <strong>20%+</strong> on energy—without sacrificing comfort.</p>
+<h2>The Dubai Garden Dilemma</h2>
+<p>Dubai is a city of contrasts — sleek skyscrapers, golden deserts, and stunning villas with private gardens. But while the dream of lush greenery is alive and well, the reality is that Dubai’s heat and arid climate make garden maintenance a real challenge.</p>
+<p>Between scorching summers, high water costs, and limited time, many homeowners ask the same question:
+<strong>“Can I have a beautiful garden that doesn’t demand constant care?”</strong></p>
+<p>The answer is yes — and it starts with smart design.</p>
 
-<h2>The Big Five: Where the Savings Come From</h2>
-
-<h3>1) Filters, Coils &amp; Airflow: The “Easy Wins”</h3>
+<h2>1. Choose Plants That Thrive, Not Just Survive</h2>
+<p>The foundation of any <em>low-maintenance garden in Dubai</em> lies in plant selection. Native and adaptive species can flourish in the UAE climate with far less watering and upkeep.</p>
 <ul>
-  <li><strong>Filter cycles:</strong> swap/wash on ΔP (pressure drop) schedule.</li>
-  <li><strong>Coil cleaning:</strong> quarterly deep cleans on evaporator + condenser coils.</li>
-  <li><strong>Airflow &amp; balancing:</strong> verify fan speeds, static pressure, and VAV settings.</li>
+  <li><strong>Bougainvillea</strong> – vibrant color with minimal care.</li>
+  <li><strong>Desert Rose (Adenium)</strong> – striking blooms, drought-resistant.</li>
+  <li><strong>Fountain Grass</strong> – adds movement and texture.</li>
+  <li><strong>Date Palm</strong> – timeless Dubai classic that handles heat beautifully.</li>
 </ul>
-<p><em>Result:</em> fans work less, compressors cycle properly, and conditioned air reaches people.</p>
+<p>At <strong>Hammer Landscape</strong>, we design plant palettes that are both aesthetically rich and environmentally sensible — ensuring beauty without burden.</p>
 
-<h3>2) Setpoints, Schedules &amp; Night Setback</h3>
+<h2>2. Smart Irrigation: Let Technology Do the Work</h2>
+<p>With <strong>smart irrigation systems</strong>, you can automate your garden care using sensors, timers, and weather-based controls that adjust watering based on actual conditions.</p>
 <ul>
-  <li>Setpoints: residential 23–24°C; commercial by occupancy.</li>
-  <li>Schedules: eliminate after-hours operation; use occupancy-based controls.</li>
-  <li>Night setback: relax temp targets at night; pre-cool intelligently.</li>
-  <li>Humidity control: tweak reheat and fan speeds for comfort at lower energy.</li>
+  <li>Up to <strong>40% water savings</strong> annually.</li>
+  <li>Healthier root systems (no overwatering).</li>
+  <li>Remote control via mobile app — ideal for busy villa owners or frequent travelers.</li>
 </ul>
-<p><em>Result:</em> fewer runtime hours, flatter load profile.</p>
+<p>We integrate <strong>drip irrigation</strong> networks that deliver moisture directly to roots — not wasted on evaporation. Your garden stays hydrated, not high-maintenance.</p>
 
-<h3>3) Refrigerant Health &amp; Compressor Life</h3>
-<ul>
-  <li>Subcooling/superheat checks; electronic leak detection.</li>
-  <li>Oil analysis (chillers); condenser fan staging &amp; VFD tuning.</li>
-</ul>
+<h2>3. Design for Shade and Efficiency</h2>
+<p>Strategic shade from <strong>pergolas</strong>, <strong>trees</strong>, or <strong>architectural screens</strong> reduces soil temperature and prevents plant stress.</p>
+<p>Meanwhile, <strong>mulching</strong> (organic or decorative gravel) locks in soil moisture and minimizes weeds. The result? A garden that practically takes care of itself.</p>
+<p>Hammer Landscape specializes in layouts that maximize shade, airflow, and efficiency — giving your garden resilience through every season.</p>
 
-<h3>4) Pumps, Valves &amp; Delta-T (Hydronic Gold)</h3>
-<ul>
-  <li>Optimize VFD curves; trim impellers where appropriate.</li>
-  <li>Increase delta-T to move less water for the same cooling.</li>
-  <li>Calibrate valves; maintain strainers and air vents.</li>
-</ul>
+<h2>4. Go Minimal, Go Modern</h2>
+<p>Modern <strong>landscape design in Dubai</strong> is leaning toward structured minimalism — clean lines, sculptural plants, and simple geometric layouts. Think fewer elements, more impact.</p>
 
-<h3>5) Ducts, Insulation &amp; Heat Gain</h3>
-<ul>
-  <li>Seal return leaks; repair damaged insulation on risers/roofs.</li>
-  <li>Reduce solar gain: shading, reflective films, or glazing upgrades.</li>
-</ul>
+<h2>5. Add Automated Lighting and Seasonal Timers</h2>
+<p><strong>Solar/LED smart lighting</strong> can be programmed to turn on at sunset, highlight pathways, or create a warm glow — all without lifting a finger. It’s beauty on autopilot.</p>
 
-<h2>Your Proactive Service Plan (Dubai Edition)</h2>
-<h3>Monthly (Baseline Health)</h3>
-<ul>
-  <li>Filters by ΔP; clear condensate drains.</li>
-  <li>Light clean grilles/coils; inspect belts &amp; pulleys.</li>
-  <li>Check thermostat/BMS setpoints &amp; schedules.</li>
-  <li>Visual electrical checks on DBs; test emergency lights (commercial).</li>
-</ul>
-
-<h3>Quarterly (Performance Boost)</h3>
-<ul>
-  <li>Deep-clean coils; re-balance airflows/VAVs.</li>
-  <li>Sensor calibration (temp/humidity/CO₂).</li>
-  <li>Refrigerant performance checks; leak scan.</li>
-  <li>Tune VFDs (fans/pumps); verify sequences.</li>
-</ul>
-
-<h3>Annually (Reset &amp; Verify)</h3>
-<ul>
-  <li>Overhaul AHUs/FCUs (bearings, dampers, seals).</li>
-  <li>Hydronic: flush strainers, check delta-T, calibrate valves.</li>
-  <li>BMS: clean alarms, remove overrides, optimize schedules.</li>
-  <li>Envelope: insulation &amp; glazing review; rooftop plant inspection.</li>
-</ul>
-<blockquote>Tip: Log everything in a CMMS—work orders, photos, readings, and parts. It’s your truth source for budgets and audits.</blockquote>
-
-<h2>KPIs That Prove It’s Working</h2>
-<ul>
-  <li>Energy kWh/m² vs last year (normalized).</li>
-  <li>Reactive vs Preventive: ≤20% reactive.</li>
-  <li>HVAC availability: ≥99% during occupied hours.</li>
-  <li>First-time fix rate: ≥85%.</li>
-  <li>Complaint volume: should trend down after quarter one.</li>
-</ul>
-
-<h2>Villas vs Commercial: What’s Different?</h2>
-<ul>
-  <li><strong>Villas:</strong> comfort-first, quiet operation, pool &amp; water-heater loads, discreet windows.</li>
-  <li><strong>Commercial:</strong> uptime, after-hours works, chiller plants, SLA reporting, compliance.</li>
-</ul>
-
-<h2>Ready to turn kWh into savings?</h2>
-<p><strong>Start with a site energy walk-through and a fast-win action list (coils, setpoints, schedules, delta-T).</strong> <a href="/contact" class="btn btn-primary">Contact Hammer Facility</a> to book your assessment.</p>
+<h2>Your Garden, Simplified — by Design</h2>
+<p>At <strong>Hammer Landscape</strong>, we believe elegance should feel effortless. We create sustainable, low-maintenance outdoor spaces that thrive in Dubai’s unique climate — so you can simply relax and enjoy your garden.</p>
+<p>💧 <strong>Let’s build your low-maintenance oasis.</strong> <a href="/contact" class="btn btn-primary">Contact Hammer Landscape</a> to start designing a garden that’s as smart as it is stunning.</p>
 """,
     },
     {
-        "title": "Pool Care in Dubai: A Year-Round Guide to Crystal-Clear Water, Compliance & Safety",
-        "tag": "Pools",
-        "read_minutes": 7,
-        "excerpt": "Dubai-specific pool care: chemistry targets, DE/sand filters, safety/compliance, and energy-smart operation for villas and facilities.",
-        "cover_image_url": "https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=1600&q=80&auto=format&fit=crop",
+        "title": "Outdoor Living Elevated: Why Pergolas and Pools Are the New Must-Haves for Dubai Homes",
+        "tag": "Outdoor Living",
+        "read_minutes": 6,
+        "excerpt": (
+            "Why pergolas and pools are transforming outdoor living in Dubai — comfort, style, "
+            "and property value in one integrated design."
+        ),
+        "cover_image_url": (
+            "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?"
+            "w=1600&q=80&auto=format&fit=crop"
+        ),
         "body": """
-<h1>Pool Care in Dubai: A Year-Round Guide to Crystal-Clear Water, Compliance &amp; Safety</h1>
-<p><em>Meta Description:</em> Keep your pool sparkling in Dubai’s heat and dust. This <strong>year-round pool maintenance guide</strong> covers chemistry, DE/sand filters, safety, and compliance—so villas and facilities stay crystal clear and guest-ready all year.</p>
+<h1>Outdoor Living Elevated: Why Pergolas and Pools Are the New Must-Haves for Dubai Homes</h1>
+<p><em>Meta Description:</em> Discover why <strong>pergolas and pools</strong> are transforming outdoor living in Dubai. Learn how modern <strong>pergola design</strong> and <strong>pool landscaping</strong> boost comfort, style, and property value with Hammer Landscape.</p>
 
-<h2>Why Dubai Pools Need a Different Playbook</h2>
-<p>Between high heat, sandstorms, and hard water, Dubai pools demand proactive care. With the right schedule and a few smart upgrades, you’ll cut chemicals, reduce downtime, and keep water hotel-grade.</p>
+<h2>The New Definition of Home Luxury</h2>
+<p>In Dubai, luxury no longer stops at the front door. Today’s homeowners crave outdoor spaces that feel like private resorts — places where design, comfort, and functionality flow seamlessly together.</p>
+<p>Whether it’s sipping coffee under a shaded pergola or cooling off in a crystal-clear pool, <strong>outdoor living</strong> has become the heartbeat of modern villa life.</p>
+<p>At Hammer Landscape, we see it every day: transforming an underused yard into a lifestyle destination instantly elevates both mood and market value.</p>
 
-<h2>The Gold Standards (Targets You Should Hit)</h2>
+<h2>1. Pergolas: The Art of Shade and Style</h2>
+<p>Pergolas are more than architectural accents — they’re the soul of outdoor living. Designed to provide shade, structure, and sophistication, a pergola defines space without confining it.</p>
+<p>Modern <strong>pergola design in Dubai</strong> blends natural wood tones, aluminum finishes, and <strong>motorized louver roofs</strong> that adjust sunlight with a tap. Add soft lighting, ceiling fans, and greenery for a retreat that works from sunrise to midnight.</p>
+<blockquote>Shade, serenity, and style — all in one elegant frame.</blockquote>
+
+<h2>2. Pools: The Centerpiece of Outdoor Life</h2>
+<p>No Dubai villa is complete without the sparkle of a pool. Beyond leisure, <strong>modern pool landscaping</strong> turns this feature into a design statement — infinity edges, natural stone borders, LED lighting, and lush privacy planting.</p>
+<p>Smart systems now allow temperature control and cleaning automation via smartphone — low effort, high enjoyment.</p>
+
+<h2>3. The Power of Integration: Pergola + Pool Harmony</h2>
+<p>Together, pergolas and pools create the perfect outdoor ecosystem — shaded dining by the water, sunset lounges, or a private cabana that feels five-star. Hammer Landscape crafts transitions so seamless that your backyard feels like one cohesive experience.</p>
+
+<h2>4. Outdoor Design as an Investment</h2>
+<p>Dubai’s real estate experts agree: <strong>landscape upgrades can raise property value by up to 20%</strong>. A well-designed pool and pergola not only attract buyers but also enhance daily living.</p>
+
+<h2>5. Details That Define 2025</h2>
 <ul>
-  <li><strong>pH:</strong> 7.2–7.6</li>
-  <li><strong>Free Chlorine:</strong> 1–3 ppm (residential), 2–4 ppm (heavy use)</li>
-  <li><strong>Total Alkalinity:</strong> 80–120 ppm</li>
-  <li><strong>Calcium Hardness:</strong> 200–400 ppm</li>
-  <li><strong>Cyanuric Acid:</strong> 30–50 ppm</li>
-  <li><strong>Salt (SWG):</strong> per OEM (≈ 3,000–3,500 ppm)</li>
-</ul>
-<blockquote>Pro tip: Log every reading. Trends tell you what a single test can’t.</blockquote>
-
-<h2>Your Year-Round Pool Schedule (Dubai Edition)</h2>
-<h3>Weekly (non-negotiables)</h3>
-<ul>
-  <li>Test &amp; balance pH, chlorine, alkalinity; adjust same day</li>
-  <li>Skim, brush, vacuum; clean skimmer and pump baskets</li>
-  <li>Top up water to mid-skimmer; check for visible leaks</li>
-  <li>Quick visual: tiles, grout, coping, handrails, lights</li>
-</ul>
-
-<h3>After Sandstorms</h3>
-<ul>
-  <li>Shock to 10 ppm free chlorine; brush entire pool; run pump 24–48h</li>
-  <li>Backwash filter; clean baskets twice in first 24h</li>
-</ul>
-
-<h3>Fortnightly</h3>
-<ul>
-  <li>Backwash sand/DE filter when pressure rises 8–10 psi from clean baseline</li>
-  <li>Clean cartridge (if used); hose from inside out</li>
+  <li>Solar-powered lighting for energy efficiency.</li>
+  <li>Natural materials like teak and limestone.</li>
+  <li>Desert-friendly greenery for effortless upkeep.</li>
+  <li>Smart irrigation and climate-responsive shading.</li>
 </ul>
 
-<h3>Monthly</h3>
-<ul>
-  <li>DE grids: remove &amp; hose clean; recharge with new DE powder</li>
-  <li>Inspect seals &amp; unions; lube O-rings; check air relief valves</li>
-  <li>Check calcium hardness and CYA; top-up as required</li>
-</ul>
-
-<h3>Quarterly</h3>
-<ul>
-  <li>Deep tile clean (scale line removal)</li>
-  <li>Inspect lights &amp; cables; verify RCD/GFCI operation</li>
-  <li>Audit chemical storage: lids tight, ventilation clear, labels intact</li>
-</ul>
-
-<h3>Pre-Summer (Apr/May)</h3>
-<ul>
-  <li>Service pump &amp; motor (bearings/noise, shaft seal)</li>
-  <li>Check heater/chiller operation; clean condenser coils</li>
-  <li>Confirm auto-fill &amp; overflow working (evaporation spikes)</li>
-</ul>
-
-<h3>Post-Season (Oct/Nov)</h3>
-<ul>
-  <li>Lower run-times; review chemical usage; service solar cover/rollers</li>
-  <li>Full filter media audit</li>
-</ul>
-
-<h2>Filter Mastery: Sand vs DE vs Cartridge</h2>
-<h3>Sand Filters</h3>
-<ul>
-  <li>Backwash at +8–10 psi; rinse 20–30 seconds</li>
-  <li>Replace media every 3–5 years (Dubai dust accelerates wear)</li>
-  <li>Use clarifier sparingly; overuse can gum the sand</li>
-</ul>
-
-<h3>DE (Diatomaceous Earth) Filters</h3>
-<ul>
-  <li>Best for polish-level clarity</li>
-  <li>After backwash, recharge with correct DE dose via skimmer</li>
-  <li>Quarterly grid clean; inspect for tears/pinholes</li>
-</ul>
-
-<h3>Cartridge Filters</h3>
-<ul>
-  <li>Rinse monthly; deep clean quarterly</li>
-  <li>Replace cartridges every 1–2 years depending on bather load</li>
-</ul>
-<p><em>Plant-room cheat sheet:</em> keep a laminated card with clean baseline PSI, backwash trigger PSI, and last media change date.</p>
-
-<h2>Safety &amp; Compliance Essentials</h2>
-<ul>
-  <li>Anti-vortex drain covers, secured and in-date; dual drains or SVRS where required</li>
-  <li>Electrical safety: RCD/GFCI protection on all pool circuits; annual test</li>
-  <li>Villas: self-closing, self-latching gates; child-safe hardware</li>
-  <li>Commercial: depth markers, “no diving,” emergency contacts</li>
-  <li>Water testing logs: digital/hard-copy with date, time, readings, actions</li>
-  <li>Chemical storage: ventilated, segregate acids from chlorine; PPE on site</li>
-</ul>
-<p><em>Note:</em> Some commercial pools require periodic third-party water-quality verification. Keep logs audit-ready.</p>
-
-<h2>Chemistry Playbook (Faster Fixes)</h2>
-<ul>
-  <li><strong>High pH &gt; 7.6:</strong> add muriatic acid gradually; re-test in 30 mins</li>
-  <li><strong>Low pH &lt; 7.2:</strong> add soda ash</li>
-  <li><strong>Low chlorine + strong sun:</strong> verify CYA 30–50 ppm; consider SWG</li>
-  <li><strong>Cloudy water:</strong> check filter PSI; backwash/clean; floc if needed, then vacuum to waste</li>
-  <li><strong>Scale on tiles:</strong> lower pH to 7.2–7.3; use descaler; review calcium &amp; TA</li>
-  <li><strong>Algae bloom:</strong> shock, brush daily; maintain high FC until overnight loss &lt; 1 ppm</li>
-</ul>
-
-<h2>Energy-Smart Pool Ops</h2>
-<ul>
-  <li>Variable-speed pump (VSP): longer runtimes at lower RPM = clarity with fewer kWh</li>
-  <li>Schedule runtimes off-peak; increase after storms/parties</li>
-  <li>LED lighting (80–90% less energy)</li>
-  <li>Solar cover: reduces evaporation and chemical loss</li>
-  <li>Chiller/heater: clean coils; verify setpoints before peak season</li>
-</ul>
-
-<h2>Why Hammer Facility?</h2>
-<ul>
-  <li>In-house pool technicians trained for Dubai conditions</li>
-  <li>Plant-room audits with clear PSI baselines &amp; service tags</li>
-  <li>Digital logs: chemistry, photos, corrective actions</li>
-  <li>One vendor for pool + MEP + HVAC—fewer delays, faster fixes</li>
-</ul>
-
-<h2>Ready for resort-grade clarity—every month of the year?</h2>
-<p><strong>Let’s set up a year-round pool plan</strong> (chemistry + filtration + safety + energy). <a href="/contact" class="btn btn-primary">Contact Hammer Facility</a> for a site visit and a customized schedule.</p>
+<h2>Let’s Build Your Resort at Home</h2>
+<p>From concept sketches to final construction, <strong>Hammer Landscape</strong> turns your vision into a beautifully livable outdoor masterpiece.</p>
+<p>🪵 <strong>Pergolas that breathe sophistication. Pools that inspire serenity.</strong> Together, they create a lifestyle you’ll never want to leave. <a href="/contact" class="btn btn-primary">Contact Hammer Landscape</a> to start your villa transformation.</p>
 """,
     },
     {
-        "title": "From Chaos to Control: Why CMMS + Single-Vendor Facility Management Outperforms Ad-Hoc Repairs",
-        "tag": "Operations",
-        "read_minutes": 7,
-        "excerpt": "How CMMS + one accountable vendor delivers reliability, SLAs, real reporting, and fewer call-outs—outperforming ad-hoc maintenance.",
-        "cover_image_url": "https://images.unsplash.com/photo-1485827404703-89b55fcc595e?w=1600&q=80&auto=format&fit=crop",
+        "title": "From Sand to Sanctuary: How Professional Landscaping Increases Your Property’s Value",
+        "tag": "Strategy",
+        "read_minutes": 6,
+        "excerpt": (
+            "How professional landscaping in Dubai boosts property value, beauty, and livability — "
+            "the smart upgrade for homeowners and developers."
+        ),
+        "cover_image_url": (
+            "https://images.unsplash.com/photo-1501183638710-841dd1904471?"
+            "w=1600&q=80&auto=format&fit=crop"
+        ),
         "body": """
-<h1>From Chaos to Control: Why CMMS + Single-Vendor Facility Management Outperforms Ad-Hoc Repairs</h1>
-<p><em>Meta Description:</em> Discover why partnering with a <strong>facility management company in Dubai</strong> using a <strong>CMMS</strong> and clear <strong>SLAs</strong> beats ad-hoc repairs. Fewer call-outs, better reporting, lower lifecycle costs. Hammer Facility delivers <strong>turnkey facility services</strong> with one accountable team.</p>
+<h1>From Sand to Sanctuary: How Professional Landscaping Increases Your Property’s Value</h1>
+<p><em>Meta Description:</em> Discover how professional <strong>landscaping in Dubai</strong> can boost your property’s value, beauty, and livability. Learn why working with expert <strong>landscape contractors in Dubai</strong> turns your villa into a timeless sanctuary.</p>
 
-<h2>The Problem with “Fix It When It Breaks”</h2>
-<p>Ad-hoc maintenance feels flexible—until it isn’t. You get late-night emergencies, duplicate visits, rising energy bills, missing paperwork, and zero asset history. Costs spike, tenants complain, and nobody can explain where the money went.</p>
-<p><strong>The cure:</strong> a <strong>single-vendor FM partner</strong> running a <strong>CMMS (Computerized Maintenance Management System)</strong> and <strong>SLA-backed</strong> workflows. One team, one system, one source of truth.</p>
+<h2>Where Aesthetics Meet Investment</h2>
+<p>In Dubai’s fast-evolving property market, design isn’t just about style — it’s about strategy. The most successful homeowners and developers understand that <strong>landscaping is a value multiplier</strong>.</p>
+<p>Whether you’re selling, leasing, or simply elevating your lifestyle, a professionally designed outdoor space doesn’t just attract admiration — it attracts <em>returns</em>.</p>
 
-<h2>What “CMMS + Single Vendor” Actually Means</h2>
-<ul>
-  <li><strong>Single vendor:</strong> All trades—HVAC, MEP, electrical, plumbing, pools, life-safety—handled by one in-house team.</li>
-  <li><strong>CMMS:</strong> Central platform for asset register, work orders, schedules, checklists, photos, spares, SLA timers, and reports.</li>
-  <li><strong>SLA framework:</strong> Defined response/resolution times by priority (Critical/High/Normal), with escalation and reporting.</li>
-</ul>
-<blockquote>Control isn’t a feeling—it’s a workflow.</blockquote>
+<h2>1. First Impressions That Sell</h2>
+<p>A well-designed landscape acts as a visual handshake — communicating care, quality, and refinement before a visitor ever steps inside. Lush greenery, balanced symmetry, and thoughtful lighting create a feeling of welcome and worth.</p>
 
-<h2>Why It Outperforms Ad-Hoc (The Big Wins)</h2>
-<h3>1) Reliability &amp; Uptime</h3>
-<p>Preventive schedules (filters, coils, pumps, valves) cut failures before they happen. Critical systems hit <strong>≥99% availability</strong> during occupied hours.</p>
+<h2>2. The ROI of Outdoor Design</h2>
+<p>According to property experts, <strong>landscaping can boost resale value by 15–20%</strong> — especially in luxury markets like Dubai, where outdoor living defines lifestyle. From bespoke pergolas and custom pools to minimalist courtyards, professional landscaping adds tangible appeal and function.</p>
 
-<h3>2) Fewer Call-Outs, Faster Fixes</h3>
-<p>Technicians arrive with the asset history, last photos, and parts list. First-time fix rates rise; repeat visits drop.</p>
+<h2>3. Smart Design for Harsh Climates</h2>
+<p>Dubai’s environment demands strategic planning — from <strong>plant selection</strong> and <strong>irrigation systems</strong> to <strong>heat-resistant materials</strong>. Our team designs with longevity in mind: native and drought-tolerant plants, smart irrigation to optimize usage, and shade solutions that enhance comfort and reduce cooling costs.</p>
 
-<h3>3) Real Reporting, Real Savings</h3>
-<p>Energy, call-outs, spares, and technician time roll up into <strong>monthly dashboards</strong>. You finally see what’s working—and what isn’t.</p>
+<h2>4. Beyond Greenery: Creating Livable Luxury</h2>
+<p>Modern landscaping is about creating experiences that extend living areas outward — elegant lounges under pergolas, alfresco dining beside shimmering pools, and warm pathway lighting that invites evening strolls.</p>
 
-<h3>4) One Accountable Team</h3>
-<p>No vendor parade. Hammer Facility’s in-house MEP &amp; HVAC technicians use unified standards, tools, and QA. Ownership is clear.</p>
+<h2>5. The Professional Edge</h2>
+<p>DIY can’t compete with professional insight. A cohesive design requires understanding architecture, microclimate, drainage, materials, and human flow. Hammer Landscape’s design-build specialists handle everything — from concept to completion — to yield lasting returns.</p>
 
-<h3>5) Compliance Without the Panic</h3>
-<p>Fire/life-safety tests, water-tank cleaning, generator runs—everything is scheduled, logged, and <strong>audit-ready</strong>.</p>
-
-<h2>What a Good SLA Looks Like (Dubai Edition)</h2>
-<ul>
-  <li><strong>Priority P1 (Critical):</strong> Response ≤ 1–2h, resolution ≤ 6–8h</li>
-  <li><strong>Priority P2 (High):</strong> Response ≤ 4h, resolution ≤ 24h</li>
-  <li><strong>Priority P3 (Normal):</strong> Response same day, resolution ≤ 72h</li>
-</ul>
-<p><strong>Included:</strong> photo proof, root-cause notes, parts used, and sign-off in CMMS.<br>
-<strong>Escalation:</strong> automatic alerts to supervisor → FM lead → client rep if thresholds are at risk.</p>
-
-<h2>CMMS: The Engine Room</h2>
-<ul>
-  <li><strong>Asset Register:</strong> make/model/SN, install date, warranty, spares → lifecycle planning.</li>
-  <li><strong>PM Schedules:</strong> coils quarterly, tank cleaning annually, fire pump tests monthly → zero lapses.</li>
-  <li><strong>Work Orders:</strong> priority, SLA timers, tech notes, photos, signatures → accountability.</li>
-  <li><strong>Inventory &amp; Spares:</strong> minimum stock, auto-reorder → faster first-time fixes.</li>
-  <li><strong>Energy &amp; KPIs:</strong> kWh/m², ΔP across filters, chiller delta-T, complaint volumes → continuous improvement.</li>
-  <li><strong>Reports:</strong> monthly/quarterly PDFs with trends, exceptions, and recommendations → board-ready.</li>
-</ul>
-
-<h2>KPI Scorecard (What Great Looks Like)</h2>
-<ul>
-  <li>Reactive vs Preventive: ≤ 20% reactive</li>
-  <li>First-Time Fix Rate: ≥ 85%</li>
-  <li>SLA Compliance: ≥ 95% jobs on time</li>
-  <li>HVAC Availability: ≥ 99% occupied hours</li>
-  <li>Energy Intensity: kWh/m² trending down</li>
-  <li>Complaint Volume: falling after Q1</li>
-</ul>
-
-<h2>Sample Workflow (From Ticket to Sign-Off)</h2>
-<ol>
-  <li>Issue logged (tenant portal / QR tag / hotline)</li>
-  <li>CMMS classifies priority; SLA timer starts</li>
-  <li>Tech dispatched with history, photos, checklists</li>
-  <li>On-site fix + before/after photos; parts recorded</li>
-  <li>Client sign-off in app; SLA closed</li>
-  <li>Report auto-updates dashboards &amp; monthly summaries</li>
-</ol>
-<blockquote>Every step leaves a breadcrumb. No ghosts, no guesses.</blockquote>
-
-<h2>Cost: The Myth vs The Math</h2>
-<p>Ad-hoc feels cheaper—until you count: emergency call-out premiums, duplicate diagnostics, energy waste (dirty coils, bad setpoints), and early equipment failure. <strong>CMMS + single vendor</strong> lowers <em>lifecycle cost</em> via preventive care, faster fixes, and energy optimization (BMS tuning, coil cleaning, delta-T).</p>
-
-<h2>Implementation Roadmap (Fast &amp; Painless)</h2>
-<ul>
-  <li><strong>Week 1–2:</strong> Asset survey &amp; data capture, priority matrix, SLA agreement</li>
-  <li><strong>Week 3–4:</strong> PM schedules loaded to CMMS; quick wins (filters, coil deep clean, schedule tune)</li>
-  <li><strong>Month 2–3:</strong> KPI baseline set; energy and complaints drop</li>
-  <li><strong>Quarterly:</strong> Review &amp; optimize: add assets, refine checklists, update spares, tune BMS</li>
-</ul>
-
-<h2>Villa vs Commercial: What Changes?</h2>
-<ul>
-  <li><strong>Villas:</strong> discreet service windows, pool plant included, simplified dashboards</li>
-  <li><strong>Commercial:</strong> after-hours work, multi-tenant coordination, formal compliance reports, expanded SLA scope</li>
-</ul>
-
-<h2>Why Hammer Facility</h2>
-<ul>
-  <li>Single-vendor, in-house technicians across HVAC, MEP, pools, and life-safety</li>
-  <li>CMMS-first operations with photo logs, SLA timers, and board-ready reporting</li>
-  <li>Energy-aware maintenance that targets measurable savings</li>
-  <li>Dubai-ready playbooks aligned to local conditions and compliance</li>
-</ul>
-
-<h2>Ready to move from firefighting to foresight?</h2>
-<p><strong>Let’s set up a CMMS demo and map your SLA framework in 30 minutes.</strong> <a href="/contact" class="btn btn-primary">Contact Hammer Facility</a> to put your property on a controlled, data-driven maintenance plan.</p>
+<h2>Elevate Your Property, Elevate Your Life</h2>
+<p>In Dubai, beauty is currency — and your landscape is your signature. Whether you’re a homeowner seeking serenity or a developer aiming for distinction, a well-executed outdoor design is the smartest upgrade you can make.</p>
+<p>🌸 <strong>From sand to sanctuary, Hammer Landscape builds value that lasts.</strong> <a href="/contact" class="btn btn-primary">Contact Hammer Landscape</a> to start your transformation.</p>
 """,
     },
 ]
 
 
-def seed_insights(service_slug: str = "facility", reset: bool = False) -> None:
+def seed_insights(service_slug: str = "landscape-design-build", reset: bool = False) -> None:
     try:
         svc = Service.objects.get(slug=service_slug)
     except Service.DoesNotExist:
@@ -626,7 +371,10 @@ def seed_insights(service_slug: str = "facility", reset: bool = False) -> None:
     created = 0
     for p in POSTS:
         slug = unique_slug(p["title"])
+
+        # Convert HTML body to Editor.js blocks
         blocks_data = html_to_editorjs_blocks(p["body"])
+
         obj, was_created = Insight.objects.get_or_create(
             service=svc,
             title=p["title"],
@@ -636,35 +384,36 @@ def seed_insights(service_slug: str = "facility", reset: bool = False) -> None:
                 "read_minutes": p["read_minutes"],
                 "excerpt": p["excerpt"],
                 "cover_image_url": p["cover_image_url"],
-                "body": p["body"].strip(),
-                "blocks": blocks_data,
+                "body": p["body"].strip(),  # Keep original HTML for reference
+                "blocks": blocks_data,      # Add Editor.js blocks
                 "published": True,
                 "published_at": timezone.now(),
             },
         )
-        if not was_created:
+        if was_created:
+            created += 1
+        else:
+            # If a record with same title exists and reset wasn't used, update it
             obj.tag = p["tag"]
             obj.read_minutes = p["read_minutes"]
             obj.excerpt = p["excerpt"]
             obj.cover_image_url = p["cover_image_url"]
             obj.body = p["body"].strip()
-            obj.blocks = blocks_data
+            obj.blocks = blocks_data  # Update blocks too
             obj.published = True
             if not obj.published_at:
                 obj.published_at = timezone.now()
             obj.save()
-        else:
-            created += 1
 
     total = Insight.objects.filter(service=svc).count()
-    print(f"✓ Seeded/updated {created} insights for '{service_slug}'. Total now: {total}.")
+    print(f"Seeded/updated {created} insights for '{service_slug}'. Total now: {total}.")
 
 
 if __name__ == "__main__":
     import argparse
 
-    parser = argparse.ArgumentParser(description="Seed Hammer Facility insights for a service")
-    parser.add_argument("--service", default="facility", help="Service slug")
+    parser = argparse.ArgumentParser(description="Seed Hammer Landscape insights for a service")
+    parser.add_argument("--service", default="landscape-design-build", help="Service slug")
     parser.add_argument("--reset", action="store_true", help="Delete existing insights before seeding")
     args = parser.parse_args()
 

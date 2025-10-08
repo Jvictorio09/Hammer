@@ -10,70 +10,84 @@
       </p>
     </div>
 
-    <!-- Quick filters (labels from Services) -->
-    <div class="flex flex-wrap items-center justify-center gap-3 mb-12 fade-up delay-100">
-      {% for label in project_filters %}
-        <button class="filter-btn {% if forloop.first %}active{% endif %}">{{ label }}</button>
+    <!-- Quick filters (service switcher) -->
+    {% if project_filters %}
+    <div id="project-filters"
+         class="flex flex-wrap items-center justify-center gap-3 mb-12 fade-up delay-100"
+         role="tablist" aria-label="Project filters">
+      {% for filter in project_filters %}
+        <button class="filter-btn{% if forloop.first %} active{% endif %}" 
+                data-filter="{{ filter.slug }}" 
+                role="tab" 
+                aria-selected="{% if forloop.first %}true{% else %}false{% endif %}">{{ filter.title }}</button>
       {% endfor %}
     </div>
-
-    <!-- Featured case study -->
-    {% if featured_cs %}
-    <article class="grid lg:grid-cols-5 gap-6 items-stretch mb-14 fade-up delay-200">
-      <!-- Image -->
-      <div class="lg:col-span-3 relative rounded-2xl overflow-hidden shadow-lg group">
-        <div class="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105"
-             style="background-image:url('{{ featured_cs.hero_image_url }}')"></div>
-        <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent"></div>
-      </div>
-      <!-- Text -->
-      <div class="lg:col-span-2 bg-white rounded-2xl border border-black/5 shadow-sm p-7 flex flex-col justify-center fade-right">
-        <div class="flex items-center gap-2 text-xs uppercase tracking-[.2em] text-[#18AFAB]">
-          <span class="h-1.5 w-1.5 rounded-full bg-[#18AFAB]"></span> Featured Case Study
-        </div>
-        <h3 class="text-2xl font-bold mt-2">{{ featured_cs.title }}</h3>
-        {% if featured_cs.summary %}
-          <p class="text-gray-600 mt-3">{{ featured_cs.summary }}</p>
-        {% endif %}
-
-        <dl class="mt-6 grid grid-cols-2 gap-4 text-sm">
-          {% if featured_cs.scope %}<div><dt class="text-gray-500">Scope</dt><dd class="font-semibold">{{ featured_cs.scope }}</dd></div>{% endif %}
-          {% if featured_cs.size_label %}<div><dt class="text-gray-500">Size</dt><dd class="font-semibold">{{ featured_cs.size_label }}</dd></div>{% endif %}
-          {% if featured_cs.timeline_label %}<div><dt class="text-gray-500">Timeline</dt><dd class="font-semibold">{{ featured_cs.timeline_label }}</dd></div>{% endif %}
-          {% if featured_cs.status_label %}<div><dt class="text-gray-500">Status</dt><dd class="font-semibold">{{ featured_cs.status_label }}</dd></div>{% endif %}
-        </dl>
-
-        {% if featured_cs.tags_list %}
-        <div class="mt-6 flex flex-wrap gap-2">
-          {% for tag in featured_cs.tags_list %}
-            <span class="tag">{{ tag }}</span>
-          {% endfor %}
-        </div>
-        {% endif %}
-
-        <div class="mt-7">
-          <a href="{{ featured_cs.cta_url|default:featured_cs.service.get_absolute_url }}" class="btn-primary">
-            View Case Study <i class="fa-solid fa-arrow-right-long"></i>
-          </a>
-        </div>
-      </div>
-    </article>
-    {% else %}
-      <p class="text-center text-slate-500 fade-up">No featured case study yet. Add one in Admin → Services → Case studies.</p>
     {% endif %}
+
+    <!-- Featured case study (switches between services) -->
+    {% if case_studies_by_service %}
+    <div id="featured-case-study" class="mb-14 fade-up delay-200">
+      {% for service_slug, case_study in case_studies_by_service.items %}
+      <article class="featured-cs-content{% if forloop.first %} active{% endif %}" 
+               data-service="{{ service_slug }}"
+               {% if not forloop.first %}style="display: none;"{% endif %}>
+        <div class="grid lg:grid-cols-5 gap-6 items-stretch">
+          <!-- Image -->
+          <div class="lg:col-span-3 relative rounded-2xl overflow-hidden shadow-lg group">
+            <div class="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105"
+                 style="background-image:url('{{ case_study.hero_image_url }}')"></div>
+            <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent"></div>
+          </div>
+          <!-- Text -->
+          <div class="lg:col-span-2 bg-white rounded-2xl border border-black/5 shadow-sm p-7 flex flex-col justify-center fade-right">
+            <div class="flex items-center gap-2 text-xs uppercase tracking-[.2em] text-[#18AFAB]">
+              <span class="h-1.5 w-1.5 rounded-full bg-[#18AFAB]"></span> Featured Case Study
+            </div>
+            <h3 class="text-2xl font-bold mt-2">{{ case_study.title }}</h3>
+            {% if case_study.summary %}
+              <p class="text-gray-600 mt-3">{{ case_study.summary }}</p>
+            {% endif %}
+            <dl class="mt-6 grid grid-cols-2 gap-4 text-sm">
+              {% if case_study.scope %}<div><dt class="text-gray-500">Scope</dt><dd class="font-semibold">{{ case_study.scope }}</dd></div>{% endif %}
+              {% if case_study.size_label %}<div><dt class="text-gray-500">Size</dt><dd class="font-semibold">{{ case_study.size_label }}</dd></div>{% endif %}
+              {% if case_study.timeline_label %}<div><dt class="text-gray-500">Timeline</dt><dd class="font-semibold">{{ case_study.timeline_label }}</dd></div>{% endif %}
+              {% if case_study.status_label %}<div><dt class="text-gray-500">Status</dt><dd class="font-semibold">{{ case_study.status_label }}</dd></div>{% endif %}
+            </dl>
+
+            {% if case_study.tags_list %}
+            <div class="mt-6 flex flex-wrap gap-2">
+              {% for tag in case_study.tags_list %}
+                <span class="tag">{{ tag }}</span>
+              {% endfor %}
+            </div>
+            {% endif %}
+
+            <div class="mt-7">
+              <a href="{{ case_study.cta_url|default:case_study.service.get_absolute_url }}" class="btn-primary">
+                View Case Study <i class="fa-solid fa-arrow-right-long"></i>
+              </a>
+            </div>
+          </div>
+        </div>
+      </article>
+      {% endfor %}
+    </div>
+    {% else %}
+      <p class="text-center text-slate-500 fade-up mb-14">No case studies yet. Add some in Admin → Services → Case studies.</p>
+    {% endif %}
+
 
     <!-- Footer CTA with shimmer -->
     <div class="text-center mt-14 fade-up delay-500">
-      <a href="{% if featured_cs and featured_cs.service.slug %}{% url 'service_detail' slug=featured_cs.service.slug %}{% else %}{% url 'projects_index' %}{% endif %}"
-   class="btn-primary shimmer-btn">
-  View All Projects <i class="fa-solid fa-arrow-right-long"></i>
-</a>
-
+      <a href="{% url 'projects_index' %}"
+         class="btn-primary shimmer-btn">
+        View All Projects <i class="fa-solid fa-arrow-right-long"></i>
+      </a>
     </div>
   </div>
 </section>
 
-<!-- Supporting styles -->
+<!-- Styles (same look, plus a tiny helper) -->
 <style>
 .filter-btn {
   display:inline-flex; align-items:center; justify-content:center;
@@ -104,21 +118,122 @@
 .fade-up, .fade-right { opacity:0; transform:translateY(20px); transition:all .7s cubic-bezier(.22,1,.36,1); }
 .fade-right { transform:translateX(40px); }
 .is-visible { opacity:1; transform:translate(0,0); }
+
+/* helper for filtering */
+.hidden-card { display:none !important; }
 </style>
 
-<!-- Reveal Script -->
+<!-- Scripts: reveal + tab filtering (ported logic) -->
 <script>
+/* Reveal on scroll */
 (function(){
   const els = document.querySelectorAll('.fade-up, .fade-right');
   if(!('IntersectionObserver' in window)){ els.forEach(e=>e.classList.add('is-visible')); return; }
   const io = new IntersectionObserver((entries, obs)=>{
     entries.forEach(e=>{
-      if(e.isIntersecting){
-        e.target.classList.add('is-visible');
-        obs.unobserve(e.target);
-      }
+      if(e.isIntersecting){ e.target.classList.add('is-visible'); obs.unobserve(e.target); }
     });
   }, { threshold:0.2 });
   els.forEach(el=>io.observe(el));
+})();
+
+/* Service switcher logic - switches featured case study */
+(function() {
+  const list  = document.getElementById('project-filters');
+  const tabs  = list ? Array.from(list.querySelectorAll('[role="tab"]')) : [];
+  const featuredSection = document.getElementById('featured-case-study');
+  const featuredContents = featuredSection ? Array.from(featuredSection.querySelectorAll('.featured-cs-content')) : [];
+  if (!list || !tabs.length || !featuredSection || !featuredContents.length) return;
+
+  const norm = s => (s||'').toString().trim().toLowerCase();
+  const setActive = (tab, on) => {
+    tab.classList.toggle('active', !!on);
+    tab.setAttribute('aria-selected', on ? 'true' : 'false');
+    tab.tabIndex = on ? 0 : -1;
+  };
+
+  const available = new Set(tabs.map(t => norm(t.dataset.filter || '')));
+
+  let opToken = 0; // guard against rapid interactions
+  function applyFilter(rawKey, fromURL=false) {
+    // Get the first service as default if no key or invalid key
+    const firstServiceKey = tabs.length > 0 ? norm(tabs[0].dataset.filter) : '';
+    const key = available.has(norm(rawKey)) ? norm(rawKey) : firstServiceKey;
+    const token = ++opToken;
+
+    // toggle tab state
+    tabs.forEach(t => setActive(t, norm(t.dataset.filter) === key));
+
+    // switch featured case study content
+    featuredContents.forEach(content => {
+      if (token !== opToken) return; // race guard
+      const contentService = norm(content.dataset.service);
+      const isMatch = (contentService === key);
+      
+      if (isMatch) {
+        content.style.display = 'block';
+        content.classList.add('active');
+      } else {
+        content.style.display = 'none';
+        content.classList.remove('active');
+      }
+    });
+
+    // update URL (skip when restoring from URL)
+    if (!fromURL) {
+      const url = new URL(window.location);
+      url.searchParams.set('filter', key);
+      url.hash = 'filter=' + key;
+      history.replaceState(null, '', url);
+    }
+
+    if (fromURL) {
+      const active = tabs.find(t => t.classList.contains('active'));
+      if (active) active.focus({preventScroll:true});
+    }
+  }
+
+  // click events
+  tabs.forEach(tab => {
+    if (!tab.hasAttribute('tabindex')) tab.tabIndex = tab.classList.contains('active') ? 0 : -1;
+
+    tab.addEventListener('click', e => {
+      e.preventDefault();
+      applyFilter(tab.dataset.filter || '');
+    });
+
+    // keyboard navigation (← → Home End + Enter/Space to apply)
+    tab.addEventListener('keydown', e => {
+      const i = tabs.indexOf(tab);
+      if (i < 0) return;
+      let next = null;
+      if (e.key === 'ArrowRight') next = tabs[(i + 1) % tabs.length];
+      else if (e.key === 'ArrowLeft') next = tabs[(i - 1 + tabs.length) % tabs.length];
+      else if (e.key === 'Home') next = tabs[0];
+      else if (e.key === 'End') next = tabs[tabs.length - 1];
+      else if (e.key === 'Enter' || e.key === ' ') {
+        applyFilter(tab.dataset.filter || '');
+        e.preventDefault();
+        return;
+      } else return;
+
+      next?.focus();
+      e.preventDefault();
+    });
+  });
+
+  // initial state from ?filter= or #filter=
+  const params = new URLSearchParams(window.location.search);
+  const q = params.get('filter');
+  const hashMatch = (window.location.hash || '').match(/filter=([^&]+)/i);
+  const initial = q || (hashMatch ? decodeURIComponent(hashMatch[1]) : (tabs[0] ? tabs[0].dataset.filter : ''));
+  applyFilter(initial, /*fromURL*/true);
+
+  // respond to hash changes (optional deep-links)
+  window.addEventListener('hashchange', () => {
+    const m = (window.location.hash || '').match(/filter=([^&]+)/i);
+    if (m && m[1]) applyFilter(decodeURIComponent(m[1]), true);
+    else applyFilter(tabs[0] ? tabs[0].dataset.filter : '', true);
+  });
 })();
 </script>
