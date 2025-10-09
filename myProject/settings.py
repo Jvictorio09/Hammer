@@ -153,10 +153,13 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 RESEND_API_KEY   = os.getenv('RESEND_API_KEY', '')
 RESEND_FROM      = os.getenv('RESEND_FROM', 'Hammer <no-reply@hammer.ae>')
-RESEND_REPLY_TO  = os.getenv('RESEND_REPLY_TO', 'hello@hammer.ae')
+RESEND_REPLY_TO  = os.getenv('RESEND_REPLY_TO', 'juliavictorio16@gmail.com')
 RESEND_BASE_URL  = os.getenv('RESEND_BASE_URL', 'https://api.resend.com')
 
-DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', 'hello@hammer.ae')
+DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', 'juliavictorio16@Gmail.com')
+
+# Contact form recipient (for testing)
+CONTACT_TO_EMAIL = 'juliavictorio16@gmail.com'
 
 # Server-side sanitize allowlists (optional; templatetag will fallback if bleach unavailable)
 BLEACH_ALLOWED_TAGS = [

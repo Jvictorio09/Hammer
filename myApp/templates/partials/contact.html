@@ -51,13 +51,15 @@
       <!-- subtle teal aura -->
       <div class="pointer-events-none absolute -inset-6 rounded-[28px] bg-[radial-gradient(40%_30%_at_80%_10%,rgba(24,175,171,.18),transparent)]"></div>
 
-      <form id="contactForm" class="relative grid gap-5 bg-white text-[#0A0A0B] rounded-2xl shadow-[0_20px_60px_rgba(0,0,0,.45)] p-6 md:p-8">
+      <form id="contactForm" method="post" action="{% url 'contact' %}" class="relative grid gap-5 bg-white text-[#0A0A0B] rounded-2xl shadow-[0_20px_60px_rgba(0,0,0,.45)] p-6 md:p-8">
+        {% csrf_token %}
+        
         <!-- floating field -->
         <label class="relative block">
           <span class="pointer-events-none absolute left-4 top-3 text-gray-400">
             <i class="fa-regular fa-user"></i>
           </span>
-          <input required name="full_name" type="text"
+          <input required name="name" type="text"
                  class="peer input-fx"
                  placeholder=" "/>
           <span class="float-label">Full Name</span>
@@ -87,7 +89,7 @@
           <span class="pointer-events-none absolute left-4 top-3 text-gray-400">
             <i class="fa-regular fa-pen-to-square"></i>
           </span>
-          <textarea name="message" rows="4"
+          <textarea name="message" rows="4" required
                     class="peer input-fx resize-y"
                     placeholder=" "></textarea>
           <span class="float-label">Tell us about your project</span>
@@ -186,12 +188,13 @@
   nodes.forEach(n=>io.observe(n));
 })();
 
-/* Lightweight submit flow (demo) */
+/* Real contact form submission */
 (function(){
   const form = document.getElementById('contactForm');
   const btn  = document.getElementById('submitBtn');
   const toast= document.getElementById('contactToast');
   if(!form) return;
+  
   form.addEventListener('submit', function(e){
     e.preventDefault();
 
@@ -199,27 +202,59 @@
     btn.classList.add('is-loading');
     btn.setAttribute('disabled','disabled');
 
-    // simulate async request
-    setTimeout(()=>{
+    // Get form data
+    const formData = new FormData(form);
+    
+    // Send to Django contact view
+    fetch(form.action, {
+      method: 'POST',
+      body: formData,
+      headers: {
+        'X-Requested-With': 'XMLHttpRequest',
+      },
+    })
+    .then(response => response.json())
+    .then(data => {
       btn.classList.remove('is-loading');
       btn.removeAttribute('disabled');
-      form.reset();
-
-      // show toast
-      toast.classList.remove('hidden');
+      
+      if (data.ok) {
+        // Success
+        form.reset();
+        showToast('Thanks! We\'ve received your details—expect a reply within 24h.', 'success');
+      } else {
+        // Error
+        showToast('Sorry, we couldn\'t send your message. Please try again.', 'error');
+        console.error('Form submission error:', data.errors);
+      }
+    })
+    .catch(error => {
+      btn.classList.remove('is-loading');
+      btn.removeAttribute('disabled');
+      showToast('Sorry, we couldn\'t send your message. Please try again.', 'error');
+      console.error('Network error:', error);
+    });
+  });
+  
+  function showToast(message, type = 'success') {
+    const toastContent = toast.querySelector('strong');
+    if (toastContent) {
+      toastContent.textContent = type === 'success' ? 'Thanks!' : 'Error!';
+    }
+    
+    toast.classList.remove('hidden');
+    toast.style.opacity = '0';
+    toast.style.transform = 'translate(-50%, 10px)';
+    requestAnimationFrame(()=>{
+      toast.style.transition = 'all .4s ease';
+      toast.style.opacity = '1';
+      toast.style.transform = 'translate(-50%, 0)';
+    });
+    setTimeout(()=>{
       toast.style.opacity = '0';
       toast.style.transform = 'translate(-50%, 10px)';
-      requestAnimationFrame(()=>{
-        toast.style.transition = 'all .4s ease';
-        toast.style.opacity = '1';
-        toast.style.transform = 'translate(-50%, 0)';
-      });
-      setTimeout(()=>{
-        toast.style.opacity = '0';
-        toast.style.transform = 'translate(-50%, 10px)';
-        setTimeout(()=>toast.classList.add('hidden'), 350);
-      }, 2800);
-    }, 900);
-  });
+      setTimeout(()=>toast.classList.add('hidden'), 350);
+    }, 2800);
+  }
 })();
 </script>
