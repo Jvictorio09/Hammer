@@ -63,6 +63,11 @@ urlpatterns = [
     # Gallery API
     path("dashboard/gallery/api/images/", views.gallery_api_images, name="gallery_api_images"),
     path("dashboard/gallery/api/upload/", views.gallery_api_upload, name="gallery_api_upload"),
+    # Team Members
+    path("dashboard/team/", views.dashboard_team_list, name="dashboard_team_list"),
+    path("dashboard/team/new/", views.dashboard_team_create, name="dashboard_team_create"),
+    path("dashboard/team/<int:pk>/edit/", views.dashboard_team_edit, name="dashboard_team_edit"),
+    path("dashboard/team/<int:pk>/delete/", views.dashboard_team_delete, name="dashboard_team_delete"),
     # Users (Admin only)
     path("dashboard/users/", views.dashboard_users_list, name="dashboard_users_list"),
     path("dashboard/users/new/", views.dashboard_user_create, name="dashboard_user_create"),

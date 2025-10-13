@@ -3,21 +3,43 @@
 Seed Case Studies for 'Landscape Design & Build' from local folders → Cloudinary → DB.
 
 Usage (examples):
+
+  # Default: metadata-only mode (no file scan, no image uploads, sources from TARGETS)
+  python seed_landscape.py --settings myProject.settings ^
+    --service-slug landscape-design-build
+
+  # Dry-run metadata updates
   python seed_landscape.py --settings myProject.settings ^
     --service-slug landscape-design-build ^
-    --root "E:\\New Downloads\\Hammer\\Landscape" ^
-    --cloud-folder hammer/landscape ^
     --dry-run
 
+  # Enable image uploads/variants/gallery (opt-in)
   python seed_landscape.py --settings myProject.settings ^
     --service-slug landscape-design-build ^
     --root "E:\\New Downloads\\Hammer\\Landscape" ^
     --cloud-folder hammer/landscape ^
+    --images
+
+  # Filter to specific projects only (metadata mode)
+  python seed_landscape.py --settings myProject.settings ^
+    --service-slug landscape-design-build ^
+    --only "tilal al ghaf,jumeirah park"
+
+  # Wipe and re-seed with images
+  python seed_landscape.py --settings myProject.settings ^
+    --service-slug landscape-design-build ^
+    --root "E:\\New Downloads\\Hammer\\Landscape" ^
+    --cloud-folder hammer/landscape ^
+    --images ^
     --wipe
 
 Notes:
 - Idempotent: existing Case Studies update instead of duplicating.
 - Only seeds folders: Tilal Al Ghaf, Murooj, Jumeirah Park (typo 'Jumeriah park' tolerated).
+- By default (--no-images), only metadata is updated; image URLs are preserved. No --root needed.
+- In metadata-only mode, projects are sourced from TARGETS dict (no filesystem scan).
+- Use --images to enable image uploads, recompression, and gallery generation (requires --root).
+- Use --only to filter specific projects (comma-separated normalized folder keys).
 - If --wipe is set, removes only Case Studies (+ gallery images) for the target service.
 """
 
@@ -43,10 +65,18 @@ parser.add_argument("--settings", help="Django settings module (e.g., myProject.
 parser.add_argument("--service-id", type=int, help="Service ID to attach case studies to")
 parser.add_argument("--service-slug", help="Service slug to attach case studies to")
 parser.add_argument("--service-title", help="Service title (fallback if id/slug missing)")
-parser.add_argument("--root", required=True, help=r'Root folder, e.g. "E:\New Downloads\Hammer\Landscape"')
+parser.add_argument("--root", help=r'Root folder, e.g. "E:\New Downloads\Hammer\Landscape" (required for --images mode)')
 parser.add_argument("--cloud-folder", default="hammer/landscape", help="Cloudinary folder prefix")
 parser.add_argument("--wipe", action="store_true", help="Delete existing Case Studies for this service first")
 parser.add_argument("--dry-run", action="store_true", help="Print actions; no uploads, no DB writes")
+parser.add_argument("--only", help="Comma-separated list of normalized folder keys to process (e.g., 'tilal al ghaf,jumeirah park')")
+
+# Mutually exclusive image mode flags
+mx = parser.add_mutually_exclusive_group()
+mx.add_argument("--no-images", dest="no_images", action="store_true", help="Do not touch image fields (default).")
+mx.add_argument("--images", dest="no_images", action="store_false", help="Enable image upload + gallery.")
+parser.set_defaults(no_images=True)
+
 args = parser.parse_args()
 
 if args.settings:
@@ -101,6 +131,16 @@ TARGETS = {
 TARGET_ALIASES = {
     "jumeriah park": "jumeirah park",
 }
+
+# -----------------------------------------------------------------------------
+# Field Constants
+# -----------------------------------------------------------------------------
+METADATA_FIELDS = [
+    "summary", "description", "completion_date", "scope", "size_label", "timeline_label",
+    "status_label", "tags_csv", "is_featured", "sort_order", "cta_url", "location", "project_type",
+]
+IMAGE_FIELDS = ["hero_image_url", "thumb_url", "full_url"]
+GALLERY_FIELD = "gallery_urls"
 
 # -----------------------------------------------------------------------------
 # Helpers
@@ -245,24 +285,50 @@ def cloudinary_variant(base_url: str, width: int, height: int, crop="fill", grav
     return base_url.replace("/upload/", f"/upload/{trans}/", 1)
 
 
-def discover_projects(root: Path):
+def projects_from_targets(only_filter=None):
+    """
+    Build a projects list straight from TARGETS (no filesystem).
+    Returns list of (folder_name, project_config, folder_path, image_paths[])
+    
+    Args:
+        only_filter: Optional set of normalized folder keys to include
+    """
+    items = []
+    for key, cfg in TARGETS.items():
+        if only_filter and key not in only_filter:
+            continue
+        # Use title as folder_name placeholder; no path/images in metadata mode
+        items.append((cfg["title"], cfg, None, []))
+    return items
+
+
+def discover_projects(root: Path, only_filter=None):
     """
     Scan root for target subfolders and RECURSIVELY find all image files (including subfolders).
     Returns list of (folder_name, project_config, folder_path, image_paths[])
+    
+    Args:
+        root: Root directory to scan
+        only_filter: Optional set of normalized folder keys to include (e.g., {"tilal al ghaf", "jumeirah park"})
     """
     found = []
     for child in sorted(root.iterdir()):
         if not child.is_dir():
             continue
         key_lower = _normalize_folder_key(child.name)
+        
+        # Skip if not in filter (when filter is provided)
+        if only_filter and key_lower not in only_filter:
+            continue
+            
         if key_lower in TARGETS:
             config = TARGETS[key_lower]
             imgs: List[Path] = []
             # Use rglob to recursively find images in ALL subfolders
             for ext in ("*.jpg", "*.jpeg", "*.png", "*.webp", "*.JPG", "*.JPEG", "*.PNG", "*.WEBP"):
                 imgs.extend(sorted(child.rglob(ext)))
-            if imgs:
-                found.append((child.name, config, child, imgs))
+            # Always include the project; images may be empty if you're just organizing now
+            found.append((child.name, config, child, imgs))
     return found
 
 
@@ -283,17 +349,27 @@ def upsert(instance, data: dict, fields: List[str]) -> bool:
 # Seeder
 # -----------------------------------------------------------------------------
 @transaction.atomic
-def seed_landscape(service: Service, root: Path, cloud_folder: str, dry_run: bool, wipe: bool):
-    ensure_pillow()
-    ensure_cloudinary()
+def seed_landscape(service: Service, root: Optional[Path], cloud_folder: str, dry_run: bool, wipe: bool, no_images: bool, only_filter=None):
+    # Only validate image deps when needed
+    if not no_images:
+        ensure_pillow()
+        ensure_cloudinary()
 
-    if not root.exists():
-        raise FileNotFoundError(f"Root folder not found: {root}")
-
-    projects = discover_projects(root)
-    if not projects:
-        print(f"[!] No target projects found under: {root}")
-        return
+    # Build the project list
+    if no_images:
+        # In metadata-only mode, we don't need the filesystem at all
+        projects = projects_from_targets(only_filter=only_filter)
+        if not projects:
+            print("[!] No matching TARGETS to process.")
+            return 0, 0, 0
+        print("[info] --no-images mode: sourcing projects from TARGETS (no file scan).")
+    else:
+        if not root or not root.exists():
+            raise FileNotFoundError(f"Root folder not found: {root}")
+        projects = discover_projects(root, only_filter=only_filter)
+        if not projects:
+            print(f"[!] No target projects found under: {root}")
+            return 0, 0, 0
 
     print(f"[i] Seeding Case Studies for Service: {getattr(service, 'title', service.id)}")
     print(f"[i] Found {len(projects)} project folder(s): {', '.join([p[0] for p in projects])}")
@@ -301,6 +377,9 @@ def seed_landscape(service: Service, root: Path, cloud_folder: str, dry_run: boo
     if wipe:
         print("[!] Wiping existing Case Studies for this service…")
         service.case_studies.all().delete()
+
+    created_count = 0
+    updated_count = 0
 
     for idx, (folder_name, config, folder_path, image_paths) in enumerate(projects, start=1):
         title = config["title"]
@@ -313,86 +392,126 @@ def seed_landscape(service: Service, root: Path, cloud_folder: str, dry_run: boo
         print(f"\n--- {title}  ({folder_name}) ---")
         print(f"    Found {len(image_paths)} images (including subfolders)")
 
-        # Choose first image as hero
-        hero_src = image_paths[0]
+        # Prepare metadata dict (always included)
+        metadata_dict = {
+            "summary": summary,
+            "description": description,
+            "completion_date": completion_date,
+            "scope": "Design + Build",
+            "size_label": "—",
+            "timeline_label": "—",
+            "status_label": "Completed",
+            "tags_csv": "Landscape, Pool, Lighting",
+            "is_featured": is_featured,
+            "sort_order": idx,
+            "cta_url": "",
+            "location": location,
+            "project_type": "landscape",
+        }
 
-        # Upload hero (or simulate)
-        public_base = f"{slugify(title)}/{file_md5(hero_src)}"
-        if dry_run:
-            print(f" [dry] HERO would upload: {hero_src} → public_id={public_base}")
-            base_hero_url = f"(dry-run)/{public_base}.jpg"
+        # Handle images if enabled
+        if no_images:
+            print(f" [-img-] Skipping hero/thumb/full and gallery; preserving existing URLs.")
+            fields_to_update = METADATA_FIELDS
+            update_dict = metadata_dict
         else:
-            data, ext = load_and_precompress(hero_src)
-            resp = cloudinary_upload(data, public_id=public_base, folder=cloud_folder)
-            base_hero_url = resp["secure_url"]
+            # Choose first image as hero
+            hero_src = image_paths[0]
 
-        # Delivery variants (16:9 for consistency)
-        hero_full_url = cloudinary_variant(base_hero_url, width=1600, height=900)
-        hero_thumb_url = cloudinary_variant(base_hero_url, width=800, height=450)
+            # Upload hero (or simulate)
+            public_base = f"{slugify(title)}/{file_md5(hero_src)}"
+            if dry_run:
+                print(f" [dry] HERO would upload: {hero_src} → public_id={public_base}")
+                base_hero_url = f"(dry-run)/{public_base}.jpg"
+            else:
+                data, ext = load_and_precompress(hero_src)
+                resp = cloudinary_upload(data, public_id=public_base, folder=cloud_folder)
+                base_hero_url = resp["secure_url"]
 
-        # Upsert Case Study
-        cs_obj, _ = CaseStudy.objects.get_or_create(service=service, title=title)
-        changed = upsert(
-            cs_obj,
-            {
+            # Delivery variants (16:9 for consistency)
+            hero_full_url = cloudinary_variant(base_hero_url, width=1600, height=900)
+            hero_thumb_url = cloudinary_variant(base_hero_url, width=800, height=450)
+
+            # Add image fields to update dict
+            update_dict = {
+                **metadata_dict,
                 "hero_image_url": hero_full_url,
                 "thumb_url": hero_thumb_url,
                 "full_url": hero_full_url,
-                "summary": summary,
-                "description": description,
-                "completion_date": completion_date,
-                "scope": "Design + Build",
-                "size_label": "—",
-                "timeline_label": "—",
-                "status_label": "Completed",
-                "tags_csv": "Landscape, Pool, Lighting",
-                "is_featured": is_featured,
-                "sort_order": idx,
-                "cta_url": "",
-                "location": location,
-                "project_type": "landscape",
-            },
-            [
-                "hero_image_url","thumb_url","full_url","summary","description",
-                "completion_date","scope","size_label","timeline_label","status_label",
-                "tags_csv","is_featured","sort_order","cta_url","location","project_type",
-            ],
-        )
-        print(f" {'[~] Updated' if changed else '[=] Kept   '} Case Study • {cs_obj.title}")
+            }
+            fields_to_update = METADATA_FIELDS + IMAGE_FIELDS
 
-        # Gallery: build JSON array for gallery_urls field
-        gallery_items = []
-        for g_i, img_path in enumerate(image_paths, start=1):
-            public_img = f"{slugify(title)}/{file_md5(img_path)}"
-            if dry_run:
-                print(f" [dry] GALLERY would upload: {img_path.name} → {public_img}")
-                base_url = f"(dry-run)/{public_img}.jpg"
-            else:
-                data, ext = load_and_precompress(img_path)
-                resp = cloudinary_upload(data, public_id=public_img, folder=cloud_folder)
-                base_url = resp["secure_url"]
-
-            thumb_url = cloudinary_variant(base_url, width=800, height=450)
-            full_url = cloudinary_variant(base_url, width=1600, height=900)
-            
-            gallery_items.append({
-                "thumb": thumb_url,
-                "full": full_url,
-                "caption": f"{title} — View {g_i}",
-            })
-
-        # Save gallery to JSONField
-        if not dry_run:
-            cs_obj.gallery_urls = gallery_items
-            cs_obj.save()
+        # Upsert Case Study
+        cs_obj, created = CaseStudy.objects.get_or_create(service=service, title=title)
         
-        print(f"     ↳ {'(dry-run) ' if dry_run else ''}Seeded {len(image_paths)} gallery images to gallery_urls")
+        if created:
+            created_count += 1
+            if no_images and not dry_run:
+                # Warn if creating new case study without images
+                print(f" [warn] New Case Study created; hero/thumb/full remain empty in --no-images mode.")
+        
+        if dry_run:
+            print(f" [dry]{'[skip-img] ' if no_images else ''} Would update fields: {', '.join(fields_to_update)}")
+            changed = True
+        else:
+            changed = upsert(cs_obj, update_dict, fields_to_update)
+        
+        if not created:
+            if changed:
+                updated_count += 1
+        
+        print(f" {'[+] Created' if created else '[~] Updated' if changed else '[=] Kept   '} Case Study • {cs_obj.title}")
+
+        # Gallery: build JSON array for gallery_urls field (only in images mode)
+        if not no_images:
+            gallery_items = []
+            for g_i, img_path in enumerate(image_paths, start=1):
+                public_img = f"{slugify(title)}/{file_md5(img_path)}"
+                if dry_run:
+                    print(f" [dry] GALLERY would upload: {img_path.name} → {public_img}")
+                    base_url = f"(dry-run)/{public_img}.jpg"
+                else:
+                    data, ext = load_and_precompress(img_path)
+                    resp = cloudinary_upload(data, public_id=public_img, folder=cloud_folder)
+                    base_url = resp["secure_url"]
+
+                thumb_url = cloudinary_variant(base_url, width=800, height=450)
+                full_url = cloudinary_variant(base_url, width=1600, height=900)
+                
+                gallery_items.append({
+                    "thumb": thumb_url,
+                    "full": full_url,
+                    "caption": f"{title} — View {g_i}",
+                })
+
+            # Save gallery to JSONField
+            if not dry_run:
+                cs_obj.gallery_urls = gallery_items
+                cs_obj.save()
+            
+            print(f"     ↳ {'(dry-run) ' if dry_run else ''}Seeded {len(image_paths)} gallery images to gallery_urls")
+    
+    return created_count, updated_count, len(projects)
 
 
 # -----------------------------------------------------------------------------
 # Main
 # -----------------------------------------------------------------------------
 if __name__ == "__main__":
+    # Print mode banner
+    mode_str = "OFF (metadata only)" if args.no_images else "ON (uploads + gallery)"
+    print(f"[mode] images: {mode_str}")
+    if args.dry_run:
+        print("[mode] dry-run: ON (no DB writes, no uploads)")
+    
+    # Parse --only filter
+    only_filter = None
+    if args.only:
+        # Normalize and create a set of folder keys
+        raw_keys = [k.strip() for k in args.only.split(",")]
+        only_filter = {_normalize_folder_key(k) for k in raw_keys if k.strip()}
+        print(f"[filter] Only processing: {', '.join(sorted(only_filter))}")
+    
     # Resolve Service
     svc: Optional[Service] = None
     if args.service_id:
@@ -408,17 +527,30 @@ if __name__ == "__main__":
         print("[!] No Service found. Provide --service-id or --service-slug or --service-title.")
         sys.exit(1)
 
-    root_path = Path(args.root)
+    root_path = Path(args.root) if args.root else None
     try:
-        seed_landscape(
+        created, updated, total = seed_landscape(
             service=svc,
             root=root_path,
             cloud_folder=args.cloud_folder,
             dry_run=args.dry_run,
             wipe=args.wipe,
+            no_images=args.no_images,
+            only_filter=only_filter,
         )
     except Exception as e:
         print(f"[!] Seeding failed: {e}")
+        import traceback
+        traceback.print_exc()
         sys.exit(1)
 
-    print("\n✔ Landscape Case Studies seed complete.")
+    # Summary
+    print("\n" + "="*60)
+    print("✔ Landscape Case Studies seed complete.")
+    print(f"  Mode: images {mode_str}")
+    print(f"  Projects processed: {total}")
+    print(f"  Case studies created: {created}")
+    print(f"  Case studies updated: {updated}")
+    if args.dry_run:
+        print(f"  (dry-run mode: no actual changes made)")
+    print("="*60)

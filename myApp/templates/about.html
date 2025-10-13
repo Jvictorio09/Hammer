@@ -907,7 +907,7 @@
 
 
 <!-- ========================= TIMELINE ========================= -->
-<section class="relative bg-gray-50 text-gray-900 overflow-hidden py-16">
+<section id="journey" class="relative bg-gray-50 text-gray-900 py-16">
   <div class="max-w-6xl mx-auto px-6 lg:px-8">
     <div class="text-center mb-12">
       <p class="text-sm uppercase tracking-wide text-gray-500">Our Journey</p>
@@ -917,83 +917,135 @@
       </p>
     </div>
 
-    <!-- Timeline -->
-    <div class="grid grid-cols-1 md:grid-cols-7 gap-8 text-center relative">
-      <!-- Connector line (desktop) -->
-      <div class="absolute top-8 left-0 w-full h-0.5 bg-gray-200 hidden md:block"></div>
+    <!-- Timeline (md+: baseline with stems; <md: stacked cards) -->
+    <div class="hidden md:block relative">
+      <!-- baseline -->
+      <div class="absolute left-0 right-0 top-1/2 -translate-y-1/2 h-[2px] bg-gray-300"></div>
 
-      <!-- 2019 -->
-      <div class="relative">
-        <div class="w-4 h-4 bg-teal-500 rounded-full mx-auto mb-6 border-4 border-white relative z-10"></div>
-        <h3 class="text-xl font-semibold">2019</h3>
-        <p class="text-sm uppercase text-gray-500">Foundation</p>
-        <p class="mt-4 text-gray-600">
-          Established the company, specializing in professional maintenance services.
-        </p>
+      <!-- 7 equal stops -->
+      <ul class="grid grid-cols-7 gap-6">
+        <!-- 2019 (up) -->
+        <li class="relative flex flex-col items-center">
+          <!-- stem -->
+          <span class="absolute left-1/2 -translate-x-1/2 bottom-1/2 h-16 w-[2px] bg-teal-400"></span>
+          <!-- marker -->
+          <span class="relative z-[1] mt-[-8px] h-4 w-4 rounded-full border-4 border-white bg-teal-500 shadow"></span>
+          <!-- label (top) -->
+          <div class="absolute -top-12 w-20 -translate-x-1/2 left-1/2 text-center">
+            <h3 class="text-lg font-semibold text-teal-700">2019</h3>
+          </div>
+        </li>
+
+        <!-- 2020 (down) -->
+        <li class="relative flex flex-col items-center">
+          <span class="absolute left-1/2 -translate-x-1/2 top-1/2 h-16 w-[2px] bg-teal-400"></span>
+          <span class="relative z-[1] mt-[-8px] h-4 w-4 rounded-full border-4 border-white bg-teal-500 shadow"></span>
+          <div class="absolute -bottom-12 w-20 -translate-x-1/2 left-1/2 text-center">
+            <h3 class="text-lg font-semibold text-teal-700">2020</h3>
+          </div>
+        </li>
+
+        <!-- 2021 (up) -->
+        <li class="relative flex flex-col items-center">
+          <span class="absolute left-1/2 -translate-x-1/2 bottom-1/2 h-16 w-[2px] bg-teal-400"></span>
+          <span class="relative z-[1] mt-[-8px] h-4 w-4 rounded-full border-4 border-white bg-teal-500 shadow"></span>
+          <div class="absolute -top-12 w-20 -translate-x-1/2 left-1/2 text-center">
+            <h3 class="text-lg font-semibold text-teal-700">2021</h3>
+          </div>
+        </li>
+
+        <!-- 2022 (down) -->
+        <li class="relative flex flex-col items-center">
+          <span class="absolute left-1/2 -translate-x-1/2 top-1/2 h-16 w-[2px] bg-teal-400"></span>
+          <span class="relative z-[1] mt-[-8px] h-4 w-4 rounded-full border-4 border-white bg-teal-500 shadow"></span>
+          <div class="absolute -bottom-12 w-20 -translate-x-1/2 left-1/2 text-center">
+            <h3 class="text-lg font-semibold text-teal-700">2022</h3>
+          </div>
+        </li>
+
+        <!-- 2023 (up) -->
+        <li class="relative flex flex-col items-center">
+          <span class="absolute left-1/2 -translate-x-1/2 bottom-1/2 h-16 w-[2px] bg-teal-400"></span>
+          <span class="relative z-[1] mt-[-8px] h-4 w-4 rounded-full border-4 border-white bg-teal-500 shadow"></span>
+          <div class="absolute -top-12 w-20 -translate-x-1/2 left-1/2 text-center">
+            <h3 class="text-lg font-semibold text-teal-700">2023</h3>
+          </div>
+        </li>
+
+        <!-- 2024 (down) -->
+        <li class="relative flex flex-col items-center">
+          <span class="absolute left-1/2 -translate-x-1/2 top-1/2 h-16 w-[2px] bg-teal-400"></span>
+          <span class="relative z-[1] mt-[-8px] h-4 w-4 rounded-full border-4 border-white bg-teal-500 shadow"></span>
+          <div class="absolute -bottom-12 w-20 -translate-x-1/2 left-1/2 text-center">
+            <h3 class="text-lg font-semibold text-teal-700">2024</h3>
+          </div>
+        </li>
+
+        <!-- 2025 (up) -->
+        <li class="relative flex flex-col items-center">
+          <span class="absolute left-1/2 -translate-x-1/2 bottom-1/2 h-16 w-[2px] bg-teal-400"></span>
+          <span class="relative z-[1] mt-[-8px] h-4 w-4 rounded-full border-4 border-white bg-teal-500 shadow"></span>
+          <div class="absolute -top-12 w-20 -translate-x-1/2 left-1/2 text-center">
+            <h3 class="text-lg font-semibold text-teal-700">2025</h3>
+          </div>
+        </li>
+      </ul>
+    </div>
+
+    <!-- Mobile: stacked cards -->
+    <div class="md:hidden space-y-6 mt-6">
+      <div class="rounded-lg border border-gray-200 bg-white p-4">
+        <div class="flex items-center gap-3">
+          <span class="h-3.5 w-3.5 rounded-full bg-teal-500"></span>
+          <h3 class="text-lg font-semibold text-teal-700">2019</h3>
+        </div>
       </div>
 
-      <!-- 2020 -->
-      <div class="relative">
-        <div class="w-4 h-4 bg-teal-500 rounded-full mx-auto mb-6 border-4 border-white relative z-10"></div>
-        <h3 class="text-xl font-semibold">2020</h3>
-        <p class="text-sm uppercase text-gray-500">Landscape</p>
-        <p class="mt-4 text-gray-600">
-          Introduced the Landscaping division to broaden our service range.
-        </p>
+      <div class="rounded-lg border border-gray-200 bg-white p-4">
+        <div class="flex items-center gap-3">
+          <span class="h-3.5 w-3.5 rounded-full bg-teal-500"></span>
+          <h3 class="text-lg font-semibold text-teal-700">2020</h3>
+        </div>
       </div>
 
-      <!-- 2021 -->
-      <div class="relative">
-        <div class="w-4 h-4 bg-teal-500 rounded-full mx-auto mb-6 border-4 border-white relative z-10"></div>
-        <h3 class="text-xl font-semibold">2021</h3>
-        <p class="text-sm uppercase text-gray-500">Interiors</p>
-        <p class="mt-4 text-gray-600">
-          Launched Interior Fit-Out services to deliver complete space solutions.
-        </p>
+      <div class="rounded-lg border border-gray-200 bg-white p-4">
+        <div class="flex items-center gap-3">
+          <span class="h-3.5 w-3.5 rounded-full bg-teal-500"></span>
+          <h3 class="text-lg font-semibold text-teal-700">2021</h3>
+        </div>
       </div>
 
-      <!-- 2022 -->
-      <div class="relative">
-        <div class="w-4 h-4 bg-teal-500 rounded-full mx-auto mb-6 border-4 border-white relative z-10"></div>
-        <h3 class="text-xl font-semibold">2022</h3>
-        <p class="text-sm uppercase text-gray-500">Facilities</p>
-        <p class="mt-4 text-gray-600">
-          Expanded into Facilities Management for integrated property services.
-        </p>
+      <div class="rounded-lg border border-gray-200 bg-white p-4">
+        <div class="flex items-center gap-3">
+          <span class="h-3.5 w-3.5 rounded-full bg-teal-500"></span>
+          <h3 class="text-lg font-semibold text-teal-700">2022</h3>
+        </div>
       </div>
 
-      <!-- 2023 -->
-      <div class="relative">
-        <div class="w-4 h-4 bg-teal-500 rounded-full mx-auto mb-6 border-4 border-white relative z-10"></div>
-        <h3 class="text-xl font-semibold">2023</h3>
-        <p class="text-sm uppercase text-gray-500">Joinery</p>
-        <p class="mt-4 text-gray-600">
-          Set up an in-house Joinery Workshop to support customized joinery finishing.
-        </p>
+      <div class="rounded-lg border border-gray-200 bg-white p-4">
+        <div class="flex items-center gap-3">
+          <span class="h-3.5 w-3.5 rounded-full bg-teal-500"></span>
+          <h3 class="text-lg font-semibold text-teal-700">2023</h3>
+        </div>
       </div>
 
-      <!-- 2024 -->
-      <div class="relative">
-        <div class="w-4 h-4 bg-teal-500 rounded-full mx-auto mb-6 border-4 border-white relative z-10"></div>
-        <h3 class="text-xl font-semibold">2024</h3>
-        <p class="text-sm uppercase text-gray-500">Construction</p>
-        <p class="mt-4 text-gray-600">
-          Formed Hammer Group and commenced high-end villa construction.
-        </p>
+      <div class="rounded-lg border border-gray-200 bg-white p-4">
+        <div class="flex items-center gap-3">
+          <span class="h-3.5 w-3.5 rounded-full bg-teal-500"></span>
+          <h3 class="text-lg font-semibold text-teal-700">2024</h3>
+        </div>
       </div>
 
-      <!-- 2025 -->
-      <div class="relative">
-        <div class="w-4 h-4 bg-teal-500 rounded-full mx-auto mb-6 border-4 border-white relative z-10"></div>
-        <h3 class="text-xl font-semibold">2025</h3>
-        <p class="text-sm uppercase text-gray-500">Innovation</p>
-        <p class="mt-4 text-gray-600">
-          Introduced Automated Solutions through a strategic tech partnership.
-        </p>
+      <div class="rounded-lg border border-gray-200 bg-white p-4">
+        <div class="flex items-center gap-3">
+          <span class="h-3.5 w-3.5 rounded-full bg-teal-500"></span>
+          <h3 class="text-lg font-semibold text-teal-700">2025</h3>
+        </div>
       </div>
     </div>
   </div>
 </section>
+
 
 
 {% include "partials/cta_slim.html" %}

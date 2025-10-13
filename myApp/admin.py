@@ -186,10 +186,46 @@ class CaseStudyAdmin(admin.ModelAdmin):
 
 @admin.register(TeamMember)
 class TeamMemberAdmin(admin.ModelAdmin):
-    list_display  = ("name", "role", "is_featured", "is_active", "sort_order")
+    list_display  = ("name", "role", "is_featured", "is_active", "sort_order", "photo_preview")
     list_filter   = ("is_featured", "is_active")
-    search_fields = ("name", "role", "email")
+    list_editable = ("is_featured", "is_active", "sort_order")
+    search_fields = ("name", "role", "email", "bio")
     ordering      = ("sort_order", "name")
+    prepopulated_fields = {"slug": ("name",)}
+    
+    fieldsets = (
+        ("Basic Information", {
+            "fields": ("name", "slug", "role", "bio")
+        }),
+        ("Photo & Contact", {
+            "fields": ("photo_url", "email", "linkedin_url")
+        }),
+        ("Display Settings", {
+            "fields": ("is_active", "is_featured", "sort_order"),
+            "description": "Control where this team member appears. 'Featured' shows them on the About page."
+        }),
+        ("Timestamps", {
+            "fields": ("created_at", "updated_at"),
+            "classes": ("collapse",)
+        }),
+    )
+    
+    readonly_fields = ("created_at", "updated_at", "photo_preview")
+    
+    def photo_preview(self, obj):
+        """Display a small preview of the team member's photo in the admin list"""
+        if obj.photo_card or obj.photo_url:
+            photo = obj.photo_card if obj.photo_card else obj.photo_url
+            return format_html(
+                '<img src="{}" style="width: 50px; height: 60px; object-fit: cover; border-radius: 4px;" />',
+                photo
+            )
+        return "—"
+    photo_preview.short_description = "Photo"
+    
+    def get_queryset(self, request):
+        """Optimize queries"""
+        return super().get_queryset(request)
 
 
 @admin.register(InsightAuditLog)

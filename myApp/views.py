@@ -48,7 +48,7 @@ from .models import (
     InsightAuditLog,
     CaseStudy,
 )
-from .forms import ServiceForm, InsightForm, ServiceCapabilityFormSet, ServiceEditorialImageFormSet, ServiceProjectImageFormSet, CaseStudyFormSet
+from .forms import ServiceForm, InsightForm, ServiceCapabilityFormSet, ServiceEditorialImageFormSet, ServiceProjectImageFormSet, CaseStudyFormSet, ServiceProcessStepFormSet
 
 # -----------------------------
 # Utility Functions
@@ -208,37 +208,45 @@ from .models import Service, CaseStudy
 def home(request):
     services = Service.objects.filter(is_active=True).order_by("sort_order", "title")
 
-    # Get first case study for each service
+    # Get first case study for each service (excluding joinery and facility management)
     case_studies_by_service = {}
     services_with_projects = []
+    excluded_services = ['joinery', 'facility-management']
     
     for service in services:
-        first_case_study = (
-            CaseStudy.objects
-            .filter(service=service)
-            .order_by("sort_order", "title")
-            .first()
-        )
-        if first_case_study:
-            case_studies_by_service[service.slug] = first_case_study
-            services_with_projects.append(service)
+        if service.slug not in excluded_services:
+            first_case_study = (
+                CaseStudy.objects
+                .filter(service=service)
+                .order_by("sort_order", "title")
+                .first()
+            )
+            if first_case_study:
+                case_studies_by_service[service.slug] = first_case_study
+                services_with_projects.append(service)
 
     # Choose the first featured case study; fallback to any case study; fallback to None.
+    # Exclude joinery and facility management services
     featured_cs = (
         CaseStudy.objects.select_related("service")
         .filter(is_featured=True)
+        .exclude(service__slug__in=excluded_services)
         .order_by("sort_order", "title")
         .first()
-        or CaseStudy.objects.select_related("service").order_by("sort_order", "title").first()
+        or CaseStudy.objects.select_related("service")
+        .exclude(service__slug__in=excluded_services)
+        .order_by("sort_order", "title")
+        .first()
     )
 
-    # Build filter data for services that have case studies
+    # Build filter data for services that have case studies (excluding joinery and facility management)
     project_filters = []
     for service in services_with_projects:
-        project_filters.append({
-            'title': service.title,
-            'slug': service.slug
-        })
+        if service.slug not in excluded_services:
+            project_filters.append({
+                'title': service.title,
+                'slug': service.slug
+            })
 
     return render(request, "index.html", {
         "services": services,
@@ -540,9 +548,7 @@ SERVICE_CHOICES = [
     ("General", "General Enquiry"),
     ("Landscape", "Landscape"),
     ("Interior", "Interior"),
-    ("Joinery", "Joinery"),
     ("Marble", "Marble"),
-    ("Facility Management", "Facility Management"),
 ]
 
 class ContactForm(forms.Form):
@@ -576,6 +582,34 @@ class ContactForm(forms.Form):
         if cleaned.get("website"):
             raise forms.ValidationError("Spam detected.")
         return cleaned
+
+
+class TeamMemberForm(forms.ModelForm):
+    """Form for creating/editing team members"""
+    class Meta:
+        model = TeamMember
+        fields = ['name', 'role', 'bio', 'photo_url', 'email', 'linkedin_url', 'is_active', 'is_featured', 'sort_order']
+        widgets = {
+            'name': forms.TextInput(attrs={'placeholder': 'Full name'}),
+            'role': forms.TextInput(attrs={'placeholder': 'Job title or role'}),
+            'bio': forms.Textarea(attrs={'rows': 4, 'placeholder': 'Brief bio or description'}),
+            'photo_url': forms.URLInput(attrs={'placeholder': 'https://res.cloudinary.com/...'}),
+            'email': forms.EmailInput(attrs={'placeholder': 'email@example.com'}),
+            'linkedin_url': forms.URLInput(attrs={'placeholder': 'https://linkedin.com/in/...'}),
+            'sort_order': forms.NumberInput(attrs={'min': 0, 'max': 999}),
+        }
+        labels = {
+            'photo_url': 'Photo URL',
+            'linkedin_url': 'LinkedIn URL',
+            'is_active': 'Active',
+            'is_featured': 'Featured (shows on About page)',
+            'sort_order': 'Sort Order (0 = first)',
+        }
+        help_texts = {
+            'photo_url': 'Use Cloudinary URLs for best results. Images will be automatically optimized.',
+            'is_featured': 'Featured team members appear on the About page carousel.',
+            'sort_order': 'Lower numbers appear first. Leave as 0 for default ordering.',
+        }
 
 
 # --------------------------------------------------------------------------------------
@@ -833,8 +867,9 @@ def dashboard_service_create(request):
         capability_formset = ServiceCapabilityFormSet(request.POST, prefix='capabilities')
         image_formset = ServiceEditorialImageFormSet(request.POST, prefix='images')
         case_study_formset = CaseStudyFormSet(request.POST, prefix='case_studies')
+        process_formset = ServiceProcessStepFormSet(request.POST, prefix='process_steps')
         
-        if form.is_valid() and capability_formset.is_valid() and image_formset.is_valid() and case_study_formset.is_valid():
+        if form.is_valid() and capability_formset.is_valid() and image_formset.is_valid() and case_study_formset.is_valid() and process_formset.is_valid():
             service = form.save()
             capability_formset.instance = service
             capability_formset.save()
@@ -848,6 +883,10 @@ def dashboard_service_create(request):
                 cs.save()
             case_study_formset.save_m2m()
             
+            # Save process steps
+            process_formset.instance = service
+            process_formset.save()
+            
             messages.success(request, "Service created successfully!")
             return redirect(service.get_absolute_url())
     else:
@@ -855,12 +894,14 @@ def dashboard_service_create(request):
         capability_formset = ServiceCapabilityFormSet(prefix='capabilities')
         image_formset = ServiceEditorialImageFormSet(prefix='images')
         case_study_formset = CaseStudyFormSet(prefix='case_studies')
+        process_formset = ServiceProcessStepFormSet(prefix='process_steps')
     
     return render(request, "dashboard/service_form.html", {
         "form": form, 
         "capability_formset": capability_formset,
         "image_formset": image_formset,
         "case_study_formset": case_study_formset,
+        "process_formset": process_formset,
         "mode": "create"
     })
 
@@ -873,14 +914,16 @@ def dashboard_service_edit(request, pk: int):
         capability_formset = ServiceCapabilityFormSet(request.POST, instance=service, prefix='capabilities')
         image_formset = ServiceEditorialImageFormSet(request.POST, instance=service, prefix='images')
         case_study_formset = CaseStudyFormSet(request.POST, instance=service, prefix='case_studies')
+        process_formset = ServiceProcessStepFormSet(request.POST, instance=service, prefix='process_steps')
         
         # Validate all forms
         form_valid = form.is_valid()
         capability_valid = capability_formset.is_valid()
         image_valid = image_formset.is_valid()
         case_study_valid = case_study_formset.is_valid()
+        process_valid = process_formset.is_valid()
         
-        if form_valid and capability_valid and image_valid and case_study_valid:
+        if form_valid and capability_valid and image_valid and case_study_valid and process_valid:
             service = form.save()
             capability_formset.save()
             image_formset.save()
@@ -892,6 +935,9 @@ def dashboard_service_edit(request, pk: int):
                     cs.service = service
                 cs.save()
             case_study_formset.save_m2m()
+            
+            # Save process steps
+            process_formset.save()
             
             messages.success(request, "Service updated successfully!")
             return redirect("dashboard_services_list")
@@ -905,17 +951,21 @@ def dashboard_service_edit(request, pk: int):
                 messages.error(request, f"Image formset errors: {image_formset.errors}")
             if not case_study_valid:
                 messages.error(request, f"Case study formset errors: {case_study_formset.errors}")
+            if not process_valid:
+                messages.error(request, f"Process steps formset errors: {process_formset.errors}")
     else:
         form = ServiceForm(instance=service)
         capability_formset = ServiceCapabilityFormSet(instance=service, prefix='capabilities')
         image_formset = ServiceEditorialImageFormSet(instance=service, prefix='images')
         case_study_formset = CaseStudyFormSet(instance=service, prefix='case_studies')
+        process_formset = ServiceProcessStepFormSet(instance=service, prefix='process_steps')
     
     return render(request, "dashboard/service_form.html", {
         "form": form, 
         "capability_formset": capability_formset,
         "image_formset": image_formset,
         "case_study_formset": case_study_formset,
+        "process_formset": process_formset,
         "mode": "edit", 
         "service": service
     })
@@ -1451,3 +1501,63 @@ def dashboard_user_delete(request, pk: int):
         "object": user, 
         "type": "User"
     })
+
+
+# Team Management Views
+@login_required
+def dashboard_team_list(request):
+    """List all team members"""
+    team_members = TeamMember.objects.all().order_by('sort_order', 'name')
+    return render(request, "dashboard/team_list.html", {
+        "team_members": team_members
+    })
+
+
+@login_required
+def dashboard_team_create(request):
+    """Create a new team member"""
+    if request.method == "POST":
+        form = TeamMemberForm(request.POST)
+        if form.is_valid():
+            team_member = form.save()
+            messages.success(request, f"Team member '{team_member.name}' has been created.")
+            return redirect("dashboard_team_list")
+    else:
+        form = TeamMemberForm()
+    
+    return render(request, "dashboard/team_form.html", {
+        "form": form,
+        "title": "Add Team Member"
+    })
+
+
+@login_required
+def dashboard_team_edit(request, pk: int):
+    """Edit a team member"""
+    team_member = get_object_or_404(TeamMember, pk=pk)
+    
+    if request.method == "POST":
+        form = TeamMemberForm(request.POST, instance=team_member)
+        if form.is_valid():
+            team_member = form.save()
+            messages.success(request, f"Team member '{team_member.name}' has been updated.")
+            return redirect("dashboard_team_list")
+    else:
+        form = TeamMemberForm(instance=team_member)
+    
+    return render(request, "dashboard/team_form.html", {
+        "form": form,
+        "title": f"Edit {team_member.name}",
+        "team_member": team_member
+    })
+
+
+@login_required
+@require_POST
+def dashboard_team_delete(request, pk: int):
+    """Delete a team member"""
+    team_member = get_object_or_404(TeamMember, pk=pk)
+    name = team_member.name
+    team_member.delete()
+    messages.success(request, f"Team member '{name}' has been deleted.")
+    return redirect("dashboard_team_list")

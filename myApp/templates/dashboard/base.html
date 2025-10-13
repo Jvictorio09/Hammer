@@ -62,6 +62,11 @@
               <i class="fa-solid fa-chevron-right text-xs opacity-60 group-hover:translate-x-0.5 transition"></i>
             </a>
             {% endif %}
+            <a href="{% url 'dashboard_team_list' %}"
+               class="group flex items-center justify-between rounded-lg px-3 py-2 border border-transparent hover:border-slate-200 transition {% if 'dashboard_team' in request.resolver_match.url_name %}bg-indigo-50 text-indigo-900 font-semibold{% else %}text-slate-700 hover:bg-slate-50{% endif %}">
+              <span class="flex items-center gap-2"><i class="fa-solid fa-users"></i> Team</span>
+              <i class="fa-solid fa-chevron-right text-xs opacity-60 group-hover:translate-x-0.5 transition"></i>
+            </a>
             <a href="{% url 'dashboard_insights_list' %}"
                class="group flex items-center justify-between rounded-lg px-3 py-2 border border-transparent hover:border-slate-200 transition {% if request.resolver_match.url_name == 'dashboard_insights_list' %}bg-indigo-50 text-indigo-900 font-semibold{% else %}text-slate-700 hover:bg-slate-50{% endif %}">
               <span class="flex items-center gap-2"><i class="fa-regular fa-file-lines"></i> Insights</span>

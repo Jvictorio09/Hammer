@@ -84,7 +84,7 @@ class ProjectImageUploadForm(_URLOrFileBaseForm):
 from django import forms
 from django.utils.text import slugify
 from django.forms import inlineformset_factory
-from .models import Service, ServiceCapability, ServiceEditorialImage
+from .models import Service, ServiceCapability, ServiceEditorialImage, ServiceProcessStep
 
 class ServiceForm(forms.ModelForm):
     class Meta:
@@ -207,6 +207,24 @@ class ServiceProjectImageForm(forms.ModelForm):
                 field.widget.attrs.update({'class': 'w-full rounded-xl border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-gray-900/10 focus:border-gray-400 transition'})
 
 
+class ServiceProcessStepForm(forms.ModelForm):
+    class Meta:
+        model = ServiceProcessStep
+        fields = ['step_no', 'title', 'description', 'sort_order']
+        widgets = {
+            'step_no': forms.NumberInput(attrs={'placeholder': 'e.g., 1', 'min': '1', 'step': '1'}),
+            'title': forms.TextInput(attrs={'placeholder': 'e.g., Site study & concept'}),
+            'description': forms.Textarea(attrs={'placeholder': 'Brief description of this step...', 'rows': 2}),
+            'sort_order': forms.NumberInput(attrs={'min': '0', 'step': '1'}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Add CSS classes for styling
+        for field in self.fields.values():
+            field.widget.attrs.update({'class': 'w-full rounded-xl border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-gray-900/10 focus:border-gray-400 transition'})
+
+
 class CaseStudyForm(forms.ModelForm):
     class Meta:
         model = CaseStudy
@@ -285,6 +303,16 @@ CaseStudyFormSet = inlineformset_factory(
     Service, 
     CaseStudy, 
     form=CaseStudyForm,
+    extra=1, 
+    can_delete=True,
+    min_num=0,
+    validate_min=False
+)
+
+ServiceProcessStepFormSet = inlineformset_factory(
+    Service, 
+    ServiceProcessStep, 
+    form=ServiceProcessStepForm,
     extra=1, 
     can_delete=True,
     min_num=0,
