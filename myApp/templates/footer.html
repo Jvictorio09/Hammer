@@ -32,10 +32,9 @@
     <div>
       <h4 class="text-white font-semibold text-sm uppercase tracking-[.2em] mb-4">Expertise</h4>
       <ul class="space-y-2 text-sm">
-        <li>Design & Build</li>
-        <li>Interior Fit-Out</li>
-        <li>Landscaping & Pools</li>
-        <li>Facility Management</li>
+        {% for service in nav_services %}
+        <li><a href="{% url nav_detail_urlname slug=service.slug %}" class="hover:text-[#18AFAB] transition">{{ service.title }}</a></li>
+        {% endfor %}
       </ul>
     </div>
 
