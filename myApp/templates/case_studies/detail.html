@@ -203,7 +203,7 @@
             <img src="{{ image.thumb_url }}" alt="{{ image.caption|default:'Project image' }}"
                  class="w-full h-auto object-cover transition duration-500 group-hover:scale-[1.02]" loading="lazy" />
             {% if image.caption %}
-              <figcaption class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent p-3 text-sm">{{ image.caption }}</figcaption>
+              
             {% endif %}
           </figure>
           {% endfor %}
@@ -212,7 +212,7 @@
           <template id="tmpl-gallery-card">
             <figure class="break-inside-avoid relative overflow-hidden rounded-2xl bg-white/5 ring-1 ring-white/10 hover:ring-white/20 transition cursor-zoom-in">
               <img class="w-full h-auto object-cover transition duration-500 group-hover:scale-[1.02]" loading="lazy" />
-              <figcaption class="caption absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent p-3 text-sm hidden"></figcaption>
+              
             </figure>
           </template>
           <div id="gallery-json-render" class="contents"></div>
@@ -224,11 +224,11 @@
   <!-- Lightbox -->
   <div id="lightbox" class="fixed inset-0 z-50 hidden bg-black/95 flex items-center justify-center p-4" onclick="closeLightbox()">
     <button aria-label="Close" class="absolute top-4 right-4 text-white/90 hover:text-white text-4xl font-light" onclick="closeLightbox()">&times;</button>
-    <button aria-label="Previous" class="absolute left-4 top-1/2 -translate-y-1/2 text-white/90 hover:text-white text-4xl font-light" onclick="event.stopPropagation(); prevImage()">&lsaquo;</button>
-    <button aria-label="Next" class="absolute right-4 top-1/2 -translate-y-1/2 text-white/90 hover:text-white text-4xl font-light" onclick="event.stopPropagation(); nextImage()">&rsaquo;</button>
+    <button aria-label="Previous" class="absolute left-4 sm:left-8 top-1/2 -translate-y-1/2 text-white/90 hover:text-white text-6xl sm:text-7xl md:text-8xl font-normal transition-all hover:scale-110" onclick="event.stopPropagation(); prevImage()">&lsaquo;</button>
+    <button aria-label="Next" class="absolute right-4 sm:right-8 top-1/2 -translate-y-1/2 text-white/90 hover:text-white text-6xl sm:text-7xl md:text-8xl font-normal transition-all hover:scale-110" onclick="event.stopPropagation(); nextImage()">&rsaquo;</button>
     <div class="max-w-6xl w-full" onclick="event.stopPropagation()">
       <img id="lightbox-img" src="" alt="" class="w-full h-auto max-h-[85vh] object-contain rounded-xl shadow-2xl ring-1 ring-white/10" />
-      <p id="lightbox-caption" class="text-white/80 text-center mt-4 text-sm"></p>
+      
     </div>
   </div>
   {% endif %}
