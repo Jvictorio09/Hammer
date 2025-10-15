@@ -14,8 +14,52 @@ urlpatterns = [
     # Service detail (canonical)
     path("services/<slug:slug>/", views.service_detail, name="service_detail"),
 
-    # Legacy route → redirect to the canonical service slug you seeded
-    # Adjust "landscape-design-build" if you use a different slug
+    # Legacy routes → redirect to the canonical service slugs you seeded
+    # Adjust slugs if you use different ones
+    
+    # Old hammer-services.com URLs
+    path(
+        "landscape/",
+        RedirectView.as_view(
+            url=reverse_lazy("service_detail", kwargs={"slug": "landscape-design-build"}),
+            permanent=True,
+        ),
+        name="legacy_landscape",
+    ),
+    path(
+        "interior/",
+        RedirectView.as_view(
+            url=reverse_lazy("service_detail", kwargs={"slug": "interior-design-build"}),
+            permanent=True,
+        ),
+        name="legacy_interior",
+    ),
+    path(
+        "facility/",
+        RedirectView.as_view(
+            url=reverse_lazy("service_detail", kwargs={"slug": "facility-management"}),
+            permanent=True,
+        ),
+        name="legacy_facility",
+    ),
+    path(
+        "aboutus/",
+        RedirectView.as_view(
+            url=reverse_lazy("about"),
+            permanent=True,
+        ),
+        name="legacy_aboutus",
+    ),
+    path(
+        "blogs/",
+        RedirectView.as_view(
+            url=reverse_lazy("service_index"),  # Redirect to services for now, or create insights index
+            permanent=True,
+        ),
+        name="legacy_blogs",
+    ),
+    
+    # Keep existing services/landscape/ redirect for backward compatibility
     path(
         "services/landscape/",
         RedirectView.as_view(
