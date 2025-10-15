@@ -365,6 +365,30 @@ def service_detail(request, slug):
 
 
 # -----------------------------
+# Legacy Views for Old URL Structure
+# -----------------------------
+def legacy_landscape(request):
+    """Legacy view for /landscape/ - serves landscape-design-build service"""
+    return service_detail(request, "landscape-design-build")
+
+def legacy_interior(request):
+    """Legacy view for /interior/ - serves interior-design-build service"""
+    return service_detail(request, "interior-design-build")
+
+def legacy_facility(request):
+    """Legacy view for /facility/ - serves facility-management service"""
+    return service_detail(request, "facility-management")
+
+def legacy_aboutus(request):
+    """Legacy view for /aboutus/ - serves the about page"""
+    return about(request)
+
+def legacy_blogs(request):
+    """Legacy view for /blogs/ - serves the services index page"""
+    return service_index(request)
+
+
+# -----------------------------
 # Insight detail
 # -----------------------------
 def insight_detail(request, slug):
