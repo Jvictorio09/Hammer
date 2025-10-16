@@ -23,7 +23,7 @@ Usage (examples):
   # Filter to specific projects only (metadata mode)
   python seed_landscape.py --settings myProject.settings ^
     --service-slug landscape-design-build ^
-    --only "tilal al ghaf,jumeirah park"
+    --only "project-1,project-3"
 
   # Wipe and re-seed with images
   python seed_landscape.py --settings myProject.settings ^
@@ -35,14 +35,11 @@ Usage (examples):
 
 Notes:
 - Idempotent: existing Case Studies update instead of duplicating.
-- Only seeds folders: Tilal Al Ghaf, Murooj, Jumeirah Park (typo 'Jumeriah park' tolerated).
-- By default (--no-images), only metadata is updated; image URLs are preserved. No --root needed.
-- In metadata-only mode, projects are sourced from TARGETS dict (no filesystem scan).
+- In metadata-only mode (--no-images, default), projects are sourced from TARGETS (no filesystem scan).
 - Use --images to enable image uploads, recompression, and gallery generation (requires --root).
-- Use --only to filter specific projects (comma-separated normalized folder keys).
+- Use --only to filter specific projects (comma-separated normalized TARGET keys, e.g., 'project-1,project-2').
 - If --wipe is set, removes only Case Studies (+ gallery images) for the target service.
 """
-
 
 import os
 import sys
@@ -69,7 +66,7 @@ parser.add_argument("--root", help=r'Root folder, e.g. "E:\New Downloads\Hammer\
 parser.add_argument("--cloud-folder", default="hammer/landscape", help="Cloudinary folder prefix")
 parser.add_argument("--wipe", action="store_true", help="Delete existing Case Studies for this service first")
 parser.add_argument("--dry-run", action="store_true", help="Print actions; no uploads, no DB writes")
-parser.add_argument("--only", help="Comma-separated list of normalized folder keys to process (e.g., 'tilal al ghaf,jumeirah park')")
+parser.add_argument("--only", help="Comma-separated list of normalized folder keys to process (e.g., 'project-1,project-2')")
 
 # Mutually exclusive image mode flags
 mx = parser.add_mutually_exclusive_group()
@@ -97,39 +94,121 @@ from myApp.models import (  # noqa: E402
 # Gallery is stored in CaseStudy.gallery_urls as JSONField (no separate model needed)
 
 # -----------------------------------------------------------------------------
-# Config / Targets
+# Config / Targets (7 projects, improved copy, dummy image URLs)
+# Keys are normalized names you can filter via --only (e.g., project-1)
 # -----------------------------------------------------------------------------
-# Lowercased keys for robust matching.
 TARGETS = {
-    "tilal al ghaf": {
-        "title": "Tilal Al Ghaf",
-        "summary": "A modern oasis in the heart of the city, featuring a private courtyard pool framed by elegant cactus arrangements and olive trees.",
-        "description": "A modern oasis in the heart of the city, the Tilal Al Ghaf landscape project features a private courtyard pool framed by elegant cactus arrangements and olive trees. Subtle lighting highlights the textures of natural elements, creating a warm, inviting atmosphere perfect for relaxing evenings and intimate gatherings.",
-        "completion_date": date(2025, 6, 27),
-        "location": "Dubai",
+    "project-1": {
+        "title": "Modern Oasis – Dubai Hills",
+        "summary": "A Mediterranean-inspired retreat where sun-washed neutrals and structured greenery evoke tranquil sophistication.",
+        "description": "Modern oasis inspired by Mediterranean serenity and desert elegance. A palette of sun-washed neutrals, structured greenery, and natural textures creates a refined escape — where alfresco living meets tranquil sophistication.",
+        "completion_date": date(2025, 4, 1),
+        "location": "Dubai Hills",
+        "scope": "Design + Build",
+        "size_label": "450 SqM",
+        "timeline_label": "90 days",
+        "status_label": "Completed",
         "is_featured": True,
+        # Dummy delivery images (swap later when real assets are ready)
+        "full_url":  "https://res.cloudinary.com/demo/image/upload/v1711111111/hammer/landscape/project1.jpg",
+        "thumb_url": "https://res.cloudinary.com/demo/image/upload/c_fill,g_auto,w_800,h_450,f_auto,q_auto:good/v1711111111/hammer/landscape/project1.jpg",
+        "hero_image_url": "https://res.cloudinary.com/demo/image/upload/c_fill,g_auto,w_1600,h_900,f_auto,q_auto:good/v1711111111/hammer/landscape/project1.jpg",
     },
-    "murooj": {
-        "title": "Murooj Al Furjan",
-        "summary": "Luxury landscape design in Dubai with a modern pool, pergola, and lush greenery.",
-        "description": "Luxury landscape design in Dubai with a modern pool, pergola, and lush greenery. Created by Hammer Landscape & Pools for stylish outdoor living.",
-        "completion_date": date(2025, 9, 3),
-        "location": "Dubai, UAE",
-        "is_featured": False,
+    "project-2": {
+        "title": "Coastal Clarity – Dubai Hills",
+        "summary": "Desert minimalism meets coastal clarity — a study in light, reflection, and seamless indoor–outdoor flow.",
+        "description": "Desert minimalism meets coastal clarity. A design rooted in light and reflection, where sun-drenched surfaces, clean lines, and soft landscaping blur the boundaries between indoors and out, evoking effortless retreat.",
+        "completion_date": date(2025, 5, 5),
+        "location": "Dubai Hills",
+        "scope": "Design + Build",
+        "size_label": "650 SqM",
+        "timeline_label": "110 days",
+        "status_label": "Completed",
+        "is_featured": True,
+        "full_url":  "https://res.cloudinary.com/demo/image/upload/v1711111111/hammer/landscape/project2.jpg",
+        "thumb_url": "https://res.cloudinary.com/demo/image/upload/c_fill,g_auto,w_800,h_450,f_auto,q_auto:good/v1711111111/hammer/landscape/project2.jpg",
+        "hero_image_url": "https://res.cloudinary.com/demo/image/upload/c_fill,g_auto,w_1600,h_900,f_auto,q_auto:good/v1711111111/hammer/landscape/project2.jpg",
     },
-    "jumeirah park": {
-        "title": "Jumeirah Park",
-        "summary": "Family-friendly landscape with clean hardscape, night lighting, and resilient planting.",
-        "description": "A thoughtfully designed outdoor space featuring clean hardscape, strategic night lighting, and climate-resilient planting. Perfect for family living and entertaining in Dubai's environment.",
-        "completion_date": date(2025, 9, 4),
-        "location": "Dubai, UAE",
+    "project-3": {
+        "title": "Andalusian Sanctuary – Jumeirah Park",
+        "summary": "Terracotta tones, lush palms, and tranquil water features bring Andalusian warmth to tropical Dubai living.",
+        "description": "A nod to Andalusian courtyards and tropical tranquillity — where terracotta tones, lush palms, and the soft interplay of stone and water create a backyard sanctuary designed for slow, sun-soaked living.",
+        "completion_date": date(2025, 6, 20),
+        "location": "Jumeirah Park",
+        "scope": "Design + Build",
+        "size_label": "600 SqM",
+        "timeline_label": "100 days",
+        "status_label": "Completed",
         "is_featured": False,
+        "full_url":  "https://res.cloudinary.com/demo/image/upload/v1711111111/hammer/landscape/project3.jpg",
+        "thumb_url": "https://res.cloudinary.com/demo/image/upload/c_fill,g_auto,w_800,h_450,f_auto,q_auto:good/v1711111111/hammer/landscape/project3.jpg",
+        "hero_image_url": "https://res.cloudinary.com/demo/image/upload/c_fill,g_auto,w_1600,h_900,f_auto,q_auto:good/v1711111111/hammer/landscape/project3.jpg",
+    },
+    "project-4": {
+        "title": "Lush Geometry – Murooj",
+        "summary": "A serene escape where clean lines meet greenery, balancing structure and softness in modern harmony.",
+        "description": "A serene escape where clean lines meet lush greenery, and the gentle rhythm of water reflects a life of effortless outdoor elegance.",
+        "completion_date": date(2025, 7, 8),
+        "location": "Murooj",
+        "scope": "Design + Build",
+        "size_label": "400 SqM",
+        "timeline_label": "98 days",
+        "status_label": "Completed",
+        "is_featured": False,
+        "full_url":  "https://res.cloudinary.com/demo/image/upload/v1711111111/hammer/landscape/project4.jpg",
+        "thumb_url": "https://res.cloudinary.com/demo/image/upload/c_fill,g_auto,w_800,h_450,f_auto,q_auto:good/v1711111111/hammer/landscape/project4.jpg",
+        "hero_image_url": "https://res.cloudinary.com/demo/image/upload/c_fill,g_auto,w_1600,h_900,f_auto,q_auto:good/v1711111111/hammer/landscape/project4.jpg",
+    },
+    "project-5": {
+        "title": "Sunlit Haven – Tilal Al Ghaf",
+        "summary": "Mediterranean charm meets desert minimalism through sculptural cacti, neutral tones, and serene water.",
+        "description": "A sunlit retreat where Mediterranean charm meets desert minimalism, blending soft neutrals, sculptural cacti, and the timeless serenity of water and stone.",
+        "completion_date": date(2025, 8, 1),
+        "location": "Tilal Al Ghaf",
+        "scope": "Design + Build",
+        "size_label": "300 SqM",
+        "timeline_label": "110 days",
+        "status_label": "Completed",
+        "is_featured": False,
+        "full_url":  "https://res.cloudinary.com/demo/image/upload/v1711111111/hammer/landscape/project5.jpg",
+        "thumb_url": "https://res.cloudinary.com/demo/image/upload/c_fill,g_auto,w_800,h_450,f_auto,q_auto:good/v1711111111/hammer/landscape/project5.jpg",
+        "hero_image_url": "https://res.cloudinary.com/demo/image/upload/c_fill,g_auto,w_1600,h_900,f_auto,q_auto:good/v1711111111/hammer/landscape/project5.jpg",
+    },
+    "project-6": {
+        "title": "Desert Balance – Tilal Al Ghaf",
+        "summary": "Desert textures and olive tones meet modern geometry, creating a timeless landscape of quiet sophistication.",
+        "description": "A sculpted haven where desert textures, olive tones, and modern geometry converge to create a landscape of quiet sophistication and timeless balance.",
+        "completion_date": date(2025, 8, 15),
+        "location": "Tilal Al Ghaf",
+        "scope": "Design + Build",
+        "size_label": "550 SqM",
+        "timeline_label": "120 days",
+        "status_label": "Completed",
+        "is_featured": False,
+        "full_url":  "https://res.cloudinary.com/demo/image/upload/v1711111111/hammer/landscape/project6.jpg",
+        "thumb_url": "https://res.cloudinary.com/demo/image/upload/c_fill,g_auto,w_800,h_450,f_auto,q_auto:good/v1711111111/hammer/landscape/project6.jpg",
+        "hero_image_url": "https://res.cloudinary.com/demo/image/upload/c_fill,g_auto,w_1600,h_900,f_auto,q_auto:good/v1711111111/hammer/landscape/project6.jpg",
+    },
+    "project-7": {
+        "title": "Verdant Minimalism – Tilal Al Ghaf",
+        "summary": "An understated sanctuary where architecture and nature align for effortless outdoor living.",
+        "description": "An understated sanctuary where structure and softness align, blending clean architecture with verdant touches for moments of calm, connection, and open-air living.",
+        "completion_date": date(2025, 9, 1),
+        "location": "Tilal Al Ghaf",
+        "scope": "Design + Build",
+        "size_label": "350 SqM",
+        "timeline_label": "95 days",
+        "status_label": "Completed",
+        "is_featured": False,
+        "full_url":  "https://res.cloudinary.com/demo/image/upload/v1711111111/hammer/landscape/project7.jpg",
+        "thumb_url": "https://res.cloudinary.com/demo/image/upload/c_fill,g_auto,w_800,h_450,f_auto,q_auto:good/v1711111111/hammer/landscape/project7.jpg",
+        "hero_image_url": "https://res.cloudinary.com/demo/image/upload/c_fill,g_auto,w_1600,h_900,f_auto,q_auto:good/v1711111111/hammer/landscape/project7.jpg",
     },
 }
 
-# Common misspellings/variations (left side will be normalized to the right).
+# Common misspellings/variations (kept for interface parity; not used with project-# keys)
 TARGET_ALIASES = {
-    "jumeriah park": "jumeirah park",
+    # Example: "jumeriah park": "jumeirah park",
 }
 
 # -----------------------------------------------------------------------------
@@ -297,8 +376,8 @@ def projects_from_targets(only_filter=None):
     for key, cfg in TARGETS.items():
         if only_filter and key not in only_filter:
             continue
-        # Use title as folder_name placeholder; no path/images in metadata mode
-        items.append((cfg["title"], cfg, None, []))
+        # Use key as folder_name placeholder; no path/images in metadata mode
+        items.append((key, cfg, None, []))
     return items
 
 
@@ -309,7 +388,7 @@ def discover_projects(root: Path, only_filter=None):
     
     Args:
         root: Root directory to scan
-        only_filter: Optional set of normalized folder keys to include (e.g., {"tilal al ghaf", "jumeirah park"})
+        only_filter: Optional set of normalized folder keys to include (e.g., {"project-1"})
     """
     found = []
     for child in sorted(root.iterdir()):
@@ -372,7 +451,7 @@ def seed_landscape(service: Service, root: Optional[Path], cloud_folder: str, dr
             return 0, 0, 0
 
     print(f"[i] Seeding Case Studies for Service: {getattr(service, 'title', service.id)}")
-    print(f"[i] Found {len(projects)} project folder(s): {', '.join([p[0] for p in projects])}")
+    print(f"[i] Found {len(projects)} project item(s): {', '.join([p[0] for p in projects])}")
 
     if wipe:
         print("[!] Wiping existing Case Studies for this service…")
@@ -386,72 +465,86 @@ def seed_landscape(service: Service, root: Optional[Path], cloud_folder: str, dr
         summary = config["summary"]
         description = config["description"]
         completion_date = config["completion_date"]
-        location = config["location"]
-        is_featured = config["is_featured"]
+        location = config.get("location", "Dubai, UAE")
+        is_featured = config.get("is_featured", False)
         
         print(f"\n--- {title}  ({folder_name}) ---")
         print(f"    Found {len(image_paths)} images (including subfolders)")
 
-        # Prepare metadata dict (always included)
+        # Prepare metadata dict (always included) — allow TARGETS to override defaults where provided
         metadata_dict = {
             "summary": summary,
             "description": description,
             "completion_date": completion_date,
-            "scope": "Design + Build",
-            "size_label": "—",
-            "timeline_label": "—",
-            "status_label": "Completed",
-            "tags_csv": "Landscape, Pool, Lighting",
+            "scope": config.get("scope", "Design + Build"),
+            "size_label": config.get("size_label", "—"),
+            "timeline_label": config.get("timeline_label", "—"),
+            "status_label": config.get("status_label", "Completed"),
+            "tags_csv": config.get("tags_csv", "Landscape, Pool, Lighting"),
             "is_featured": is_featured,
-            "sort_order": idx,
-            "cta_url": "",
+            "sort_order": config.get("sort_order", idx),
+            "cta_url": config.get("cta_url", ""),
             "location": location,
-            "project_type": "landscape",
+            "project_type": config.get("project_type", "landscape"),
         }
 
-        # Handle images if enabled
+        # Handle images
         if no_images:
-            print(f" [-img-] Skipping hero/thumb/full and gallery; preserving existing URLs.")
-            fields_to_update = METADATA_FIELDS
-            update_dict = metadata_dict
-        else:
-            # Choose first image as hero
-            hero_src = image_paths[0]
-
-            # Upload hero (or simulate)
-            public_base = f"{slugify(title)}/{file_md5(hero_src)}"
-            if dry_run:
-                print(f" [dry] HERO would upload: {hero_src} → public_id={public_base}")
-                base_hero_url = f"(dry-run)/{public_base}.jpg"
+            # NEW: if TARGETS provides dummy URLs, set them even in --no-images mode
+            update_dict = metadata_dict.copy()
+            fields_to_update = METADATA_FIELDS[:]
+            has_dummy = any(k in config for k in ("hero_image_url", "thumb_url", "full_url"))
+            if has_dummy:
+                if "hero_image_url" in config:
+                    update_dict["hero_image_url"] = config["hero_image_url"]
+                if "thumb_url" in config:
+                    update_dict["thumb_url"] = config["thumb_url"]
+                if "full_url" in config:
+                    update_dict["full_url"] = config["full_url"]
+                fields_to_update = METADATA_FIELDS + [f for f in IMAGE_FIELDS if f in update_dict]
+                print(" [-img-] Using dummy delivery URLs from TARGETS (no uploads).")
             else:
-                data, ext = load_and_precompress(hero_src)
-                resp = cloudinary_upload(data, public_id=public_base, folder=cloud_folder)
-                base_hero_url = resp["secure_url"]
+                print(" [-img-] Skipping hero/thumb/full and gallery; preserving existing URLs.")
+        else:
+            # Upload first image as hero
+            if not image_paths:
+                print(" [warn] No images found for uploads; skipping image fields.")
+                update_dict = metadata_dict
+                fields_to_update = METADATA_FIELDS
+            else:
+                hero_src = image_paths[0]
 
-            # Delivery variants (16:9 for consistency)
-            hero_full_url = cloudinary_variant(base_hero_url, width=1600, height=900)
-            hero_thumb_url = cloudinary_variant(base_hero_url, width=800, height=450)
+                public_base = f"{slugify(title)}/{file_md5(hero_src)}"
+                if dry_run:
+                    print(f" [dry] HERO would upload: {hero_src} → public_id={public_base}")
+                    base_hero_url = f"(dry-run)/{public_base}.jpg"
+                else:
+                    data, ext = load_and_precompress(hero_src)
+                    resp = cloudinary_upload(data, public_id=public_base, folder=cloud_folder)
+                    base_hero_url = resp["secure_url"]
 
-            # Add image fields to update dict
-            update_dict = {
-                **metadata_dict,
-                "hero_image_url": hero_full_url,
-                "thumb_url": hero_thumb_url,
-                "full_url": hero_full_url,
-            }
-            fields_to_update = METADATA_FIELDS + IMAGE_FIELDS
+                # Delivery variants (16:9)
+                hero_full_url = cloudinary_variant(base_hero_url, width=1600, height=900)
+                hero_thumb_url = cloudinary_variant(base_hero_url, width=800, height=450)
+
+                update_dict = {
+                    **metadata_dict,
+                    "hero_image_url": hero_full_url,
+                    "thumb_url": hero_thumb_url,
+                    "full_url": hero_full_url,
+                }
+                fields_to_update = METADATA_FIELDS + IMAGE_FIELDS
 
         # Upsert Case Study
         cs_obj, created = CaseStudy.objects.get_or_create(service=service, title=title)
         
         if created:
             created_count += 1
-            if no_images and not dry_run:
-                # Warn if creating new case study without images
+            if no_images and not dry_run and not any(k in config for k in ("hero_image_url","thumb_url","full_url")):
                 print(f" [warn] New Case Study created; hero/thumb/full remain empty in --no-images mode.")
         
         if dry_run:
-            print(f" [dry]{'[skip-img] ' if no_images else ''} Would update fields: {', '.join(fields_to_update)}")
+            print(f" [dry]{'[skip-img] ' if no_images and not any(k in config for k in ('hero_image_url','thumb_url','full_url')) else ''}Would update fields: {', '.join(fields_to_update)}")
             changed = True
         else:
             changed = upsert(cs_obj, update_dict, fields_to_update)
@@ -462,34 +555,36 @@ def seed_landscape(service: Service, root: Optional[Path], cloud_folder: str, dr
         
         print(f" {'[+] Created' if created else '[~] Updated' if changed else '[=] Kept   '} Case Study • {cs_obj.title}")
 
-        # Gallery: build JSON array for gallery_urls field (only in images mode)
+        # Gallery (only in images mode)
         if not no_images:
-            gallery_items = []
-            for g_i, img_path in enumerate(image_paths, start=1):
-                public_img = f"{slugify(title)}/{file_md5(img_path)}"
-                if dry_run:
-                    print(f" [dry] GALLERY would upload: {img_path.name} → {public_img}")
-                    base_url = f"(dry-run)/{public_img}.jpg"
-                else:
-                    data, ext = load_and_precompress(img_path)
-                    resp = cloudinary_upload(data, public_id=public_img, folder=cloud_folder)
-                    base_url = resp["secure_url"]
+            if not image_paths:
+                print("     ↳ No gallery images (none found).")
+            else:
+                gallery_items = []
+                for g_i, img_path in enumerate(image_paths, start=1):
+                    public_img = f"{slugify(title)}/{file_md5(img_path)}"
+                    if dry_run:
+                        print(f" [dry] GALLERY would upload: {img_path.name} → {public_img}")
+                        base_url = f"(dry-run)/{public_img}.jpg"
+                    else:
+                        data, ext = load_and_precompress(img_path)
+                        resp = cloudinary_upload(data, public_id=public_img, folder=cloud_folder)
+                        base_url = resp["secure_url"]
 
-                thumb_url = cloudinary_variant(base_url, width=800, height=450)
-                full_url = cloudinary_variant(base_url, width=1600, height=900)
+                    thumb_url = cloudinary_variant(base_url, width=800, height=450)
+                    full_url = cloudinary_variant(base_url, width=1600, height=900)
+                    
+                    gallery_items.append({
+                        "thumb": thumb_url,
+                        "full": full_url,
+                        "caption": f"{title} — View {g_i}",
+                    })
+
+                if not dry_run:
+                    cs_obj.gallery_urls = gallery_items
+                    cs_obj.save()
                 
-                gallery_items.append({
-                    "thumb": thumb_url,
-                    "full": full_url,
-                    "caption": f"{title} — View {g_i}",
-                })
-
-            # Save gallery to JSONField
-            if not dry_run:
-                cs_obj.gallery_urls = gallery_items
-                cs_obj.save()
-            
-            print(f"     ↳ {'(dry-run) ' if dry_run else ''}Seeded {len(image_paths)} gallery images to gallery_urls")
+                print(f"     ↳ {'(dry-run) ' if dry_run else ''}Seeded {len(image_paths)} gallery images to gallery_urls")
     
     return created_count, updated_count, len(projects)
 
