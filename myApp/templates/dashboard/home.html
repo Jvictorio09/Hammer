@@ -18,6 +18,10 @@
     <p class="text-slate-600">Manage user accounts and roles.</p>
   </a>
   {% endif %}
+  <button type="button" id="openGalleryBtn" class="block rounded-xl border border-slate-100 bg-white p-6 shadow-sm hover:shadow transition text-left">
+    <div class="text-lg font-medium mb-1">📷 Gallery</div>
+    <p class="text-slate-600">Browse, upload, and manage your image gallery.</p>
+  </button>
 </div>
 
 {% if request.user.profile.is_blog_author and not request.user.profile.is_admin %}
@@ -31,5 +35,424 @@
   </div>
 </div>
 {% endif %}
+
+<script>
+// Gallery Modal functionality
+document.addEventListener('DOMContentLoaded', function() {
+  const openGalleryBtn = document.getElementById('openGalleryBtn');
+  if (openGalleryBtn) {
+    openGalleryBtn.addEventListener('click', function() {
+      createAndShowGalleryModal();
+    });
+  }
+});
+
+function createAndShowGalleryModal() {
+  // Remove existing modal if any
+  const existingModal = document.getElementById('dashboardGalleryModal');
+  if (existingModal) {
+    existingModal.remove();
+  }
+  
+  const modal = document.createElement('div');
+  modal.id = 'dashboardGalleryModal';
+  modal.className = 'fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4';
+  modal.innerHTML = `
+    <div class="bg-white rounded-2xl shadow-xl max-w-6xl w-full max-h-[90vh] overflow-hidden">
+      <div class="flex items-center justify-between p-6 border-b border-gray-200 bg-gradient-to-r from-teal-50 to-white">
+        <div>
+          <h3 class="text-xl font-bold text-gray-900">Image Gallery</h3>
+          <p class="text-sm text-gray-600 mt-1">Browse your images or upload new ones</p>
+        </div>
+        <button id="closeGalleryModal" class="text-gray-400 hover:text-gray-600 transition-colors">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
+        </button>
+      </div>
+      
+      <!-- Tab Navigation -->
+      <div class="flex border-b border-gray-200">
+        <button id="galleryTab" class="flex-1 px-6 py-3 text-sm font-medium text-gray-900 border-b-2 border-gray-900 bg-gray-50 transition">
+          📷 Browse Gallery
+        </button>
+        <button id="uploadTab" class="flex-1 px-6 py-3 text-sm font-medium text-gray-500 border-b-2 border-transparent hover:text-gray-700 hover:bg-gray-50 transition">
+          ⬆️ Upload Images
+        </button>
+      </div>
+      
+      <!-- Tab Content -->
+      <div class="p-6 overflow-y-auto" style="max-height: calc(90vh - 180px);">
+        <!-- Gallery Tab -->
+        <div id="galleryTabContent" class="tab-content">
+          <div id="galleryGrid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+            <div class="col-span-full text-center py-8 text-gray-500">
+              <i class="fa-solid fa-spinner fa-spin text-2xl mb-2"></i>
+              <p>Loading images...</p>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Upload Tab -->
+        <div id="uploadTabContent" class="tab-content hidden">
+          <div class="max-w-2xl mx-auto">
+            <div id="dropZone" class="border-2 border-dashed border-gray-300 rounded-lg p-12 text-center hover:border-teal-400 hover:bg-teal-50/30 transition-all">
+              <input type="file" id="imageUpload" accept="image/*" class="hidden" multiple>
+              <label for="imageUpload" class="cursor-pointer">
+                <svg class="mx-auto h-16 w-16 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
+                  <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+                <div class="mt-4">
+                  <p class="text-lg font-medium text-gray-900">Upload Images</p>
+                  <p class="text-sm text-gray-500 mt-1">Click to select files or drag and drop</p>
+                  <p class="text-xs text-gray-400 mt-2">Supports: JPG, PNG, WebP • Single or multiple files • Max 10MB each</p>
+                </div>
+              </label>
+            </div>
+            
+            <div id="uploadProgress" class="mt-6 hidden">
+              <div class="bg-gray-200 rounded-full h-3">
+                <div id="uploadBar" class="bg-teal-600 h-3 rounded-full transition-all duration-300" style="width: 0%"></div>
+              </div>
+              <p id="uploadStatus" class="text-sm text-gray-600 mt-2 text-center">Uploading...</p>
+            </div>
+            
+            <div id="uploadedImages" class="mt-6 grid grid-cols-3 md:grid-cols-4 gap-4">
+              <!-- Newly uploaded images will appear here -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+  
+  document.body.appendChild(modal);
+  
+  // Close modal functionality
+  modal.querySelector('#closeGalleryModal').addEventListener('click', () => {
+    modal.remove();
+  });
+  
+  // Close on backdrop click
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) {
+      modal.remove();
+    }
+  });
+  
+  // Close on ESC key
+  const escHandler = (e) => {
+    if (e.key === 'Escape') {
+      modal.remove();
+      document.removeEventListener('keydown', escHandler);
+    }
+  };
+  document.addEventListener('keydown', escHandler);
+  
+  // Tab switching
+  const galleryTab = modal.querySelector('#galleryTab');
+  const uploadTab = modal.querySelector('#uploadTab');
+  const galleryTabContent = modal.querySelector('#galleryTabContent');
+  const uploadTabContent = modal.querySelector('#uploadTabContent');
+  
+  galleryTab.addEventListener('click', () => {
+    galleryTab.classList.add('text-gray-900', 'border-gray-900', 'bg-gray-50');
+    galleryTab.classList.remove('text-gray-500', 'border-transparent');
+    uploadTab.classList.remove('text-gray-900', 'border-gray-900', 'bg-gray-50');
+    uploadTab.classList.add('text-gray-500', 'border-transparent');
+    galleryTabContent.classList.remove('hidden');
+    uploadTabContent.classList.add('hidden');
+  });
+  
+  uploadTab.addEventListener('click', () => {
+    uploadTab.classList.add('text-gray-900', 'border-gray-900', 'bg-gray-50');
+    uploadTab.classList.remove('text-gray-500', 'border-transparent');
+    galleryTab.classList.remove('text-gray-900', 'border-gray-900', 'bg-gray-50');
+    galleryTab.classList.add('text-gray-500', 'border-transparent');
+    uploadTabContent.classList.remove('hidden');
+    galleryTabContent.classList.add('hidden');
+  });
+  
+  // Load gallery images
+  loadDashboardGalleryImages(modal);
+  
+  // Setup upload functionality
+  setupImageUpload(modal);
+}
+
+function loadDashboardGalleryImages(modal) {
+  const galleryGrid = modal.querySelector('#galleryGrid');
+  if (!galleryGrid) return;
+  
+  fetch('/dashboard/gallery/api/images/')
+    .then(response => response.json())
+    .then(data => {
+      galleryGrid.innerHTML = '';
+      if (data.images && data.images.length > 0) {
+        data.images.forEach(image => {
+          const imgElement = document.createElement('div');
+          imgElement.className = 'relative group rounded-lg overflow-hidden border-2 border-gray-200 hover:border-teal-500 transition-all shadow-sm hover:shadow-md';
+          imgElement.innerHTML = `
+            <div class="aspect-square bg-gray-100">
+              <img src="${image.thumb_url || image.web_url || image.secure_url}" 
+                   alt="${image.title}" 
+                   class="w-full h-full object-cover">
+            </div>
+            <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-40 transition-all">
+              <div class="absolute inset-0 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                <div class="bg-white rounded-lg px-3 py-1.5 text-xs font-medium text-gray-900 mb-2 max-w-[90%] truncate">
+                  ${image.title}
+                </div>
+                <div class="flex gap-2">
+                  <button class="copy-url-btn bg-teal-600 hover:bg-teal-700 text-white px-3 py-1.5 rounded text-xs font-medium transition" 
+                          data-url="${image.web_url || image.secure_url}"
+                          title="Copy URL">
+                    📋 Copy URL
+                  </button>
+                  <a href="${image.web_url || image.secure_url}" 
+                     target="_blank" 
+                     class="bg-gray-800 hover:bg-gray-900 text-white px-3 py-1.5 rounded text-xs font-medium transition">
+                    🔗 Open
+                  </a>
+                </div>
+              </div>
+            </div>
+            <div class="p-2 bg-white border-t border-gray-200">
+              <div class="text-xs text-gray-600 truncate" title="${image.title}">${image.title}</div>
+              <div class="text-[10px] text-gray-400">${image.width}×${image.height} • ${image.album || 'Uncategorized'}</div>
+            </div>
+          `;
+          galleryGrid.appendChild(imgElement);
+        });
+        
+        // Add copy URL functionality
+        modal.querySelectorAll('.copy-url-btn').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const url = btn.dataset.url;
+            navigator.clipboard.writeText(url).then(() => {
+              const originalText = btn.innerHTML;
+              btn.innerHTML = '✅ Copied!';
+              btn.classList.add('bg-green-600');
+              btn.classList.remove('bg-teal-600');
+              setTimeout(() => {
+                btn.innerHTML = originalText;
+                btn.classList.remove('bg-green-600');
+                btn.classList.add('bg-teal-600');
+              }, 2000);
+            });
+          });
+        });
+      } else {
+        galleryGrid.innerHTML = `
+          <div class="col-span-full text-center py-12">
+            <i class="fa-solid fa-images text-4xl text-gray-300 mb-3"></i>
+            <p class="text-gray-500">No images in gallery yet</p>
+            <p class="text-sm text-gray-400 mt-1">Upload some images to get started</p>
+          </div>
+        `;
+      }
+    })
+    .catch(error => {
+      console.error('Error loading gallery images:', error);
+      galleryGrid.innerHTML = `
+        <div class="col-span-full text-center py-12">
+          <i class="fa-solid fa-exclamation-triangle text-4xl text-red-300 mb-3"></i>
+          <p class="text-red-500">Error loading images</p>
+          <p class="text-sm text-gray-400 mt-1">${error.message}</p>
+        </div>
+      `;
+    });
+}
+
+function setupImageUpload(modal) {
+  const fileInput = modal.querySelector('#imageUpload');
+  const uploadProgress = modal.querySelector('#uploadProgress');
+  const uploadBar = modal.querySelector('#uploadBar');
+  const uploadStatus = modal.querySelector('#uploadStatus');
+  const uploadedImages = modal.querySelector('#uploadedImages');
+  const dropZone = modal.querySelector('#dropZone');
+  
+  // Drag and drop functionality
+  dropZone.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    dropZone.classList.add('border-teal-400', 'bg-teal-50');
+  });
+  
+  dropZone.addEventListener('dragleave', (e) => {
+    e.preventDefault();
+    dropZone.classList.remove('border-teal-400', 'bg-teal-50');
+  });
+  
+  dropZone.addEventListener('drop', (e) => {
+    e.preventDefault();
+    dropZone.classList.remove('border-teal-400', 'bg-teal-50');
+    
+    const files = e.dataTransfer.files;
+    if (files.length > 0) {
+      fileInput.files = files;
+      fileInput.dispatchEvent(new Event('change'));
+    }
+  });
+  
+  fileInput.addEventListener('change', async (e) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+    
+    // Show progress
+    uploadProgress.classList.remove('hidden');
+    uploadBar.style.width = '0%';
+    uploadStatus.textContent = `Processing ${files.length} image${files.length > 1 ? 's' : ''}...`;
+    uploadStatus.className = 'text-sm text-gray-600 mt-2 text-center';
+    
+    try {
+      // Compress large images
+      const maxSizeMB = 8;
+      const processedFiles = [];
+      let compressedCount = 0;
+      
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        if (file.size > maxSizeMB * 1024 * 1024) {
+          uploadStatus.textContent = `Compressing image ${i + 1}/${files.length}...`;
+          const compressed = await compressImage(file, maxSizeMB);
+          processedFiles.push(compressed);
+          compressedCount++;
+        } else {
+          processedFiles.push(file);
+        }
+      }
+      
+      if (compressedCount > 0) {
+        uploadStatus.textContent = `Compressed ${compressedCount} image${compressedCount > 1 ? 's' : ''}. Uploading...`;
+      } else {
+        uploadStatus.textContent = `Uploading ${files.length} image${files.length > 1 ? 's' : ''}...`;
+      }
+      
+      // Create FormData with processed files
+      const formData = new FormData();
+      for (let i = 0; i < processedFiles.length; i++) {
+        formData.append('files', processedFiles[i]);
+      }
+      
+      // Add CSRF token
+      const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]');
+      if (!csrfToken) {
+        throw new Error('CSRF token not found');
+      }
+      
+      uploadBar.style.width = '50%';
+      
+      const response = await fetch('/dashboard/gallery/api/upload/', {
+        method: 'POST',
+        body: formData,
+        headers: {
+          'X-CSRFToken': csrfToken.value
+        }
+      });
+      
+      uploadBar.style.width = '100%';
+      
+      const result = await response.json();
+      
+      if (result.success) {
+        uploadStatus.textContent = `Successfully uploaded ${result.images.length} image${result.images.length > 1 ? 's' : ''}!`;
+        uploadStatus.classList.add('text-green-600');
+        
+        // Display uploaded images
+        uploadedImages.innerHTML = '';
+        result.images.forEach(image => {
+          const imgEl = document.createElement('div');
+          imgEl.className = 'relative group rounded-lg overflow-hidden border-2 border-green-500 bg-green-50 transition';
+          imgEl.innerHTML = `
+            <div class="aspect-square bg-white">
+              <img src="${image.thumb_url || image.web_url}" alt="${image.title}" class="w-full h-full object-cover">
+            </div>
+            <div class="absolute top-1 right-1 w-6 h-6 bg-green-600 text-white text-xs rounded-full flex items-center justify-center shadow-lg">
+              ✓
+            </div>
+            <div class="p-1 bg-white">
+              <div class="text-[10px] text-gray-600 truncate">${image.title}</div>
+            </div>
+          `;
+          uploadedImages.appendChild(imgEl);
+        });
+        
+        // Reload gallery to show new images
+        loadDashboardGalleryImages(modal);
+        
+        // Reset after 5 seconds
+        setTimeout(() => {
+          uploadProgress.classList.add('hidden');
+          uploadBar.style.width = '0%';
+          uploadStatus.textContent = 'Uploading...';
+          uploadStatus.classList.remove('text-green-600');
+          uploadedImages.innerHTML = '';
+          fileInput.value = '';
+        }, 5000);
+      } else {
+        uploadStatus.textContent = `Error: ${result.error}`;
+        uploadStatus.classList.add('text-red-600');
+      }
+    } catch (error) {
+      console.error('Upload error:', error);
+      uploadStatus.textContent = `Upload failed: ${error.message}`;
+      uploadStatus.classList.add('text-red-600');
+    }
+  });
+}
+
+// Image compression function
+async function compressImage(file, maxSizeMB) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = (e) => {
+      const img = new Image();
+      img.src = e.target.result;
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let width = img.width;
+        let height = img.height;
+        
+        // Calculate new dimensions
+        const maxSize = 2048;
+        if (width > height && width > maxSize) {
+          height = (height / width) * maxSize;
+          width = maxSize;
+        } else if (height > maxSize) {
+          width = (width / height) * maxSize;
+          height = maxSize;
+        }
+        
+        canvas.width = width;
+        canvas.height = height;
+        
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+        
+        // Convert to blob with quality reduction
+        let quality = 0.8;
+        const tryCompress = (q) => {
+          canvas.toBlob((blob) => {
+            if (blob.size <= maxSizeMB * 1024 * 1024 || q <= 0.1) {
+              const compressedFile = new File([blob], file.name, {
+                type: 'image/jpeg',
+                lastModified: Date.now()
+              });
+              resolve(compressedFile);
+            } else {
+              tryCompress(q - 0.1);
+            }
+          }, 'image/jpeg', q);
+        };
+        
+        tryCompress(quality);
+      };
+    };
+    reader.onerror = reject;
+  });
+}
+</script>
 {% endblock %}
 

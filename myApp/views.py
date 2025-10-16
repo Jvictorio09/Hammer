@@ -413,30 +413,52 @@ def insight_detail(request, slug):
 # myApp/views.py
 from django.core.paginator import Paginator, InvalidPage
 from django.shortcuts import render, get_object_or_404
-from django.db.models import Prefetch
+from django.db.models import Prefetch, Q, Exists, OuterRef
 from .models import Service, ServiceProjectImage, CaseStudy
 
 def projects_index(request, service_slug=None):
     """
     Projects gallery aggregated from CaseStudy.
     - Optional filter by service via /projects/<service_slug>/
-    - Simple pagination with ?page=#
-    - Uses same sorting pattern as services: sort_order, title
+    - Pagination via ?page=#
+    - Only show services & projects that actually have an image (full_url)
+    - Grouped ordering: service first (sort_order, title), then projects (-is_featured, sort_order, title)
     """
+
+    # Subquery: does this service have at least one imaged case study?
+    imaged_cs_exists = CaseStudy.objects.filter(
+        service_id=OuterRef("pk")
+    ).exclude(
+        Q(full_url__isnull=True) | Q(full_url__exact="")
+    )
+
+    # Left-rail services: only active services that actually have imaged projects
     services = (
-        Service.objects.only("id", "title", "slug")
+        Service.objects.only("id", "title", "slug", "sort_order")
         .filter(is_active=True)
+        .annotate(has_imaged_cs=Exists(imaged_cs_exists))
+        .filter(has_imaged_cs=True)
         .order_by("sort_order", "title")
     )
 
     current_service = None
+
+    # Base queryset: only imaged case studies, ordered by service grouping then project priority
     case_studies_qs = (
         CaseStudy.objects.select_related("service")
-        .only("id", "service_id", "title", "thumb_url", "full_url", "summary", "is_featured", "sort_order")
-        .order_by("-is_featured", "sort_order", "title")
+        .only(
+            "id", "service_id", "title", "thumb_url", "full_url",
+            "summary", "is_featured", "sort_order"
+        )
+        .exclude(Q(full_url__isnull=True) | Q(full_url__exact=""))
+        .order_by(
+            "service__sort_order", "service__title",    # group & order by service
+            "-is_featured", "sort_order", "title", "id" # order within a service
+        )
     )
 
     if service_slug:
+        # Only allow services that *actually* have imaged case studies
         current_service = get_object_or_404(services, slug=service_slug)
         case_studies_qs = case_studies_qs.filter(service=current_service)
 
@@ -460,13 +482,14 @@ def projects_index(request, service_slug=None):
     )
 
     ctx = {
-        "services": services,
-        "current_service": current_service,
-        "page_obj": page_obj,
+        "services": services,               # left rail shows only services with imaged projects
+        "current_service": current_service, # may be None
+        "page_obj": page_obj,               # items are image-only & grouped by service
         "meta_title": meta_title,
         "meta_desc": meta_desc,
     }
     return render(request, "projects/index.html", ctx)
+
 
 
 # myApp/views.py (append / modify your about view)

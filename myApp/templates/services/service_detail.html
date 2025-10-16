@@ -407,30 +407,7 @@ details[open] .faq-content{ height:auto; }      /* fallback if JS off */
 </section>
 
 
-<!-- ===== METRICS (credibility) ===== -->
-<section class="bg-[#0F0F10] text-white border-t border-white/10">
-  <div class="max-w-7xl mx-auto px-6 py-6 grid sm:grid-cols-3 gap-4 text-center text-sm">
-    {% if service.metrics.all %}
-      {% for m in service.metrics.all %}
-        <div class="rounded-xl border border-white/10 bg-white/5 backdrop-blur p-4">
-          <p class="text-3xl font-extrabold text-[#18AFAB]">
-            <span class="countup" data-raw="{{ m.value|escape }}">{{ m.value }}</span>
-          </p>
-          <p class="text-white/70">{{ m.label }}</p>
-        </div>
-      {% endfor %}
-    {% else %}
-      {% for m in fallback_metrics %}
-        <div class="rounded-xl border border-white/10 bg-white/5 backdrop-blur p-4">
-          <p class="text-3xl font-extrabold text-[#18AFAB]">
-            <span class="countup" data-raw="{{ m.value|escape }}">{{ m.value }}</span>
-          </p>
-          <p class="text-white/70">{{ m.label }}</p>
-        </div>
-      {% endfor %}
-    {% endif %}
-  </div>
-</section>
+{% include "partials/stats.html" %}
 
 <section id="landscape-services" class="bg-white py-20">
   <!-- scoped styles just for this section -->
