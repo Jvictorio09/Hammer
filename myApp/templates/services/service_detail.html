@@ -467,7 +467,9 @@ details[open] .faq-content{ height:auto; }      /* fallback if JS off */
       </div>
       <div class="seg self-start md:self-auto" role="tablist" aria-label="Landscape content switcher">
         <button class="seg-btn" role="tab" aria-selected="true" aria-pressed="true" data-tab="overview">Overview</button>
-        <button class="seg-btn" role="tab" aria-selected="false" aria-pressed="false" data-tab="beforeafter">Before/After</button>
+        {% if 'facility' not in service.slug and 'Facility' not in service.title %}
+        <button class="seg-btn" role="tab" aria-selected="false" aria-pressed="false" data-tab="beforeafter">{% if 'interior' in service.slug or 'Interior' in service.title %}Concept/3D{% else %}Before/After{% endif %}</button>
+        {% endif %}
       </div>
 
     </div>
@@ -505,37 +507,43 @@ details[open] .faq-content{ height:auto; }      /* fallback if JS off */
     </div>
 
     <!-- Before/After -->
+    {% if 'facility' not in service.slug and 'Facility' not in service.title %}
     <div id="panel-beforeafter" class="" role="tabpanel" aria-hidden="true">
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-6" data-stagger>
         {% if ba_pairs %}
           {% for a, b in ba_pairs %}
             <figure class="ba">
-              <img src="{{ a.image_url }}" alt="{{ a.caption|default:'Before' }}">
+              <img src="{{ a.image_url }}" alt="{% if 'interior' in service.slug or 'Interior' in service.title %}{{ a.caption|default:'Concept' }}{% else %}{{ a.caption|default:'Before' }}{% endif %}">
               <div class="after">
-                <img src="{{ b.image_url }}" alt="{{ b.caption|default:'After' }}">
+                <img src="{{ b.image_url }}" alt="{% if 'interior' in service.slug or 'Interior' in service.title %}{{ b.caption|default:'3D' }}{% else %}{{ b.caption|default:'After' }}{% endif %}">
               </div>
               <div class="handle"></div>
               <div class="knob"><i class="fa-solid fa-arrows-left-right"></i></div>
               {% if a.caption or b.caption %}
                 <figcaption class="absolute left-3 bottom-3 px-3 py-1.5 text-xs font-semibold rounded-full bg-white/90 text-[var(--ink)]">
-                  {{ a.caption|default:"Before" }} → {{ b.caption|default:"After" }}
+                  {% if 'interior' in service.slug or 'Interior' in service.title %}
+                    {{ a.caption|default:"Concept" }} → {{ b.caption|default:"3D" }}
+                  {% else %}
+                    {{ a.caption|default:"Before" }} → {{ b.caption|default:"After" }}
+                  {% endif %}
                 </figcaption>
               {% endif %}
             </figure>
           {% endfor %}
         {% else %}
           <figure class="ba">
-            <img src="https://images.unsplash.com/photo-1481627834876-b7833e8f5570?q=80&w=1600&auto=format&fit=crop" alt="Before">
+            <img src="https://images.unsplash.com/photo-1481627834876-b7833e8f5570?q=80&w=1600&auto=format&fit=crop" alt="{% if 'interior' in service.slug or 'Interior' in service.title %}Concept{% else %}Before{% endif %}">
             <div class="after">
-              <img src="https://images.unsplash.com/photo-1519710164239-da123dc03ef4?q=80&w=1600&auto=format&fit=crop" alt="After">
+              <img src="https://images.unsplash.com/photo-1519710164239-da123dc03ef4?q=80&w=1600&auto=format&fit=crop" alt="{% if 'interior' in service.slug or 'Interior' in service.title %}3D{% else %}After{% endif %}">
             </div>
             <div class="handle"></div>
             <div class="knob"><i class="fa-solid fa-arrows-left-right"></i></div>
           </figure>
         {% endif %}
       </div>
-      <p class="text-xs text-gray-500 mt-3">Tip: drag the handle to compare.</p>
+      <p class="text-xs text-gray-500 mt-3">Tip: drag the handle to compare{% if 'interior' in service.slug or 'Interior' in service.title %} concept and 3D render{% endif %}.</p>
     </div>
+    {% endif %}
   </div>
 
   <!-- scoped JS for reveals + tabs + BA -->
@@ -752,7 +760,7 @@ details[open] .faq-content{ height:auto; }      /* fallback if JS off */
               <!--    
               <button class="btn primary" data-action="preview" data-url="{{ cs.full_url }}" data-href="{{ cs.get_absolute_url }}" data-title="{{ cs.title }}" data-summary="{{ cs.summary|default_if_none:''|escapejs }}">Quick preview</button>
               -->
-              <a class="btn" href="{{ cs.get_absolute_url }}">View project</a>
+              <a class="btn" href="{{ cs.get_absolute_url }}">{% if 'facility' in service.slug or 'Facility' in service.title %}View service{% else %}View project{% endif %}</a>
             </div>
           </div>
         </article>
