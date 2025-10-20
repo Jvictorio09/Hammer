@@ -35,6 +35,7 @@ urlpatterns = [
     ),
 
     # Insights
+    path("insights/", views.insights_list, name="insights_list"),
     path("insights/<slug:slug>/", views.insight_detail, name="insight_detail"),
     
     # Case Studies
@@ -72,6 +73,9 @@ urlpatterns = [
     # Gallery API
     path("dashboard/gallery/api/images/", views.gallery_api_images, name="gallery_api_images"),
     path("dashboard/gallery/api/upload/", views.gallery_api_upload, name="gallery_api_upload"),
+    # Google Drive Upload API
+    path("dashboard/gallery/api/google-drive/upload/", views.google_drive_upload, name="google_drive_upload"),
+    path("dashboard/gallery/api/google-drive/bulk-upload/", views.google_drive_bulk_upload, name="google_drive_bulk_upload"),
     # Team Members
     path("dashboard/team/", views.dashboard_team_list, name="dashboard_team_list"),
     path("dashboard/team/new/", views.dashboard_team_create, name="dashboard_team_create"),

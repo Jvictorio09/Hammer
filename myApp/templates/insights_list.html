@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+{% block title %}Insights & Blog | Hammer Group{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-b from-gray-50 to-white">
+  <!-- Hero Section -->
+  <section class="pt-20 pb-12 px-6">
+    <div class="max-w-7xl mx-auto text-center">
+      <p class="text-xs uppercase tracking-[0.2em] text-[#18AFAB] font-medium mb-4">Insights</p>
+      <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-6">
+        Latest Insights & Articles
+      </h1>
+      <p class="text-lg md:text-xl text-gray-600 max-w-3xl mx-auto">
+        Explore our latest thoughts on architecture, design, construction, and facility management.
+      </p>
+    </div>
+  </section>
+
+  <!-- Insights Grid -->
+  <section class="pb-20 px-6">
+    <div class="max-w-7xl mx-auto">
+      {% if insights %}
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {% for insight in insights %}
+            <article class="group bg-white rounded-2xl border border-gray-200 overflow-hidden hover:shadow-xl transition-all duration-300">
+              <!-- Cover Image -->
+              <div class="relative aspect-[16/9] bg-gray-100 overflow-hidden">
+                {% if insight.cover_image_url %}
+                  <img 
+                    src="{{ insight.cover_image_url }}" 
+                    alt="{{ insight.title }}"
+                    class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105">
+                {% else %}
+                  <div class="absolute inset-0 flex items-center justify-center text-gray-400">
+                    <svg class="w-16 h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                  </div>
+                {% endif %}
+                
+                <!-- Tag Badge -->
+                {% if insight.tag %}
+                  <span class="absolute top-4 left-4 inline-block px-3 py-1 bg-[#18AFAB] text-white text-xs font-medium rounded-full">
+                    {{ insight.tag }}
+                  </span>
+                {% endif %}
+              </div>
+
+              <!-- Content -->
+              <div class="p-6">
+                <!-- Service & Meta -->
+                <div class="flex items-center gap-2 text-sm text-gray-500 mb-3">
+                  {% if insight.service %}
+                    <span class="text-[#18AFAB] font-medium">{{ insight.service.title }}</span>
+                    <span>•</span>
+                  {% endif %}
+                  <span>{{ insight.read_minutes }} min read</span>
+                  <span>•</span>
+                  <time datetime="{{ insight.published_at|date:'Y-m-d' }}">
+                    {{ insight.published_at|date:"M j, Y" }}
+                  </time>
+                </div>
+
+                <!-- Title -->
+                <h2 class="text-xl font-bold text-gray-900 mb-3 line-clamp-2 group-hover:text-[#18AFAB] transition-colors">
+                  {{ insight.title }}
+                </h2>
+
+                <!-- Excerpt -->
+                {% if insight.excerpt %}
+                  <p class="text-gray-600 text-sm line-clamp-3 mb-4">
+                    {{ insight.excerpt }}
+                  </p>
+                {% endif %}
+
+                <!-- Author & Read More -->
+                <div class="flex items-center justify-between">
+                  {% if insight.author %}
+                    <div class="text-sm text-gray-500">
+                      by <span class="font-medium text-gray-700">{{ insight.author.username }}</span>
+                    </div>
+                  {% else %}
+                    <div></div>
+                  {% endif %}
+                  
+                  <a href="{% url 'insight_detail' insight.slug %}" 
+                     class="inline-flex items-center text-sm font-medium text-[#18AFAB] hover:text-[#159d99] transition-colors">
+                    Read More
+                    <svg class="w-4 h-4 ml-1 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                    </svg>
+                  </a>
+                </div>
+              </div>
+            </article>
+          {% endfor %}
+        </div>
+      {% else %}
+        <!-- Empty State -->
+        <div class="text-center py-20">
+          <svg class="w-24 h-24 mx-auto text-gray-300 mb-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+          </svg>
+          <h3 class="text-2xl font-bold text-gray-900 mb-2">No Insights Yet</h3>
+          <p class="text-gray-600">Check back soon for our latest articles and insights.</p>
+        </div>
+      {% endif %}
+    </div>
+  </section>
+
+  <!-- CTA Section -->
+  <section class="py-16 px-6 bg-gray-900">
+    <div class="max-w-4xl mx-auto text-center">
+      <h2 class="text-3xl md:text-4xl font-bold text-white mb-4">
+        Ready to Start Your Project?
+      </h2>
+      <p class="text-lg text-gray-300 mb-8">
+        Let's discuss how we can bring your vision to life.
+      </p>
+      <a href="{% url 'contact' %}" 
+         class="inline-block px-8 py-4 bg-[#18AFAB] text-white font-semibold rounded-xl hover:bg-[#159d99] transition-colors">
+        Get In Touch
+      </a>
+    </div>
+  </section>
+</div>
+{% endblock %}
+

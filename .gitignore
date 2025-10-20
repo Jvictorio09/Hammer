@@ -1,6 +1,39 @@
 .env
-node_modules
-node_modules
-node_modules
-node_modules
-node_modules
+node_modules/
+
+# Google Drive credentials
+google-credentials.json
+*-credentials.json
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+
+# Database
+*.sqlite3
+db.sqlite3
+
+# Media files (if any local)
+media/
+
+# Static files collected
+staticfiles/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db

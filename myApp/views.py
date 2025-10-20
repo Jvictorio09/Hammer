@@ -45,10 +45,13 @@ from .models import (
     Insight,
     ContentVersion,
     MediaAsset,
+    MediaAlbum,
     InsightAuditLog,
     CaseStudy,
 )
 from .forms import ServiceForm, InsightForm, ServiceCapabilityFormSet, ServiceEditorialImageFormSet, ServiceProjectImageFormSet, CaseStudyFormSet, ServiceProcessStepFormSet
+from .utils.google_drive_utils import upload_from_google_drive_to_cloudinary, extract_file_id_from_url, bulk_upload_from_drive_folder
+from .utils.cloudinary_utils import smart_compress_to_bytes, upload_to_cloudinary, TARGET_BYTES
 
 # -----------------------------
 # Utility Functions
@@ -384,8 +387,23 @@ def legacy_aboutus(request):
     return about(request)
 
 def legacy_blogs(request):
-    """Legacy view for /blogs/ - serves the services index page"""
-    return service_index(request)
+    """Legacy view for /blogs/ - serves the insights list page"""
+    return insights_list(request)
+
+
+# -----------------------------
+# Public Insights List
+# -----------------------------
+def insights_list(request):
+    """Public-facing list of all published insights/blog posts"""
+    insights = Insight.objects.filter(
+        published=True,
+        is_active=True
+    ).select_related('service', 'author').order_by('-published_at', '-created_at')
+    
+    return render(request, "insights_list.html", {
+        "insights": insights
+    })
 
 
 # -----------------------------
@@ -1413,32 +1431,36 @@ def gallery_api_upload(request):
         
         for file in files:
             try:
-                # Check file size and compress if needed
-                max_size = 10 * 1024 * 1024  # 10MB limit
-                if file.size > max_size:
-                    # Compress the image
-                    file = compress_image(file, max_size)
+                # Read file content
+                file.seek(0)
+                file_bytes = file.read()
                 
-                # Upload to Cloudinary with additional transformations
-                result = cloudinary.uploader.upload(
-                    file,
+                # Auto-compress if file is too large (>10MB)
+                if len(file_bytes) > TARGET_BYTES:
+                    file.seek(0)
+                    file_bytes = smart_compress_to_bytes(file)
+                
+                # Generate clean public_id from filename
+                from django.utils.text import slugify
+                base_name = file.name.rsplit('.', 1)[0] if '.' in file.name else file.name
+                public_id = slugify(base_name)[:120]
+                
+                # Upload to Cloudinary using utility function
+                result, web_url, thumb_url = upload_to_cloudinary(
+                    file_bytes=file_bytes,
                     folder="uploads",
-                    resource_type="image",
-                    overwrite=True,
-                    eager=[
-                        {"width": 400, "height": 300, "crop": "fill"},
-                        {"width": 800, "height": 600, "crop": "fill"}
-                    ]
+                    public_id=public_id,
+                    tags=None
                 )
                 
                 # Create MediaAsset record
                 asset = MediaAsset.objects.create(
                     album=default_album,
                     title=file.name.split('.')[0],  # Use filename without extension
-                    public_id=result['public_id'],
-                    secure_url=result['secure_url'],
-                    web_url=result['secure_url'].replace('/upload/', '/upload/f_auto,q_auto/'),
-                    thumb_url=result['eager'][0]['secure_url'] if result.get('eager') else result['secure_url'],
+                    public_id=result.get('public_id', ''),
+                    secure_url=result.get('secure_url', ''),
+                    web_url=web_url,
+                    thumb_url=thumb_url,
                     bytes_size=result.get('bytes', 0),
                     width=result.get('width', 0),
                     height=result.get('height', 0),
@@ -1469,6 +1491,230 @@ def gallery_api_upload(request):
             'success': False,
             'error': str(e)
         })
+
+
+@login_required
+@require_POST
+def google_drive_upload(request):
+    """
+    Upload an image from Google Drive to Cloudinary with automatic compression.
+    
+    Expects JSON body with:
+    - drive_url: Google Drive shareable link or file ID
+    - album_id: (optional) MediaAlbum ID to assign the uploaded image to
+    - tags: (optional) Comma-separated tags
+    - auto_compress: (optional, default: true) Whether to compress large files
+    """
+    try:
+        import json
+        data = json.loads(request.body)
+        
+        drive_url = data.get('drive_url')
+        if not drive_url:
+            return JsonResponse({
+                'success': False,
+                'error': 'drive_url is required'
+            }, status=400)
+        
+        # Get album or use default
+        album_id = data.get('album_id')
+        if album_id:
+            album = get_object_or_404(MediaAlbum, pk=album_id)
+        else:
+            # Get or create default album
+            album, created = MediaAlbum.objects.get_or_create(
+                title='Google Drive Uploads',
+                defaults={
+                    'description': 'Images uploaded from Google Drive',
+                    'cld_folder': 'google_drive_uploads'
+                }
+            )
+        
+        # Parse tags
+        tags_str = data.get('tags', '')
+        tags = [t.strip() for t in tags_str.split(',') if t.strip()]
+        if album.default_tags:
+            tags += [t.strip() for t in album.default_tags.split(',') if t.strip()]
+        
+        # Auto compress setting
+        auto_compress = data.get('auto_compress', True)
+        
+        # Upload from Google Drive to Cloudinary
+        cloudinary_folder = album.cld_folder or 'uploads'
+        result, web_url, thumb_url, drive_metadata = upload_from_google_drive_to_cloudinary(
+            drive_file_id_or_url=drive_url,
+            cloudinary_folder=cloudinary_folder,
+            tags=tags,
+            auto_compress=auto_compress
+        )
+        
+        # Create MediaAsset record
+        from django.utils.text import slugify
+        title = drive_metadata.get('name', 'Google Drive Upload')
+        if '.' in title:
+            title = title.rsplit('.', 1)[0]
+        
+        asset = MediaAsset.objects.create(
+            album=album,
+            title=title,
+            public_id=result.get('public_id', ''),
+            secure_url=result.get('secure_url', ''),
+            web_url=web_url,
+            thumb_url=thumb_url,
+            bytes_size=result.get('bytes', 0),
+            width=result.get('width', 0),
+            height=result.get('height', 0),
+            format=result.get('format', ''),
+            tags_csv=', '.join(tags) if tags else '',
+        )
+        
+        return JsonResponse({
+            'success': True,
+            'image': {
+                'id': asset.id,
+                'title': asset.title,
+                'secure_url': asset.secure_url,
+                'web_url': asset.web_url,
+                'thumb_url': asset.thumb_url,
+                'public_id': asset.public_id,
+            },
+            'drive_metadata': {
+                'original_name': drive_metadata.get('name'),
+                'mime_type': drive_metadata.get('mimeType'),
+                'size': drive_metadata.get('size'),
+            }
+        })
+        
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'error': str(e)
+        }, status=500)
+
+
+@login_required
+@require_POST
+def google_drive_bulk_upload(request):
+    """
+    Upload multiple images from a Google Drive folder to Cloudinary.
+    
+    Expects JSON body with:
+    - folder_url: Google Drive folder shareable link or folder ID
+    - album_id: (optional) MediaAlbum ID to assign uploaded images to
+    - tags: (optional) Comma-separated tags
+    - auto_compress: (optional, default: true) Whether to compress large files
+    """
+    try:
+        import json
+        data = json.loads(request.body)
+        
+        folder_url = data.get('folder_url')
+        if not folder_url:
+            return JsonResponse({
+                'success': False,
+                'error': 'folder_url is required'
+            }, status=400)
+        
+        # Extract folder ID
+        folder_id = extract_file_id_from_url(folder_url)
+        if not folder_id:
+            return JsonResponse({
+                'success': False,
+                'error': 'Invalid Google Drive folder URL'
+            }, status=400)
+        
+        # Get album or use default
+        album_id = data.get('album_id')
+        if album_id:
+            album = get_object_or_404(MediaAlbum, pk=album_id)
+        else:
+            album, created = MediaAlbum.objects.get_or_create(
+                title='Google Drive Uploads',
+                defaults={
+                    'description': 'Images uploaded from Google Drive',
+                    'cld_folder': 'google_drive_uploads'
+                }
+            )
+        
+        # Parse tags
+        tags_str = data.get('tags', '')
+        tags = [t.strip() for t in tags_str.split(',') if t.strip()]
+        if album.default_tags:
+            tags += [t.strip() for t in album.default_tags.split(',') if t.strip()]
+        
+        # Auto compress setting
+        auto_compress = data.get('auto_compress', True)
+        
+        # Bulk upload from Google Drive folder
+        cloudinary_folder = album.cld_folder or 'uploads'
+        results = bulk_upload_from_drive_folder(
+            folder_id=folder_id,
+            cloudinary_folder=cloudinary_folder,
+            tags=tags,
+            auto_compress=auto_compress
+        )
+        
+        # Create MediaAsset records for successful uploads
+        created_assets = []
+        failed_uploads = []
+        
+        for result in results:
+            if result['success']:
+                try:
+                    from django.utils.text import slugify
+                    title = result['drive_name']
+                    if '.' in title:
+                        title = title.rsplit('.', 1)[0]
+                    
+                    # Find the Cloudinary result by public_id
+                    # We need to fetch it to get all metadata
+                    import cloudinary.api
+                    cloud_result = cloudinary.api.resource(result['public_id'])
+                    
+                    asset = MediaAsset.objects.create(
+                        album=album,
+                        title=title,
+                        public_id=result['public_id'],
+                        secure_url=cloud_result.get('secure_url', ''),
+                        web_url=result['cloudinary_url'],
+                        thumb_url=cloud_result.get('secure_url', '').replace('/upload/', '/upload/c_fill,w_480,h_320/'),
+                        bytes_size=cloud_result.get('bytes', 0),
+                        width=cloud_result.get('width', 0),
+                        height=cloud_result.get('height', 0),
+                        format=cloud_result.get('format', ''),
+                        tags_csv=', '.join(tags) if tags else '',
+                    )
+                    
+                    created_assets.append({
+                        'id': asset.id,
+                        'title': asset.title,
+                        'web_url': asset.web_url,
+                        'drive_name': result['drive_name']
+                    })
+                except Exception as e:
+                    failed_uploads.append({
+                        'drive_name': result['drive_name'],
+                        'error': f'Failed to create MediaAsset: {str(e)}'
+                    })
+            else:
+                failed_uploads.append({
+                    'drive_name': result['drive_name'],
+                    'error': result['error']
+                })
+        
+        return JsonResponse({
+            'success': True,
+            'uploaded': len(created_assets),
+            'failed': len(failed_uploads),
+            'images': created_assets,
+            'errors': failed_uploads
+        })
+        
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'error': str(e)
+        }, status=500)
 
 
 # -------------------------------------------------------------------------------------- 
