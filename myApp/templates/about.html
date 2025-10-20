@@ -772,12 +772,7 @@
       <div class="carousel" id="expertsCarousel" aria-label="Experts carousel" tabindex="0">
         {% for p in leaders %}
         <article class="slide team-card">
-          {% if p.url %}
-            <a class="team-link" href="{{ p.url }}" aria-label="{{ p.name }} profile">
-          {% else %}
-            <div class="team-link" aria-label="{{ p.name }}">
-          {% endif %}
-
+          <div class="team-link" aria-label="{{ p.name }}">
             <div class="team-photo-wrap">
               {% if p.photo_card %}
                 <img
@@ -813,8 +808,7 @@
               <h3 class="team-name">{{ p.name }}</h3>
               <p class="team-role">{{ p.role }}</p>
             </div>
-
-          {% if p.url %}</a>{% else %}</div>{% endif %}
+          </div>
         </article>
         {% empty %}
           {% for i in "1,2,3,4,5"|cut:"," %}
