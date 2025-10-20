@@ -749,7 +749,9 @@ details[open] .faq-content{ height:auto; }      /* fallback if JS off */
             <div class="title">{{ cs.title }}</div>
             {% if cs.summary %}<p class="sum">{{ cs.summary|truncatewords:18 }}</p>{% endif %}
             <div class="row">
+              <!--    
               <button class="btn primary" data-action="preview" data-url="{{ cs.full_url }}" data-href="{{ cs.get_absolute_url }}" data-title="{{ cs.title }}" data-summary="{{ cs.summary|default_if_none:''|escapejs }}">Quick preview</button>
+              -->
               <a class="btn" href="{{ cs.get_absolute_url }}">View project</a>
             </div>
           </div>
