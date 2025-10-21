@@ -1846,19 +1846,19 @@ document.addEventListener('DOMContentLoaded', () => {
   document.addEventListener('click', (e) => {
     if (e.target.classList.contains('gallery-btn-hero')) {
       const heroInput = document.querySelector('input[name="hero_media_url"]');
-      openImageGallery(heroInput);
+      openImageGalleryWithUpload(heroInput);
     } else if (e.target.classList.contains('gallery-btn-image')) {
       const imageInput = e.target.parentElement.querySelector('input[type="url"]');
       openImageGalleryWithUpload(imageInput);
     } else if (e.target.classList.contains('gallery-btn-thumb')) {
       const thumbInput = e.target.parentElement.querySelector('input[name$="-thumb_url"]');
-      openImageGallery(thumbInput);
+      openImageGalleryWithUpload(thumbInput);
     } else if (e.target.classList.contains('gallery-btn-full')) {
       const fullInput = e.target.parentElement.querySelector('input[name$="-full_url"]');
-      openImageGallery(fullInput);
+      openImageGalleryWithUpload(fullInput);
     } else if (e.target.classList.contains('gallery-btn-case-study')) {
       const caseStudyInput = e.target.parentElement.querySelector('input[name$="-hero_image_url"]');
-      openImageGallery(caseStudyInput);
+      openImageGalleryWithUpload(caseStudyInput);
     }
   });
 
