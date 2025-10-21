@@ -23,6 +23,7 @@ urlpatterns = [
     path("facility/", views.legacy_facility, name="legacy_facility"),
     path("aboutus/", views.legacy_aboutus, name="legacy_aboutus"),
     path("blogs/", views.legacy_blogs, name="legacy_blogs"),
+    path("landscaping/", views.legacy_landscape, name="legacy_landscape"),
     
     # Keep existing services/landscape/ redirect for backward compatibility
     path(
