@@ -702,17 +702,34 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Handle remove buttons for case studies/projects
     if (e.target.classList.contains('remove-case-study')) {
+      console.log('🗑️ Remove case study button clicked');
       const formDiv = e.target.closest('.case-study-form');
-      if (!formDiv) return;
+      console.log('Form div:', formDiv);
+      if (!formDiv) {
+        console.error('❌ Could not find .case-study-form parent');
+        return;
+      }
       
       // Find the DELETE checkbox
       const deleteCheckbox = formDiv.querySelector('input[type="checkbox"][name$="-DELETE"]');
+      console.log('DELETE checkbox:', deleteCheckbox);
+      console.log('Checkbox name:', deleteCheckbox?.name);
       if (deleteCheckbox) {
         deleteCheckbox.checked = true;
+        console.log('✅ DELETE checkbox checked:', deleteCheckbox.checked);
         formDiv.style.opacity = '0.5';
         formDiv.style.pointerEvents = 'none';
         e.target.textContent = 'Marked for deletion';
         e.target.disabled = true;
+        console.log('✅ Form marked for deletion visually');
+      } else {
+        console.error('❌ DELETE checkbox not found!');
+        // List all inputs in the form for debugging
+        const allInputs = formDiv.querySelectorAll('input');
+        console.log('All inputs in form:', allInputs);
+        allInputs.forEach(input => {
+          console.log(`  - ${input.type}: ${input.name}`);
+        });
       }
     }
     

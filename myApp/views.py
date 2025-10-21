@@ -999,6 +999,16 @@ def dashboard_service_edit(request, pk: int):
                 if not cs.pk:
                     cs.service = service
                 cs.save()
+            
+            # Delete marked case studies
+            deleted_count = 0
+            for obj in case_study_formset.deleted_objects:
+                obj.delete()
+                deleted_count += 1
+            
+            if deleted_count > 0:
+                messages.info(request, f"{deleted_count} project(s) deleted.")
+            
             case_study_formset.save_m2m()
             
             # Save process steps
