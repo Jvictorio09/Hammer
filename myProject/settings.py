@@ -81,12 +81,38 @@ WSGI_APPLICATION = 'myProject.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+# MIGRATION: Dual-database configuration for SQLite → PostgreSQL migration
+# After migration is complete, remove the 'sqlite' entry and keep only 'default'
+
+import dj_database_url
+
+# Check if DATABASE_URL is set (for PostgreSQL on Railway)
+DATABASE_URL = os.getenv('DATABASE_URL')
+
+if DATABASE_URL:
+    # MIGRATION: Production/PostgreSQL configuration
+    # Parse DATABASE_URL and ensure SSL is required for Railway
+    DATABASES = {
+        'default': dj_database_url.config(
+            default=DATABASE_URL,
+            conn_max_age=600,
+            conn_health_checks=True,
+            ssl_require=True,
+        ),
+        # MIGRATION: Keep SQLite available for data export during migration
+        'sqlite': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
     }
-}
+else:
+    # MIGRATION: Development/SQLite configuration (fallback)
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
 
 
 # Password validation
