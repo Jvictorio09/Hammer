@@ -432,9 +432,14 @@
             <label class="block text-xs font-medium text-gray-700 mb-1">Description</label>
             {{ form.blurb }}
           </div>
-          <div class="flex items-center gap-2 mt-3">
-            <label class="text-xs text-gray-600">Order:</label>
-            {{ form.sort_order }}
+          <div class="flex items-center justify-between mt-3">
+            <div class="flex items-center gap-2">
+              <label class="text-xs text-gray-600">Order:</label>
+              {{ form.sort_order }}
+            </div>
+            {% if form.instance.pk %}
+              <button type="button" class="remove-capability text-red-600 hover:text-red-800 text-sm">Remove</button>
+            {% endif %}
           </div>
           {{ form.id }}
         </div>
@@ -468,9 +473,14 @@
             <label class="block text-xs font-medium text-gray-700 mb-1">Description</label>
             {{ form.description }}
           </div>
-          <div class="flex items-center gap-2 mt-3">
-            <label class="text-xs text-gray-600">Sort Order:</label>
-            {{ form.sort_order }}
+          <div class="flex items-center justify-between mt-3">
+            <div class="flex items-center gap-2">
+              <label class="text-xs text-gray-600">Sort Order:</label>
+              {{ form.sort_order }}
+            </div>
+            {% if form.instance.pk %}
+              <button type="button" class="remove-process-step text-red-600 hover:text-red-800 text-sm">Remove</button>
+            {% endif %}
           </div>
           {{ form.id }}
         </div>
@@ -671,6 +681,73 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
   addChrome('.capability-form input, .capability-form textarea, .image-form input');
+
+  // ----------------- Formset deletion handlers -----------------
+  // Handle remove buttons for images
+  document.addEventListener('click', (e) => {
+    if (e.target.classList.contains('remove-image')) {
+      const formDiv = e.target.closest('.image-form');
+      if (!formDiv) return;
+      
+      // Find the DELETE checkbox
+      const deleteCheckbox = formDiv.querySelector('input[type="checkbox"][name$="-DELETE"]');
+      if (deleteCheckbox) {
+        deleteCheckbox.checked = true;
+        formDiv.style.opacity = '0.5';
+        formDiv.style.pointerEvents = 'none';
+        e.target.textContent = 'Marked for deletion';
+        e.target.disabled = true;
+      }
+    }
+    
+    // Handle remove buttons for case studies/projects
+    if (e.target.classList.contains('remove-case-study')) {
+      const formDiv = e.target.closest('.case-study-form');
+      if (!formDiv) return;
+      
+      // Find the DELETE checkbox
+      const deleteCheckbox = formDiv.querySelector('input[type="checkbox"][name$="-DELETE"]');
+      if (deleteCheckbox) {
+        deleteCheckbox.checked = true;
+        formDiv.style.opacity = '0.5';
+        formDiv.style.pointerEvents = 'none';
+        e.target.textContent = 'Marked for deletion';
+        e.target.disabled = true;
+      }
+    }
+    
+    // Handle remove buttons for capabilities
+    if (e.target.classList.contains('remove-capability')) {
+      const formDiv = e.target.closest('.capability-form');
+      if (!formDiv) return;
+      
+      // Find the DELETE checkbox
+      const deleteCheckbox = formDiv.querySelector('input[type="checkbox"][name$="-DELETE"]');
+      if (deleteCheckbox) {
+        deleteCheckbox.checked = true;
+        formDiv.style.opacity = '0.5';
+        formDiv.style.pointerEvents = 'none';
+        e.target.textContent = 'Marked for deletion';
+        e.target.disabled = true;
+      }
+    }
+    
+    // Handle remove buttons for process steps
+    if (e.target.classList.contains('remove-process-step')) {
+      const formDiv = e.target.closest('.process-step-form');
+      if (!formDiv) return;
+      
+      // Find the DELETE checkbox
+      const deleteCheckbox = formDiv.querySelector('input[type="checkbox"][name$="-DELETE"]');
+      if (deleteCheckbox) {
+        deleteCheckbox.checked = true;
+        formDiv.style.opacity = '0.5';
+        formDiv.style.pointerEvents = 'none';
+        e.target.textContent = 'Marked for deletion';
+        e.target.disabled = true;
+      }
+    }
+  });
 
   // ----------------- Hero preview -----------------
   const heroInput = document.querySelector('input[name="hero_media_url"]');
