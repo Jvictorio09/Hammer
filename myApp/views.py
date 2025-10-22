@@ -18,6 +18,7 @@ from django.urls import reverse
 from django.utils.html import escape
 from django.views.decorators.http import require_http_methods
 from django.shortcuts import render, get_object_or_404
+from django.db import IntegrityError
 from django.utils import timezone
 from django.db.models import Prefetch
 from django.contrib.auth.decorators import login_required
@@ -46,8 +47,8 @@ from .models import (
     ContentVersion,
     MediaAsset,
     MediaAlbum,
-    InsightAuditLog,
     CaseStudy,
+    InsightAuditLog,
 )
 from .forms import ServiceForm, InsightForm, ServiceCapabilityFormSet, ServiceEditorialImageFormSet, ServiceProjectImageFormSet, CaseStudyFormSet, ServiceProcessStepFormSet
 from .utils.google_drive_utils import upload_from_google_drive_to_cloudinary, extract_file_id_from_url, bulk_upload_from_drive_folder
@@ -993,12 +994,43 @@ def dashboard_service_edit(request, pk: int):
             capability_formset.save()
             image_formset.save()
             
-            # Save case studies first, then link project images to them
+            # Save case studies with proper error handling
             case_studies = case_study_formset.save(commit=False)
             for cs in case_studies:
                 if not cs.pk:
                     cs.service = service
-                cs.save()
+                try:
+                    # Debug gallery_urls before saving
+                    print(f"DEBUG: Saving case study {cs.id or 'new'} with gallery_urls: {cs.gallery_urls}")
+                    cs.save()
+                except IntegrityError as e:
+                    print(f"ERROR: Integrity error saving case study: {e}")
+                    # If there's a duplicate key error, try to get the existing object
+                    if 'duplicate key' in str(e).lower():
+                        # Try to find existing case study with same slug or title
+                        try:
+                            existing_cs = CaseStudy.objects.get(
+                                service=service,
+                                slug=cs.slug
+                            )
+                            # Update the existing case study
+                            existing_cs.title = cs.title
+                            existing_cs.gallery_urls = cs.gallery_urls
+                            existing_cs.summary = cs.summary
+                            existing_cs.description = cs.description
+                            existing_cs.completion_date = cs.completion_date
+                            existing_cs.scope = cs.scope
+                            existing_cs.timeline = cs.timeline
+                            existing_cs.tags = cs.tags
+                            existing_cs.save()
+                            print(f"Updated existing case study: {existing_cs.id}")
+                        except CaseStudy.DoesNotExist:
+                            # If we can't find existing, create new with different slug
+                            cs.slug = f"{cs.slug}-{cs.pk or 'new'}"
+                            cs.save()
+                            print(f"Created new case study with modified slug: {cs.slug}")
+                    else:
+                        raise e
             
             # Delete marked case studies
             deleted_count = 0
@@ -1496,6 +1528,38 @@ def gallery_api_upload(request):
             'images': uploaded_images
         })
         
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'error': str(e)
+        })
+
+
+@login_required
+@require_POST
+def gallery_api_delete(request):
+    """API endpoint to delete gallery images"""
+    try:
+        from .models import MediaAsset
+        import json
+        
+        data = json.loads(request.body)
+        image_id = data.get('image_id')
+        
+        if not image_id:
+            return JsonResponse({'success': False, 'error': 'No image ID provided'})
+        
+        try:
+            asset = MediaAsset.objects.get(id=image_id, is_active=True)
+            # Soft delete by setting is_active to False
+            asset.is_active = False
+            asset.save()
+            
+            return JsonResponse({'success': True, 'message': 'Image deleted successfully'})
+            
+        except MediaAsset.DoesNotExist:
+            return JsonResponse({'success': False, 'error': 'Image not found'})
+            
     except Exception as e:
         return JsonResponse({
             'success': False,

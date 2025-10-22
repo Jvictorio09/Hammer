@@ -74,6 +74,7 @@ urlpatterns = [
     # Gallery API
     path("dashboard/gallery/api/images/", views.gallery_api_images, name="gallery_api_images"),
     path("dashboard/gallery/api/upload/", views.gallery_api_upload, name="gallery_api_upload"),
+    path("dashboard/gallery/api/delete/", views.gallery_api_delete, name="gallery_api_delete"),
     # Google Drive Upload API
     path("dashboard/gallery/api/google-drive/upload/", views.google_drive_upload, name="google_drive_upload"),
     path("dashboard/gallery/api/google-drive/bulk-upload/", views.google_drive_bulk_upload, name="google_drive_bulk_upload"),

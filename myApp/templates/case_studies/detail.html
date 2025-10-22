@@ -342,13 +342,25 @@
     try {
       const data = JSON.parse(jsonNode.textContent || '[]');
       if (!Array.isArray(data)) return;
-      images = data.map((d, i) => ({ full: d.full || d.thumb || '', caption: d.caption || '' }));
+      
+      // Debug: log the gallery data structure
+      console.log('Gallery data:', data);
+      
+      images = data.map((d, i) => {
+        const fullUrl = d.full || d.web_url || d.secure_url || d.thumb || '';
+        console.log(`Image ${i}: full=${d.full}, web_url=${d.web_url}, secure_url=${d.secure_url}, thumb=${d.thumb}, final=${fullUrl}`);
+        return { 
+          full: fullUrl, 
+          caption: d.caption || '' 
+        };
+      });
       const tmpl = document.getElementById('tmpl-gallery-card');
       data.forEach((item, idx) => {
         const node = tmpl.content.cloneNode(true);
         const img = node.querySelector('img');
         const cap = node.querySelector('.caption');
-        img.src = item.thumb || item.full || '';
+        // Use thumb for gallery display, but ensure we have the full URL for lightbox
+        img.src = item.thumb || item.full || item.web_url || item.secure_url || '';
         img.alt = item.caption || 'Project image';
         node.firstElementChild.onclick = () => openLightbox(idx);
         if (item.caption) { cap.textContent = item.caption; cap.classList.remove('hidden'); }

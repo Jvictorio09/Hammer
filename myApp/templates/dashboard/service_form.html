@@ -581,6 +581,36 @@
   </div>
 </form>
 
+
+<!-- Cropper.js CSS -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css">
+
+<!-- Cropper.js JavaScript -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+
+<!-- Custom CSS for crop functionality -->
+<style>
+#cropContainer {
+  position: relative;
+  height: 384px;
+  width: 100%;
+  background: #f3f4f6;
+  border-radius: 0.5rem;
+  overflow: hidden;
+}
+
+#cropImage {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+.cropper-container {
+  max-height: 384px !important;
+  max-width: 100% !important;
+}
+</style>
+
 <script>
 // Image compression utility
 async function compressImage(file, maxSizeMB = 8) {
@@ -611,33 +641,73 @@ async function compressImage(file, maxSizeMB = 8) {
         const ctx = canvas.getContext('2d');
         ctx.drawImage(img, 0, 0, width, height);
         
-        // Try different quality levels to get under the target size
-        let quality = 0.9;
+        // Enable high-quality image rendering
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = 'high';
+        
+        // Smart compression with WebP conversion for better quality and smaller size
+        let quality = 0.9; // Start with high quality
+        let targetWidth = width;
+        let targetHeight = height;
+        
+        // For very large images, reduce dimensions first
+        if (width > 1920 || height > 1920) {
+          const scale = Math.min(1920 / width, 1920 / height);
+          targetWidth = Math.floor(width * scale);
+          targetHeight = Math.floor(height * scale);
+          console.log(`Reducing dimensions from ${width}x${height} to ${targetWidth}x${targetHeight}`);
+        }
+        
+        // Update canvas size
+        canvas.width = targetWidth;
+        canvas.height = targetHeight;
+        
+        // Redraw with new dimensions
+        ctx.drawImage(img, 0, 0, targetWidth, targetHeight);
+        
         const tryCompress = () => {
+          // Try WebP first (better compression, same quality)
           canvas.toBlob(
             (blob) => {
               if (!blob) {
-                reject(new Error('Compression failed'));
+                reject(new Error('WebP compression failed'));
                 return;
               }
               
               const sizeMB = blob.size / 1024 / 1024;
-              console.log(`Compressed to ${sizeMB.toFixed(2)}MB at quality ${quality}`);
+              console.log(`WebP compressed to ${sizeMB.toFixed(2)}MB at quality ${quality} (${targetWidth}x${targetHeight})`);
               
-              // If still too large and quality can be reduced further, try again
-              if (sizeMB > maxSizeMB && quality > 0.5) {
-                quality -= 0.1;
-                tryCompress();
+              // If WebP is still too large, try reducing quality or dimensions
+              if (sizeMB > maxSizeMB) {
+                if (quality > 0.6) {
+                  quality -= 0.1; // Reduce quality
+                  tryCompress();
+                } else if (targetWidth > 1200 || targetHeight > 1200) {
+                  // Further reduce dimensions
+                  const scale = 0.8;
+                  targetWidth = Math.floor(targetWidth * scale);
+                  targetHeight = Math.floor(targetHeight * scale);
+                  canvas.width = targetWidth;
+                  canvas.height = targetHeight;
+                  ctx.drawImage(img, 0, 0, targetWidth, targetHeight);
+                  quality = 0.8; // Reset quality
+                  tryCompress();
+                } else {
+                  // Final attempt with lower quality
+                  quality = 0.5;
+                  tryCompress();
+                }
               } else {
-                // Create a File object from the blob
-                const compressedFile = new File([blob], file.name, {
-                  type: 'image/jpeg',
+                // Create a File object from the WebP blob
+                const compressedFile = new File([blob], file.name.replace(/\.[^/.]+$/, '.webp'), {
+                  type: 'image/webp',
                   lastModified: Date.now()
                 });
+                console.log(`✅ WebP conversion successful: ${sizeMB.toFixed(2)}MB (${((file.size / 1024 / 1024) / sizeMB).toFixed(1)}x smaller)`);
                 resolve(compressedFile);
               }
             },
-            'image/jpeg',
+            'image/webp',
             quality
           );
         };
@@ -1114,6 +1184,9 @@ document.addEventListener('DOMContentLoaded', () => {
             <button id="uploadTab" class="flex-1 px-6 py-3 text-sm font-medium text-gray-500 border-b-2 border-transparent hover:text-gray-700 hover:bg-gray-50">
               ⬆️ Upload
             </button>
+            <button id="cropTab" class="flex-1 px-6 py-3 text-sm font-medium text-gray-500 border-b-2 border-transparent hover:text-gray-700 hover:bg-gray-50 hidden">
+              ✂️ Crop
+            </button>
           </div>
           
           <!-- Tab Content -->
@@ -1122,6 +1195,38 @@ document.addEventListener('DOMContentLoaded', () => {
             <div id="galleryTabContent" class="tab-content">
               <div id="galleryGrid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                 <!-- Images will be loaded here -->
+              </div>
+            </div>
+            
+            <!-- Crop Tab (hidden by default) -->
+            <div id="cropTabContent" class="tab-content hidden">
+              <div class="mb-4">
+                <div id="cropContainer" class="h-96 overflow-hidden bg-gray-100 rounded-lg">
+                  <img id="cropImage" src="" alt="Crop this image" class="max-w-full max-h-full object-contain">
+                </div>
+              </div>
+              
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-4">
+                  <button id="cropReset" class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-lg hover:bg-gray-200 transition">
+                    Reset
+                  </button>
+                  <button id="cropRotate" class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-lg hover:bg-gray-200 transition">
+                    Rotate
+                  </button>
+                  <button id="cropFlip" class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-lg hover:bg-gray-200 transition">
+                    Flip
+                  </button>
+                </div>
+                
+                <div class="flex items-center gap-3">
+                  <button id="cropCancel" class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-lg hover:bg-gray-200 transition">
+                    Cancel
+                  </button>
+                  <button id="cropApply" class="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-blue-600 rounded-lg hover:bg-blue-700 transition">
+                    Apply Crop
+                  </button>
+                </div>
               </div>
             </div>
             
@@ -1228,8 +1333,8 @@ document.addEventListener('DOMContentLoaded', () => {
       uploadStatus.textContent = `Processing ${files.length} image${files.length > 1 ? 's' : ''}...`;
       
       try {
-        // Compress large images
-        const maxSizeMB = 8;
+        // Compress large images - optimized for web performance
+        const maxSizeMB = 2.0;
         const processedFiles = [];
         let compressedCount = 0;
         
@@ -1242,6 +1347,21 @@ document.addEventListener('DOMContentLoaded', () => {
             compressedCount++;
           } else {
             processedFiles.push(file);
+          }
+        }
+        
+        // Upload all images directly without crop modal for bulk uploads
+        // Users can crop individual images later if needed
+        for (let i = 0; i < processedFiles.length; i++) {
+          const file = processedFiles[i];
+          uploadStatus.textContent = `Uploading image ${i + 1}/${processedFiles.length}...`;
+          uploadBar.style.width = `${((i + 1) / processedFiles.length) * 100}%`;
+          
+          try {
+            await uploadSingleImage(file);
+          } catch (error) {
+            console.error(`Failed to upload image ${i + 1}:`, error);
+            // Continue with next image
           }
         }
         
@@ -1366,11 +1486,18 @@ document.addEventListener('DOMContentLoaded', () => {
             imgElement.innerHTML = `
               <img src="${image.thumb_url || image.web_url || image.secure_url}" 
                    alt="${image.title}" 
-                   class="w-full h-32 object-cover">
+                   class="w-full h-32 object-cover"
+                   data-full-url="${image.web_url || image.secure_url}">
               <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition">
                 <div class="absolute bottom-2 left-2 right-2 text-white text-xs opacity-0 group-hover:opacity-100 transition">
                   ${image.title}
                 </div>
+                <button class="crop-btn absolute top-2 right-2 w-6 h-6 bg-blue-600 text-white rounded-full opacity-0 group-hover:opacity-100 transition flex items-center justify-center text-xs hover:bg-blue-700" title="Crop Image" data-image-url="${image.web_url || image.secure_url}">
+                  ✂️
+                </button>
+                <button class="delete-btn absolute top-2 left-2 w-6 h-6 bg-red-600 text-white rounded-full opacity-0 group-hover:opacity-100 transition flex items-center justify-center text-xs hover:bg-red-700" title="Delete Image" data-image-id="${image.id}">
+                  🗑️
+                </button>
               </div>
             `;
             // Don't add the old click handler - we'll handle selection in the modal event listener
@@ -1607,7 +1734,8 @@ document.addEventListener('DOMContentLoaded', () => {
             imgElement.innerHTML = `
               <img src="${image.thumb_url || image.web_url || image.secure_url}" 
                    alt="${image.title}" 
-                   class="w-full h-32 object-cover">
+                   class="w-full h-32 object-cover"
+                   data-full-url="${image.web_url || image.secure_url}">
               <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition">
                 <div class="absolute bottom-2 left-2 right-2 text-white text-xs opacity-0 group-hover:opacity-100 transition">
                   ${image.title}
@@ -1673,8 +1801,8 @@ document.addEventListener('DOMContentLoaded', () => {
       uploadStatus.className = 'uploadStatus text-sm text-gray-600 mt-2';
       
       try {
-        // Compress image if it's too large
-        const maxSizeMB = 8; // Target 8MB to be safe (max is 10MB)
+        // Compress image if it's too large - optimized for web performance
+        const maxSizeMB = 2.0; // Target 2MB for better web performance
         let processedFile = file;
         
         if (file.size > maxSizeMB * 1024 * 1024) {
@@ -1692,11 +1820,16 @@ document.addEventListener('DOMContentLoaded', () => {
         
         uploadBar.style.width = '50%';
         
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]');
+        if (!csrfToken) {
+          throw new Error('CSRF token not found. Please refresh the page.');
+        }
+        
         const response = await fetch('/u/editor-image/', {
           method: 'POST',
           body: formData,
           headers: {
-            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            'X-CSRFToken': csrfToken.value
           }
         });
         
@@ -1704,7 +1837,8 @@ document.addEventListener('DOMContentLoaded', () => {
         
         if (!response.ok) {
           const text = await response.text();
-          throw new Error(`Server error: ${response.status}`);
+          console.error('Upload failed. Response:', text);
+          throw new Error(`Server error: ${response.status} - ${text.substring(0, 100)}...`);
         }
         
         const data = await response.json();
@@ -1896,7 +2030,8 @@ document.addEventListener('DOMContentLoaded', () => {
             imgElement.innerHTML = `
               <img src="${image.thumb_url || image.web_url || image.secure_url}" 
                    alt="${image.title}" 
-                   class="w-full h-32 object-cover">
+                   class="w-full h-32 object-cover"
+                   data-full-url="${image.web_url || image.secure_url}">
               <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition">
                 <div class="absolute bottom-2 left-2 right-2 text-white text-xs opacity-0 group-hover:opacity-100 transition">
                   ${image.title}
@@ -1943,10 +2078,291 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
+  // ----------------- Image Cropping -----------------
+  let cropper = null;
+  
+  // Function to upload a single image
+  async function uploadSingleImage(file) {
+    const formData = new FormData();
+    formData.append('file', file);
+    
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]');
+    if (!csrfToken) {
+      throw new Error('CSRF token not found. Please refresh the page.');
+    }
+    
+    const response = await fetch('/u/editor-image/', {
+      method: 'POST',
+      body: formData,
+      headers: {
+        'X-CSRFToken': csrfToken.value
+      }
+    });
+    
+    if (!response.ok) {
+      const text = await response.text();
+      console.error('Upload failed. Response:', text);
+      throw new Error(`Server error: ${response.status} - ${text.substring(0, 100)}...`);
+    }
+    
+    const data = await response.json();
+    
+    if (data.url) {
+      // Store uploaded image for pre-selection
+      if (!window.recentlyUploadedImages) {
+        window.recentlyUploadedImages = [];
+      }
+      window.recentlyUploadedImages.push(data.web_url || data.url);
+      return data;
+    } else {
+      throw new Error(data.error || 'Upload failed');
+    }
+  }
+  
+  // Event listeners for crop functionality within gallery modal
+  document.addEventListener('click', (e) => {
+    if (e.target.id === 'cropCancel') {
+      // Return to gallery tab
+      const galleryModal = document.getElementById('galleryModal');
+      if (galleryModal) {
+        const galleryTab = galleryModal.querySelector('#galleryTab');
+        const cropTab = galleryModal.querySelector('#cropTab');
+        const galleryTabContent = galleryModal.querySelector('#galleryTabContent');
+        const cropTabContent = galleryModal.querySelector('#cropTabContent');
+        
+        // Hide crop tab
+        cropTab.classList.add('hidden');
+        cropTab.classList.remove('text-gray-900', 'border-gray-900', 'bg-gray-50');
+        cropTab.classList.add('text-gray-500', 'border-transparent');
+        cropTabContent.classList.add('hidden');
+        
+        // Show gallery tab
+        galleryTab.classList.add('text-gray-900', 'border-gray-900', 'bg-gray-50');
+        galleryTab.classList.remove('text-gray-500', 'border-transparent');
+        galleryTabContent.classList.remove('hidden');
+        
+        // Destroy cropper
+        if (cropper) {
+          cropper.destroy();
+          cropper = null;
+        }
+      }
+    }
+    
+    if (e.target.id === 'cropApply') {
+      // Apply crop and upload
+      if (cropper) {
+        try {
+          // Get cropped canvas with high quality settings
+          const canvas = cropper.getCroppedCanvas({
+            maxWidth: 2560,
+            maxHeight: 2560,
+            imageSmoothingEnabled: true,
+            imageSmoothingQuality: 'high',
+            fillColor: '#ffffff',
+            imageSmoothingEnabled: true,
+          });
+          
+          if (!canvas) {
+            throw new Error('Failed to crop image');
+          }
+          
+          // Convert canvas to blob with high quality
+          canvas.toBlob(async (blob) => {
+            try {
+              // Create file from blob
+              const croppedFile = new File([blob], 'cropped-image.webp', {
+                type: 'image/webp',
+                lastModified: Date.now()
+              });
+              
+              // Upload the cropped image
+              const result = await uploadSingleImage(croppedFile);
+              console.log('Cropped image uploaded:', result);
+              
+              // Return to gallery tab and reload
+              const galleryModal = document.getElementById('galleryModal');
+              if (galleryModal) {
+                const galleryTab = galleryModal.querySelector('#galleryTab');
+                const cropTab = galleryModal.querySelector('#cropTab');
+                const galleryTabContent = galleryModal.querySelector('#galleryTabContent');
+                const cropTabContent = galleryModal.querySelector('#cropTabContent');
+                
+                // Hide crop tab
+                cropTab.classList.add('hidden');
+                cropTab.classList.remove('text-gray-900', 'border-gray-900', 'bg-gray-50');
+                cropTab.classList.add('text-gray-500', 'border-transparent');
+                cropTabContent.classList.add('hidden');
+                
+                // Show gallery tab
+                galleryTab.classList.add('text-gray-900', 'border-gray-900', 'bg-gray-50');
+                galleryTab.classList.remove('text-gray-500', 'border-transparent');
+                galleryTabContent.classList.remove('hidden');
+                
+                // Destroy cropper
+                if (cropper) {
+                  cropper.destroy();
+                  cropper = null;
+                }
+                
+                // Reload gallery to show new image
+                loadGalleryImages();
+              }
+            } catch (error) {
+              console.error('Failed to upload cropped image:', error);
+              alert('Failed to upload cropped image. Please try again.');
+            }
+          }, 'image/webp', 0.95);
+        } catch (error) {
+          console.error('Crop error:', error);
+          alert('Failed to crop image. Please try again.');
+        }
+      }
+    }
+    
+    if (e.target.id === 'cropReset') {
+      if (cropper) cropper.reset();
+    }
+    
+    if (e.target.id === 'cropRotate') {
+      if (cropper) cropper.rotate(90);
+    }
+    
+    if (e.target.id === 'cropFlip') {
+      if (cropper) {
+        const canvas = cropper.getCanvasData();
+        cropper.scaleX(canvas.scaleX * -1);
+      }
+    }
+  });
+  
+  
+  // Handle crop button clicks in gallery
+  document.addEventListener('click', (e) => {
+    if (e.target.classList.contains('crop-btn')) {
+      e.preventDefault();
+      e.stopPropagation();
+      
+      const imageUrl = e.target.dataset.imageUrl;
+      if (imageUrl) {
+        // Show crop tab in gallery modal
+        const galleryModal = document.getElementById('galleryModal');
+        if (galleryModal) {
+          // Hide other tabs
+          const galleryTab = galleryModal.querySelector('#galleryTab');
+          const uploadTab = galleryModal.querySelector('#uploadTab');
+          const cropTab = galleryModal.querySelector('#cropTab');
+          const galleryTabContent = galleryModal.querySelector('#galleryTabContent');
+          const uploadTabContent = galleryModal.querySelector('#uploadTabContent');
+          const cropTabContent = galleryModal.querySelector('#cropTabContent');
+          
+          // Deactivate all tabs
+          [galleryTab, uploadTab, cropTab].forEach(tab => {
+            tab.classList.remove('text-gray-900', 'border-gray-900', 'bg-gray-50');
+            tab.classList.add('text-gray-500', 'border-transparent');
+          });
+          
+          // Hide all content
+          [galleryTabContent, uploadTabContent, cropTabContent].forEach(content => {
+            content.classList.add('hidden');
+          });
+          
+          // Show crop tab
+          cropTab.classList.remove('hidden');
+          cropTab.classList.add('text-gray-900', 'border-gray-900', 'bg-gray-50');
+          cropTab.classList.remove('text-gray-500', 'border-transparent');
+          cropTabContent.classList.remove('hidden');
+          
+          // Load image for cropping
+          const cropImage = galleryModal.querySelector('#cropImage');
+          cropImage.src = imageUrl;
+          
+          // Initialize cropper when image loads
+          cropImage.onload = function() {
+            if (cropper) {
+              cropper.destroy();
+            }
+            
+            cropper = new Cropper(cropImage, {
+              aspectRatio: NaN, // Free aspect ratio
+              viewMode: 1,
+              dragMode: 'move',
+              autoCropArea: 0.8,
+              restore: false,
+              guides: true,
+              center: true,
+              highlight: false,
+              cropBoxMovable: true,
+              cropBoxResizable: true,
+              toggleDragModeOnDblclick: false,
+              minContainerWidth: 300,
+              minContainerHeight: 200,
+            });
+          };
+        }
+      }
+    }
+    
+    // Handle delete button clicks in gallery
+    if (e.target.classList.contains('delete-btn')) {
+      e.preventDefault();
+      e.stopPropagation();
+      
+      const imageId = e.target.dataset.imageId;
+      if (imageId && confirm('Are you sure you want to delete this image? This action cannot be undone.')) {
+        // Delete the image
+        fetch('/dashboard/gallery/api/delete/', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+          },
+          body: JSON.stringify({
+            image_id: imageId
+          })
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            // Remove the image from the gallery
+            const imageElement = e.target.closest('.relative.group');
+            if (imageElement) {
+              imageElement.remove();
+            }
+            
+            // Show success message
+            console.log('Image deleted successfully');
+          } else {
+            alert('Failed to delete image: ' + (data.error || 'Unknown error'));
+          }
+        })
+        .catch(error => {
+          console.error('Delete error:', error);
+          alert('Failed to delete image. Please try again.');
+        });
+      }
+    }
+  });
+
   // ----------------- Dirty flag -----------------
   const dirtyEl = document.getElementById('dirtyFlag'); let dirty=false, timer;
   function setDirty(v){ dirty=v; if(dirtyEl) dirtyEl.textContent = v ? 'Unsaved changes…' : 'All changes saved'; }
   document.querySelector('form').addEventListener('input', ()=> setDirty(true));
+  
+  // Debug form submission to see what gallery_urls are being sent
+  document.querySelector('form').addEventListener('submit', function(e) {
+    console.log('🚀 Form submitting...');
+    const galleryInputs = document.querySelectorAll('input[name*="gallery_urls"]');
+    galleryInputs.forEach((input, index) => {
+      console.log(`Gallery URLs ${index}:`, input.value);
+      try {
+        const parsed = JSON.parse(input.value || '[]');
+        console.log(`Parsed gallery URLs ${index}:`, parsed);
+      } catch (err) {
+        console.error(`Error parsing gallery URLs ${index}:`, err);
+      }
+    });
+  });
   document.querySelector('form').addEventListener('submit', (e)=>{ 
     clearTimeout(timer); 
     if(dirtyEl) dirtyEl.textContent='Saving…'; 
@@ -2058,16 +2474,23 @@ document.addEventListener('DOMContentLoaded', () => {
           const formData = new FormData();
           formData.append('file', processedFile);
           
-          const response = await fetch('/u/editor-image/', {
-            method: 'POST',
-            body: formData,
-            headers: {
-              'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
-            }
-          });
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]');
+        if (!csrfToken) {
+          throw new Error('CSRF token not found. Please refresh the page.');
+        }
+        
+        const response = await fetch('/u/editor-image/', {
+          method: 'POST',
+          body: formData,
+          headers: {
+            'X-CSRFToken': csrfToken.value
+          }
+        });
           
           if (!response.ok) {
-            throw new Error(`Server error: ${response.status}`);
+            const text = await response.text();
+            console.error('Bulk upload failed. Response:', text);
+            throw new Error(`Server error: ${response.status} - ${text.substring(0, 100)}...`);
           }
           
           const data = await response.json();
@@ -2235,9 +2658,31 @@ document.addEventListener('DOMContentLoaded', () => {
               if (hiddenInput) {
                 const currentUrls = JSON.parse(hiddenInput.value || '[]');
                 const imgSrc = itemToRemove.querySelector('img').src;
-                const updatedUrls = currentUrls.filter(url => url.full !== imgSrc);
+                
+                // Remove the image by checking all possible URL fields
+                const updatedUrls = currentUrls.filter(url => {
+                  return url.full !== imgSrc && 
+                         url.thumb !== imgSrc && 
+                         url.secure_url !== imgSrc && 
+                         url.web_url !== imgSrc;
+                });
+                
                 hiddenInput.value = JSON.stringify(updatedUrls);
                 console.log('✅ Hidden input updated');
+                console.log('Before:', currentUrls.length, 'images');
+                console.log('After:', updatedUrls.length, 'images');
+                console.log('Removed image src:', imgSrc);
+                
+                // Trigger change event to ensure Django detects the change
+                hiddenInput.dispatchEvent(new Event('change', { bubbles: true }));
+                hiddenInput.dispatchEvent(new Event('input', { bubbles: true }));
+                
+                // Mark the form as dirty to ensure it gets saved
+                const form = caseStudyForm.closest('form');
+                if (form) {
+                  form.classList.add('dirty');
+                  console.log('✅ Form marked as dirty');
+                }
               }
               
               // Show "No gallery images" message if no images left
@@ -2303,8 +2748,9 @@ document.addEventListener('DOMContentLoaded', () => {
           galleryItems.forEach(item => {
             const img = item.querySelector('img');
             if (img && window.recentlyUploadedImages.includes(img.src)) {
-              // Pre-select this image
-              selectedImages.add(img.src);
+              // Pre-select this image using full URL
+              const fullUrl = img.dataset.fullUrl || img.src;
+              selectedImages.add(fullUrl);
               item.classList.add('ring-2', 'ring-blue-500', 'bg-blue-50');
               item.classList.remove('hover:border-gray-400');
               // Add checkmark
@@ -2356,7 +2802,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (galleryItem) {
           const img = galleryItem.querySelector('img');
           if (img) {
-            const fullUrl = img.src; // Use the full URL from the image src
+            const fullUrl = img.dataset.fullUrl || img.src; // Use the full URL from data attribute
             const imageId = fullUrl; // Use URL as unique identifier
             
             console.log('Image clicked:', imageId);
@@ -2459,7 +2905,12 @@ document.addEventListener('DOMContentLoaded', () => {
         if (hiddenInput) {
           const currentUrls = JSON.parse(hiddenInput.value || '[]');
           const imgSrc = itemToRemove.querySelector('img').src;
-          const updatedUrls = currentUrls.filter(url => url.full !== imgSrc);
+          const updatedUrls = currentUrls.filter(url => {
+            return url.full !== imgSrc && 
+                   url.thumb !== imgSrc && 
+                   url.secure_url !== imgSrc && 
+                   url.web_url !== imgSrc;
+          });
           hiddenInput.value = JSON.stringify(updatedUrls);
         }
         
@@ -2544,10 +2995,11 @@ document.addEventListener('DOMContentLoaded', () => {
           if (galleryGrid) {
             const galleryItems = galleryGrid.querySelectorAll('.relative.group.cursor-pointer');
             galleryItems.forEach(item => {
-              const img = item.querySelector('img');
-              if (img && window.recentlyUploadedImages.includes(img.src)) {
-                // Pre-select this image
-                selectedImages.add(img.src);
+            const img = item.querySelector('img');
+            if (img && window.recentlyUploadedImages.includes(img.src)) {
+              // Pre-select this image using full URL
+              const fullUrl = img.dataset.fullUrl || img.src;
+              selectedImages.add(fullUrl);
                 item.classList.add('ring-2', 'ring-blue-500', 'bg-blue-50');
                 item.classList.remove('hover:border-gray-400');
                 // Add checkmark
@@ -2599,8 +3051,8 @@ document.addEventListener('DOMContentLoaded', () => {
           if (galleryItem) {
             const img = galleryItem.querySelector('img');
             if (img) {
-              const fullUrl = img.src; // Use the full URL from the image src
-              const thumbUrl = img.src; // Same for thumb since we're using the same URL
+              const fullUrl = img.dataset.fullUrl || img.src; // Use the full URL from data attribute
+              const thumbUrl = img.src; // Use thumbnail for display
               const imageId = fullUrl; // Use URL as unique identifier
               
               console.log('Image clicked:', imageId);
@@ -2666,6 +3118,8 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // Add selected images
         selectedImages.forEach(imageUrl => {
+          // Use the full resolution URL for both full and thumb
+          // The thumb will be used for gallery display, full for lightbox
           const newImage = {full: imageUrl, thumb: imageUrl};
           currentUrls.push(newImage);
           
@@ -2705,7 +3159,12 @@ document.addEventListener('DOMContentLoaded', () => {
           if (hiddenInput) {
             const currentUrls = JSON.parse(hiddenInput.value || '[]');
             const imgSrc = itemToRemove.querySelector('img').src;
-            const updatedUrls = currentUrls.filter(url => url.full !== imgSrc);
+            const updatedUrls = currentUrls.filter(url => {
+            return url.full !== imgSrc && 
+                   url.thumb !== imgSrc && 
+                   url.secure_url !== imgSrc && 
+                   url.web_url !== imgSrc;
+          });
             hiddenInput.value = JSON.stringify(updatedUrls);
           }
           
