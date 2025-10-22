@@ -1303,35 +1303,22 @@ document.addEventListener('DOMContentLoaded', () => {
             
             // Pre-select uploaded images for gallery selection
             const imageUrl = image.web_url || image.secure_url;
-            // Note: selectedImages and updateButton will be available when the modal is properly set up
+            // Note: selectedImages will be handled when gallery reloads
           });
           
-          // Reload gallery to show new images and pre-select them
-          loadGalleryImages().then(() => {
-            // Pre-select the newly uploaded images
-            result.images.forEach(image => {
-              const imageUrl = image.web_url || image.secure_url;
-              const galleryGrid = modal.querySelector('#galleryGrid');
-              if (galleryGrid) {
-                const galleryItems = galleryGrid.querySelectorAll('.relative.group.cursor-pointer');
-                galleryItems.forEach(item => {
-                  const img = item.querySelector('img');
-                  if (img && img.src === imageUrl) {
-                    // Pre-select this image
-                    selectedImages.add(imageUrl);
-                    item.classList.add('ring-2', 'ring-blue-500', 'bg-blue-50');
-                    item.classList.remove('hover:border-gray-400');
-                    // Add checkmark
-                    const checkmark = document.createElement('div');
-                    checkmark.className = 'selection-checkmark absolute top-1 right-1 w-5 h-5 bg-blue-600 text-white text-xs rounded-full flex items-center justify-center';
-                    checkmark.innerHTML = '✓';
-                    item.appendChild(checkmark);
-                  }
-                });
-              }
-            });
-            updateButton();
+          // Note: Button count will be updated when gallery reloads and pre-selects images
+          
+          // Store uploaded images for pre-selection when gallery modal opens
+          if (!window.recentlyUploadedImages) {
+            window.recentlyUploadedImages = [];
+          }
+          result.images.forEach(image => {
+            const imageUrl = image.web_url || image.secure_url;
+            window.recentlyUploadedImages.push(imageUrl);
           });
+          
+          // Reload gallery to show new images
+          loadGalleryImages();
           
           // Reset after 3 seconds
           setTimeout(() => {
@@ -2171,14 +2158,13 @@ document.addEventListener('DOMContentLoaded', () => {
         const galleryPreview = form.querySelector('.gallery-preview');
         console.log('Gallery preview found:', galleryPreview);
         
-        // Create and show gallery modal
-        const modal = createGalleryModal();
+        // Create and show gallery modal (reuse if exists)
+        let modal = document.getElementById('galleryModal');
         if (!modal) {
-          console.error('Failed to create gallery modal!');
-          return;
+          modal = createGalleryModal();
+          document.body.appendChild(modal);
         }
         modal.style.zIndex = '9999';
-        document.body.appendChild(modal);
         modal.classList.remove('hidden');
         
         // Set up the modal for this specific case study
@@ -2307,7 +2293,35 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     
     // Load gallery images
-    loadGalleryImages();
+    loadGalleryImages().then(() => {
+      // Pre-select recently uploaded images
+      if (window.recentlyUploadedImages && window.recentlyUploadedImages.length > 0) {
+        console.log('Pre-selecting recently uploaded images:', window.recentlyUploadedImages);
+        const galleryGrid = modal.querySelector('#galleryGrid');
+        if (galleryGrid) {
+          const galleryItems = galleryGrid.querySelectorAll('.relative.group.cursor-pointer');
+          galleryItems.forEach(item => {
+            const img = item.querySelector('img');
+            if (img && window.recentlyUploadedImages.includes(img.src)) {
+              // Pre-select this image
+              selectedImages.add(img.src);
+              item.classList.add('ring-2', 'ring-blue-500', 'bg-blue-50');
+              item.classList.remove('hover:border-gray-400');
+              // Add checkmark
+              const checkmark = document.createElement('div');
+              checkmark.className = 'selection-checkmark absolute top-1 right-1 w-5 h-5 bg-blue-600 text-white text-xs rounded-full flex items-center justify-center';
+              checkmark.innerHTML = '✓';
+              item.appendChild(checkmark);
+              console.log('Pre-selected image:', img.src);
+            }
+          });
+          // Clear the recently uploaded images after pre-selection
+          window.recentlyUploadedImages = [];
+          // Update button count
+          updateButton();
+        }
+      }
+    });
     
     // Add close button functionality
     const closeBtn = modal.querySelector('#closeGallery');
@@ -2469,15 +2483,14 @@ document.addEventListener('DOMContentLoaded', () => {
       console.log('Case study form found:', caseStudyForm);
       console.log('Gallery preview found:', galleryPreview);
       
-      // Create gallery modal for this specific case study
-      console.log('Creating gallery modal...');
-      const modal = createGalleryModal();
+      // Create gallery modal for this specific case study (reuse if exists)
+      console.log('Creating/reusing gallery modal...');
+      let modal = document.getElementById('galleryModal');
       if (!modal) {
-        console.error('Failed to create gallery modal!');
-        return;
+        modal = createGalleryModal();
+        document.body.appendChild(modal);
       }
       modal.style.zIndex = '9999';
-      document.body.appendChild(modal);
       
       // Show the modal
       modal.classList.remove('hidden');
@@ -2523,7 +2536,35 @@ document.addEventListener('DOMContentLoaded', () => {
       });
       
       // Load gallery images
-      loadGalleryImages();
+      loadGalleryImages().then(() => {
+        // Pre-select recently uploaded images
+        if (window.recentlyUploadedImages && window.recentlyUploadedImages.length > 0) {
+          console.log('Pre-selecting recently uploaded images:', window.recentlyUploadedImages);
+          const galleryGrid = modal.querySelector('#galleryGrid');
+          if (galleryGrid) {
+            const galleryItems = galleryGrid.querySelectorAll('.relative.group.cursor-pointer');
+            galleryItems.forEach(item => {
+              const img = item.querySelector('img');
+              if (img && window.recentlyUploadedImages.includes(img.src)) {
+                // Pre-select this image
+                selectedImages.add(img.src);
+                item.classList.add('ring-2', 'ring-blue-500', 'bg-blue-50');
+                item.classList.remove('hover:border-gray-400');
+                // Add checkmark
+                const checkmark = document.createElement('div');
+                checkmark.className = 'selection-checkmark absolute top-1 right-1 w-5 h-5 bg-blue-600 text-white text-xs rounded-full flex items-center justify-center';
+                checkmark.innerHTML = '✓';
+                item.appendChild(checkmark);
+                console.log('Pre-selected image:', img.src);
+              }
+            });
+            // Clear the recently uploaded images after pre-selection
+            window.recentlyUploadedImages = [];
+            // Update button count
+            updateButton();
+          }
+        }
+      });
       
       // Add close button functionality
       const closeBtn = modal.querySelector('#closeGallery');
