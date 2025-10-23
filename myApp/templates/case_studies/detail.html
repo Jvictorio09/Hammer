@@ -195,24 +195,65 @@
       <h2 class="text-3xl md:text-4xl font-semibold text-center">Project Gallery</h2>
       <p class="mt-2 text-center text-white/80">Highlights from design + build</p>
 
-      <div class="mt-10 lg:columns-3 lg:gap-6 cs-gallery-masonry space-y-4 lg:space-y-6">
+      <div class="mt-10 gallery-container">
         {% if gallery_images %}
-          {% for image in gallery_images %}
-          <figure class="break-inside-avoid relative overflow-hidden rounded-2xl bg-white/5 ring-1 ring-white/10 hover:ring-white/20 transition cursor-zoom-in"
-                  onclick="openLightbox({{ forloop.counter0 }})">
-            <img src="{{ image.thumb_url }}" alt="{{ image.caption|default:'Project image' }}"
-                 class="w-full h-auto object-cover transition duration-500 group-hover:scale-[1.02]" loading="lazy" />
-            {% if image.caption %}
-              
-            {% endif %}
-          </figure>
-          {% endfor %}
+          {% if gallery_images|length == 1 %}
+            {# Single image - full width #}
+            <figure class="relative overflow-hidden rounded-2xl transition cursor-zoom-in max-w-4xl mx-auto"
+                    onclick="openLightbox(0)">
+              <img src="{{ gallery_images.0.thumb_url }}" alt="{{ gallery_images.0.caption|default:'Project image' }}"
+                   class="w-full h-auto object-cover transition duration-500 group-hover:scale-[1.02]" loading="lazy" />
+            </figure>
+          {% elif gallery_images|length == 2 %}
+            {# Two images - side by side #}
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+              {% for image in gallery_images %}
+              <figure class="relative overflow-hidden rounded-2xl transition cursor-zoom-in"
+                      onclick="openLightbox({{ forloop.counter0 }})">
+                <img src="{{ image.thumb_url }}" alt="{{ image.caption|default:'Project image' }}"
+                     class="w-full h-auto object-cover transition duration-500 group-hover:scale-[1.02]" loading="lazy" />
+              </figure>
+              {% endfor %}
+            </div>
+          {% elif gallery_images|length == 3 %}
+            {# Three images - 2 on top, 1 centered below #}
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+              {% for image in gallery_images %}
+              <figure class="relative overflow-hidden rounded-2xl bg-white/5 ring-1 ring-white/10 hover:ring-white/20 transition cursor-zoom-in {% if forloop.counter == 3 %}md:col-span-2 md:max-w-md md:mx-auto{% endif %}"
+                      onclick="openLightbox({{ forloop.counter0 }})">
+                <img src="{{ image.thumb_url }}" alt="{{ image.caption|default:'Project image' }}"
+                     class="w-full h-auto object-cover transition duration-500 group-hover:scale-[1.02]" loading="lazy" />
+              </figure>
+              {% endfor %}
+            </div>
+          {% elif gallery_images|length == 4 %}
+            {# Four images - 2x2 grid maintaining natural aspect patterns #}
+            <div class="grid grid-cols-2 gap-4 md:gap-6 items-start">
+              {% for image in gallery_images %}
+              <figure class="relative overflow-hidden rounded-2xl transition cursor-zoom-in"
+                      onclick="openLightbox({{ forloop.counter0 }})">
+                <img src="{{ image.thumb_url }}" alt="{{ image.caption|default:'Project image' }}"
+                     class="w-full h-auto object-cover transition duration-500 group-hover:scale-[1.02]" loading="lazy" />
+              </figure>
+              {% endfor %}
+            </div>
+          {% else %}
+            {# Five or more images - masonry layout #}
+            <div class="lg:columns-3 lg:gap-6 cs-gallery-masonry space-y-4 lg:space-y-6">
+              {% for image in gallery_images %}
+              <figure class="break-inside-avoid relative overflow-hidden rounded-2xl bg-white/5 ring-1 ring-white/10 hover:ring-white/20 transition cursor-zoom-in"
+                      onclick="openLightbox({{ forloop.counter0 }})">
+                <img src="{{ image.thumb_url }}" alt="{{ image.caption|default:'Project image' }}"
+                     class="w-full h-auto object-cover transition duration-500 group-hover:scale-[1.02]" loading="lazy" />
+              </figure>
+              {% endfor %}
+            </div>
+          {% endif %}
         {% else %}
           {# Render from JSONField (gallery_urls: [{thumb, full, caption}]) #}
           <template id="tmpl-gallery-card">
-            <figure class="break-inside-avoid relative overflow-hidden rounded-2xl bg-white/5 ring-1 ring-white/10 hover:ring-white/20 transition cursor-zoom-in">
+            <figure class="relative overflow-hidden rounded-2xl transition cursor-zoom-in">
               <img class="w-full h-auto object-cover transition duration-500 group-hover:scale-[1.02]" loading="lazy" />
-              
             </figure>
           </template>
           <div id="gallery-json-render" class="contents"></div>
@@ -334,7 +375,7 @@
   function updateLightbox(){ const img=document.getElementById('lightbox-img'); const cap=document.getElementById('lightbox-caption'); if(img) img.src=images[currentIndex]?.full||''; if(cap) cap.textContent=images[currentIndex]?.caption||''; }
   document.addEventListener('keydown',(e)=>{ const lb=document.getElementById('lightbox'); if(!lb||lb.classList.contains('hidden')) return; if(e.key==='Escape') closeLightbox(); if(e.key==='ArrowLeft') prevImage(); if(e.key==='ArrowRight') nextImage(); });
 
-  // If gallery is from JSONField, render it client-side
+  // If gallery is from JSONField, render it client-side with adaptive layout
   (function(){
     const jsonNode = document.getElementById('gallery-json');
     const mount = document.getElementById('gallery-json-render');
@@ -354,18 +395,62 @@
           caption: d.caption || '' 
         };
       });
+      
+      // Create adaptive layout based on number of images
+      let container;
+      if (data.length === 1) {
+        // Single image - full width
+        container = document.createElement('figure');
+        container.className = 'relative overflow-hidden rounded-2xl transition cursor-zoom-in max-w-4xl mx-auto';
+        container.onclick = () => openLightbox(0);
+      } else if (data.length === 2) {
+        // Two images - side by side
+        container = document.createElement('div');
+        container.className = 'grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6';
+      } else if (data.length === 3) {
+        // Three images - 2 on top, 1 centered below
+        container = document.createElement('div');
+        container.className = 'grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6';
+      } else if (data.length === 4) {
+        // Four images - perfect 2x2 grid with consistent aspect ratios
+        container = document.createElement('div');
+        container.className = 'grid grid-cols-2 gap-4 md:gap-6';
+      } else {
+        // Five or more images - masonry layout
+        container = document.createElement('div');
+        container.className = 'lg:columns-3 lg:gap-6 cs-gallery-masonry space-y-4 lg:space-y-6';
+      }
+      
       const tmpl = document.getElementById('tmpl-gallery-card');
       data.forEach((item, idx) => {
         const node = tmpl.content.cloneNode(true);
         const img = node.querySelector('img');
-        const cap = node.querySelector('.caption');
+        const fig = node.querySelector('figure');
+        
         // Use thumb for gallery display, but ensure we have the full URL for lightbox
         img.src = item.thumb || item.full || item.web_url || item.secure_url || '';
         img.alt = item.caption || 'Project image';
-        node.firstElementChild.onclick = () => openLightbox(idx);
-        if (item.caption) { cap.textContent = item.caption; cap.classList.remove('hidden'); }
-        mount.appendChild(node);
+        fig.onclick = () => openLightbox(idx);
+        
+        // Special handling for 3rd image in 3-image layout
+        if (data.length === 3 && idx === 2) {
+          fig.classList.add('md:col-span-2', 'md:max-w-md', 'md:mx-auto');
+        }
+        
+        // Add items-start alignment for 4-image layout to handle different aspect ratios
+        if (data.length === 4) {
+          // Keep natural aspect ratios - no modifications needed
+        }
+        
+        // Add masonry class for 5+ images
+        if (data.length >= 5) {
+          fig.classList.add('break-inside-avoid');
+        }
+        
+        container.appendChild(node);
       });
+      
+      mount.appendChild(container);
     } catch (e) {}
   })();
 

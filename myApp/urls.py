@@ -14,16 +14,31 @@ urlpatterns = [
     # Service detail (canonical)
     path("services/<slug:slug>/", views.service_detail, name="service_detail"),
 
-    # Legacy routes → redirect to the canonical service slugs you seeded
-    # Adjust slugs if you use different ones
-    
-    # Old hammer-services.com URLs - Using actual views for transition period
+    path("villas", views.home, name="home"),
+
     path("landscape/", views.legacy_landscape, name="legacy_landscape"),
+    path("landscape", views.legacy_landscape, name="legacy_landscape"),
+    path("services/landscaping/", views.legacy_landscape, name="legacy_landscape"),
     path("interior/", views.legacy_interior, name="legacy_interior"),
+    path("interior", views.legacy_interior, name="legacy_interior"),
+
+    path("services/commercial-fit-out/", views.legacy_interior, name="legacy_interior"),
+
+    path("interior/residential-fit-out-company-in-dubai/", views.legacy_interior, name="legacy_interior"),
     path("facility/", views.legacy_facility, name="legacy_facility"),
+
+    path("services/maintenance/", views.legacy_facility, name="legacy_facility"),
     path("aboutus/", views.legacy_aboutus, name="legacy_aboutus"),
+
+    path("aboutus", views.legacy_aboutus, name="legacy_aboutus"),
+
     path("blogs/", views.legacy_blogs, name="legacy_blogs"),
     path("landscaping/", views.legacy_landscape, name="legacy_landscape"),
+    path("landscape/landscape-design-development-company/", views.legacy_landscape, name="legacy_landscape"),
+
+    path("services/swimming-pools/", views.legacy_landscape, name="legacy_landscape"),
+
+    path("services/home-renovation/", views.home, name="home"),
     
     # Keep existing services/landscape/ redirect for backward compatibility
     path(
@@ -46,6 +61,9 @@ urlpatterns = [
     path("test-look/", views.landscape, name="landscape_test"),
 
     path("projects/", views.projects_index, name="projects_index"),
+
+    path("projects", views.projects_index, name="projects_index"),
+    
     path("projects/<slug:service_slug>/", views.projects_index, name="projects_by_service"),
 
 
