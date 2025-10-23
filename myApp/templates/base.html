@@ -12,7 +12,6 @@
     window.dataLayer = window.dataLayer || [];
     function gtag(){dataLayer.push(arguments);}
     gtag('js', new Date());
-
     gtag('config', 'G-QF007QSC06');
   </script>
 
@@ -35,20 +34,156 @@
 
   <!-- Tailwind CDN (v4) -->
   <script src="https://cdn.tailwindcss.com"></script>
+
   <!-- Icons -->
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet"/>
 
   <!-- Hammer tokens & small tweaks (must be AFTER Tailwind) -->
   <link href="{% static 'css/hammer.css' %}" rel="stylesheet">
 
+  <!-- Optional: Preload your hero image to improve LCP -->
+  {# <link rel="preload" as="image" href="{% static 'images/hero.jpg' %}"> #}
+
+  <!-- Enhanced preloader CSS - echoes brand identity -->
+  <style>
+    :root { --ink:#0B0E14; --teal:#18AFAB; --slate:#475569; }
+    /* container paints instantly */
+    #preloader{
+      position:fixed; inset:0; z-index:9999; display:flex;
+      align-items:center; justify-content:center; background:#fff;
+      transition:opacity .6s ease;
+    }
+    #preloader[hidden]{display:none!important}
+
+    /* card */
+    .hg-card{
+      width:min(92vw, 420px); padding:22px 20px; border-radius:16px;
+      box-shadow:0 20px 60px rgba(0,0,0,.08), 0 2px 8px rgba(0,0,0,.05);
+      background:#fff; text-align:left; will-change:transform,opacity;
+      transform:translateY(6px); opacity:0; animation:cardIn .8s ease .1s forwards;
+    }
+
+    /* header row: mark + wordmark + divider */
+    .hg-row{display:flex; align-items:center; gap:14px}
+    .hg-mark{
+      width:42px; height:42px; border-radius:10px; overflow:hidden; position:relative;
+      background:var(--teal);
+    }
+    /* subtle "steel shimmer" pass over the teal block */
+    .hg-mark::after{
+      content:""; position:absolute; inset:-40% -60% auto auto;
+      width:60%; height:160%;
+      background:linear-gradient(115deg, rgba(255,255,255,0) 0%, rgba(255,255,255,.35) 45%, rgba(255,255,255,0) 80%);
+      transform:rotate(18deg); animation:shimmer 2.2s ease-in-out .3s infinite;
+    }
+    .hg-word{
+      font:700 18px/1.15 Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      letter-spacing:.01em; color:var(--ink);
+    }
+    .hg-sub{ font:500 11px/1.1 Inter, system-ui, sans-serif; color:#6b7280; letter-spacing:.18em }
+    .hg-div{
+      flex:1 1 auto; height:1px; margin-left:10px; background:linear-gradient(to right, #e5e7eb, #c7cad1);
+    }
+
+    /* tagline & sectors */
+    .hg-tag{ margin-top:10px; color:var(--slate); font:500 12px/1.35 Inter, system-ui, sans-serif; opacity:0; animation:fadeIn .8s ease .4s forwards }
+    .hg-sec{ margin-top:6px; color:#94a3b8; font:600 10px/1 Inter, system-ui, sans-serif; letter-spacing:.22em; opacity:0; animation:fadeIn .8s ease .55s forwards }
+
+    /* progress hairline (left→right, very subtle) */
+    .hg-bar{
+      margin-top:14px; height:2px; width:0; background:linear-gradient(90deg, var(--teal), #4f46e5);
+      border-radius:2px; animation:bar 1.6s cubic-bezier(.22,.61,.36,1) .3s forwards;
+    }
+
+    /* keyframes */
+    @keyframes shimmer { 0%{transform:translateX(-40%) rotate(18deg)} 100%{transform:translateX(160%) rotate(18deg)} }
+    @keyframes fadeIn { from{opacity:0} to{opacity:1} }
+    @keyframes cardIn { from{opacity:0; transform:translateY(6px)} to{opacity:1; transform:translateY(0)} }
+    @keyframes bar { from{width:0} to{width:100%} }
+
+    /* accessibility */
+    @media (prefers-reduced-motion:reduce){
+      .hg-mark::after, .hg-bar, .hg-tag, .hg-sec, .hg-card { animation:none }
+      .hg-card{opacity:1; transform:none}
+    }
+  </style>
+
   {% block extra_head %}{% endblock %}
 </head>
 <body class="font-sans text-hammer-ink bg-white antialiased">
-  
+  <!-- Enhanced Brand Preloader -->
+  <div id="preloader" role="status" aria-live="polite" aria-label="Loading site">
+    <div class="hg-card">
+      <div class="hg-row">
+        <div class="hg-mark"></div>
+        <div>
+          <div class="hg-word">HAMMER</div>
+          <div class="hg-sub">GROUP</div>
+        </div>
+        <div class="hg-div" aria-hidden="true"></div>
+      </div>
+      <div class="hg-tag">Transforming Spaces, Redefining Living</div>
+      <div class="hg-sec">VILLAS&nbsp;|&nbsp;INTERIOR&nbsp;|&nbsp;LANDSCAPE&nbsp;|&nbsp;FACILITY</div>
+      <div class="hg-bar" aria-hidden="true"></div>
+    </div>
+  </div>
 
   {% include "header.html" %}
   {% include "partials/wattsapp.html" %}
-  <main class="pt-20">{% block content %}{% endblock %}</main>
+  <main class="pt-20">
+    {% block content %}{% endblock %}
+  </main>
   {% include "footer.html" %}
+
+  <!-- Fade-out logic with a safety cap (never lingers) -->
+  <script>
+    (function () {
+      const pre = document.getElementById('preloader');
+      if (!pre) return;
+
+      // Show only once per session (optional). Comment out to show every page load.
+      if (sessionStorage.getItem('hgPreloaded') === '1') {
+        pre.setAttribute('hidden','');
+        return;
+      }
+
+      let done = false;
+      const hide = () => {
+        if (done) return; done = true;
+        pre.style.opacity = '0';
+        setTimeout(() => pre.setAttribute('hidden',''), 600);
+        sessionStorage.setItem('hgPreloaded','1');
+      };
+
+      // Hard cap so the loader never exceeds ~2.2s
+      const cap = setTimeout(hide, 2200);
+
+      // Preferred: when the whole page (images, CSS, fonts) has loaded
+      window.addEventListener('load', () => { clearTimeout(cap); hide(); }, { once:true });
+
+      // Faster path: if you have a hero image as LCP, give it id="heroImage"
+      const hero = document.getElementById('heroImage');
+      if (hero) {
+        if (hero.complete) { clearTimeout(cap); hide(); }
+        else hero.addEventListener('load', () => { clearTimeout(cap); hide(); }, { once:true });
+      }
+
+      // Also check for hero section background image
+      const heroSection = document.getElementById('heroSection');
+      if (heroSection) {
+        const bgUrl = heroSection.dataset.bg;
+        if (bgUrl) {
+          const img = new Image();
+          img.onload = () => { clearTimeout(cap); hide(); };
+          img.src = bgUrl;
+        }
+      }
+    })();
+  </script>
+
+  <noscript>
+    <!-- If JS is disabled, ensure content shows -->
+    <style>#preloader{display:none!important}</style>
+  </noscript>
 </body>
 </html>
