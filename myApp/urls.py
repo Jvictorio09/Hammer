@@ -14,6 +14,10 @@ urlpatterns = [
     # Legacy service redirects (must come BEFORE generic service detail)
     path("services/landscaping/", views.legacy_landscape, name="legacy_landscape"),
     path("services/landscape/", views.legacy_landscape, name="legacy_landscape"),
+    path("services/commercial-fit-out/", views.legacy_interior, name="legacy_interior"),
+    path("services/maintenance/", views.legacy_facility, name="legacy_facility"),
+    path("services/swimming-pools/", views.legacy_landscape, name="legacy_landscape"),
+    path("services/home-renovation/", views.home, name="home"),
     
     # Service detail (canonical) - must come AFTER specific redirects
     path("services/<slug:slug>/", views.service_detail, name="service_detail"),
@@ -25,13 +29,9 @@ urlpatterns = [
     path("interior/", views.legacy_interior, name="legacy_interior"),
     path("interior", views.legacy_interior, name="legacy_interior"),
 
-    path("services/commercial-fit-out/", views.legacy_interior, name="legacy_interior"),
-
     path("interior/residential-fit-out-company-in-dubai/", views.legacy_interior, name="legacy_interior"),
     path("facility/", views.legacy_facility, name="legacy_facility"),
     path("facility", views.legacy_facility, name="legacy_facility"),
-
-    path("services/maintenance/", views.legacy_facility, name="legacy_facility"),
     path("aboutus/", views.legacy_aboutus, name="legacy_aboutus"),
 
     path("aboutus", views.legacy_aboutus, name="legacy_aboutus"),
@@ -40,9 +40,6 @@ urlpatterns = [
     path("landscaping/", views.legacy_landscape, name="legacy_landscape"),
     path("landscape/landscape-design-development-company/", views.legacy_landscape, name="legacy_landscape"),
 
-    path("services/swimming-pools/", views.legacy_landscape, name="legacy_landscape"),
-
-    path("services/home-renovation/", views.home, name="home"),
     
     # Legacy redirects moved above to avoid conflicts
 
