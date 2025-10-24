@@ -736,20 +736,38 @@
     </header>
 
     <style>
-      .carousel-wrap { position: relative; display: flex; align-items: center; }
+      .carousel-wrap { 
+        position: relative; 
+        display: flex; 
+        align-items: center;
+        user-select: none;
+      }
+      .carousel-wrap.dragging { cursor: grabbing; }
       .carousel {
         display: flex; gap: 1.25rem;
-        overflow-x: auto; padding: .5rem 0; width: 100%;
+        overflow-x: auto; 
+        padding: .5rem 0; 
+        width: 100%;
         scroll-snap-type: x mandatory; scrollbar-width: none;
         -webkit-overflow-scrolling: touch;
+        cursor: grab;
       }
       .carousel::-webkit-scrollbar { display: none; }
+      .carousel.dragging { cursor: grabbing; }
 
-      .slide { flex: 0 0 80%; max-width: 80%; scroll-snap-align: center; }
+      .slide { 
+        flex: 0 0 80%; max-width: 80%; 
+        scroll-snap-align: center;
+        pointer-events: auto;
+      }
       @media (min-width: 768px) { .slide { flex-basis: 40%; max-width: 40%; } }
       @media (min-width: 1024px){ .slide { flex-basis: 25%; max-width: 25%; } }
 
-      .team-card { display: flex; flex-direction: column; height: 100%; }
+      .team-card { 
+        display: flex; 
+        flex-direction: column; 
+        height: 100%;
+      }
       .team-photo-wrap {
         position: relative; border-radius: 1rem; overflow: hidden;
         aspect-ratio: 4 / 5; background: #f5f5f5;
@@ -757,6 +775,7 @@
       .team-photo {
         width: 100%; height: 100%; object-fit: cover; display: block;
         transition: transform .25s cubic-bezier(.22,1,.36,1), box-shadow .25s;
+        pointer-events: none;
       }
       .team-card:hover .team-photo { transform: translateY(-4px); box-shadow: 0 12px 32px rgba(0,0,0,.12); }
       .team-meta { margin-top: .85rem; text-align: center; }
@@ -764,7 +783,11 @@
       .team-role { margin-top: .25rem; color: #667085; font-size: .95rem; }
 
       #expertsCarousel { scroll-snap-type: none !important; }
-      .team-link { text-decoration: none; color: inherit; }
+      .team-link { 
+        text-decoration: none; 
+        color: inherit;
+        display: block;
+      }
       .team-link:focus-visible { outline: 2px solid #111; outline-offset: 4px; border-radius: 12px; }
     </style>
 
@@ -829,21 +852,54 @@
     <script>
     (function(){
       const rail = document.getElementById('expertsCarousel');
-      if(!rail) return;
+      const wrap = rail?.parentElement;
+      if(!rail || !wrap) return;
 
-      let speed = 0.6, rafId = null, baseWidth = 0, isTouching = false;
+      let speed = 0.6, rafId = null, baseWidth = 0, isTouching = false, isDragging = false;
 
-      rail.addEventListener('wheel', (e)=>{
-        if(Math.abs(e.deltaY) > Math.abs(e.deltaX)){
-          rail.scrollLeft += e.deltaY * 0.85;
-          e.preventDefault();
+      // Touch and pointer events
+      const startInteraction = () => { isTouching = true; stop(); };
+      const endInteraction = () => { isTouching = false; if(!isDragging) start(); };
+      
+      rail.addEventListener('touchstart', startInteraction, {passive:true});
+      rail.addEventListener('touchend', endInteraction, {passive:true});
+      
+      wrap.addEventListener('touchstart', startInteraction, {passive:true});
+      wrap.addEventListener('touchend', endInteraction, {passive:true});
+
+      // Drag to scroll functionality
+      let startX, scrollLeft;
+      
+      const dragStart = (e) => {
+        isDragging = true;
+        rail.classList.add('dragging');
+        wrap.classList.add('dragging');
+        startX = e.pageX - rail.offsetLeft;
+        scrollLeft = rail.scrollLeft;
+        stop();
+      };
+      
+      const dragMove = (e) => {
+        if (!isDragging) return;
+        e.preventDefault();
+        const x = e.pageX - rail.offsetLeft;
+        const walk = (x - startX) * 1.5;
+        rail.scrollLeft = scrollLeft - walk;
+      };
+      
+      const dragEnd = () => {
+        if (isDragging) {
+          isDragging = false;
+          rail.classList.remove('dragging');
+          wrap.classList.remove('dragging');
+          setTimeout(() => { if(!isTouching) start(); }, 100);
         }
-      }, {passive:false});
-
-      rail.addEventListener('touchstart', ()=>{ isTouching = true; stop(); }, {passive:true});
-      rail.addEventListener('touchend',   ()=>{ isTouching = false; start(); }, {passive:true});
-      rail.addEventListener('pointerdown', ()=>{ isTouching = true; stop(); });
-      rail.addEventListener('pointerup',   ()=>{ isTouching = false; start(); });
+      };
+      
+      rail.addEventListener('mousedown', dragStart);
+      rail.addEventListener('mousemove', dragMove);
+      rail.addEventListener('mouseup', dragEnd);
+      rail.addEventListener('mouseleave', dragEnd);
 
       function buildClones(){
         stop();
@@ -873,7 +929,7 @@
 
       function step(){
         if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-        if (isTouching) return;
+        if (isTouching || isDragging) return;
         rail.scrollLeft += speed;
         if(rail.scrollLeft >= baseWidth){
           rail.scrollLeft -= baseWidth;
@@ -883,8 +939,8 @@
       function start(){ if(!rafId) rafId = requestAnimationFrame(step); }
       function stop(){ cancelAnimationFrame(rafId); rafId = null; }
 
-      rail.addEventListener('mouseenter', stop);
-      rail.addEventListener('mouseleave', start);
+      wrap.addEventListener('mouseenter', stop);
+      wrap.addEventListener('mouseleave', () => { if(!isDragging) start(); });
       rail.addEventListener('focusin', stop);
       rail.addEventListener('focusout', start);
 
@@ -1087,7 +1143,7 @@
 
 
 {% include "partials/cta_slim.html" %}
-{% include "partials/partners.html" %}
+{% include "partials/partners_colored.html" %}
 
 
 
