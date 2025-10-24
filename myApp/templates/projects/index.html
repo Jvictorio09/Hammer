@@ -238,7 +238,7 @@
     <div class="projects-grid" id="projectsGrid">
       {% for p in page_obj.object_list %}
         {% if p.full_url %}
-        <a href="{% if p.service %}{% url 'service_detail' p.service.slug %}{% else %}#{% endif %}"
+        <a href="{% url 'case_study_detail' p.slug %}"
            class="project-card"
            data-service="{{ p.service.slug|default:'misc' }}"
            aria-label="View {{ p.title|default:'project' }}">
