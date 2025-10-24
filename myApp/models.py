@@ -492,3 +492,68 @@ class MediaAsset(models.Model):
         # Optional detail page (add a URL if you plan to expose it)
         return reverse("mediaasset_detail", kwargs={"slug": self.slug}) if self.slug else "#"
 
+
+class PageHero(models.Model):
+    """
+    Dynamic hero section content for each page.
+    Allows superusers to customize hero images and text per page.
+    """
+    PAGE_CHOICES = [
+        ('home', 'Home'),
+        ('about', 'About'),
+        ('services', 'Services'),
+        ('projects', 'Projects'),
+        ('insights', 'Insights'),
+        ('contact', 'Contact'),
+    ]
+    
+    page = models.CharField(max_length=50, choices=PAGE_CHOICES, unique=True, db_index=True, 
+                           help_text="Which page this hero applies to")
+    title = models.CharField(max_length=200, help_text="Internal title for identification")
+    
+    # Hero content
+    eyebrow = models.CharField(max_length=100, blank=True, 
+                              help_text="Small text above headline (e.g., 'Dubai • Design & Build')")
+    headline = models.CharField(max_length=250, 
+                               help_text="Main hero headline")
+    subtext = models.TextField(blank=True, 
+                              help_text="Supporting text below headline")
+    
+    # Hero image
+    hero_image_url = models.URLField(blank=True, 
+                                     help_text="Cloudinary URL for hero background image")
+    image_position = models.CharField(max_length=50, default='50% 50%',
+                                     help_text="CSS background-position (e.g., '50% 50%', '50% 30%')")
+    
+    # Call-to-action buttons (stored as JSON for flexibility)
+    buttons = models.JSONField(default=list, blank=True,
+                              help_text="Array of button objects: [{text, url, style}, ...]")
+    
+    # Feature pills below CTA buttons
+    pills = models.JSONField(default=list, blank=True,
+                            help_text="Array of pill text: ['pill 1', 'pill 2', ...]")
+    
+    # Control
+    is_active = models.BooleanField(default=True, db_index=True,
+                                   help_text="Set to false to temporarily disable")
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        ordering = ['page']
+        verbose_name = 'Page Hero'
+        verbose_name_plural = 'Page Heroes'
+    
+    def __str__(self):
+        return f"{self.get_page_display()} Hero - {self.title}"
+    
+    @classmethod
+    def get_hero_for_page(cls, page_identifier):
+        """
+        Get active hero content for a page, with fallback to default.
+        """
+        try:
+            return cls.objects.get(page=page_identifier, is_active=True)
+        except cls.DoesNotExist:
+            return None

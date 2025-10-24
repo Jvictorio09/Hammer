@@ -99,4 +99,9 @@ urlpatterns = [
     path("dashboard/users/new/", views.dashboard_user_create, name="dashboard_user_create"),
     path("dashboard/users/<int:pk>/edit/", views.dashboard_user_edit, name="dashboard_user_edit"),
     path("dashboard/users/<int:pk>/delete/", views.dashboard_user_delete, name="dashboard_user_delete"),
+    # Page Heroes (Superuser/Admin only)
+    path("dashboard/heroes/", views.dashboard_heroes_list, name="dashboard_heroes_list"),
+    path("dashboard/heroes/new/", views.dashboard_hero_create, name="dashboard_hero_create"),
+    path("dashboard/heroes/<int:pk>/edit/", views.dashboard_hero_edit, name="dashboard_hero_edit"),
+    path("dashboard/heroes/<int:pk>/delete/", views.dashboard_hero_delete, name="dashboard_hero_delete"),
 ]

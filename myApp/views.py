@@ -49,6 +49,7 @@ from .models import (
     MediaAlbum,
     CaseStudy,
     InsightAuditLog,
+    PageHero,
 )
 from .forms import ServiceForm, InsightForm, ServiceCapabilityFormSet, ServiceEditorialImageFormSet, ServiceProjectImageFormSet, CaseStudyFormSet, ServiceProcessStepFormSet
 from .utils.google_drive_utils import upload_from_google_drive_to_cloudinary, extract_file_id_from_url, bulk_upload_from_drive_folder
@@ -251,12 +252,16 @@ def home(request):
                 'title': service.title,
                 'slug': service.slug
             })
+    
+    # Get hero content for home page
+    hero = PageHero.get_hero_for_page('home')
 
     return render(request, "index.html", {
         "services": services,
         "featured_cs": featured_cs,
         "project_filters": project_filters,
         "case_studies_by_service": case_studies_by_service,
+        "hero": hero,
     })
 
 
@@ -499,6 +504,9 @@ def projects_index(request, service_slug=None):
         if current_service else
         "Selected projects by Hammer Group across landscape, interiors and build—crafted with premium materials and clean execution."
     )
+    
+    # Get hero content for projects page
+    hero = PageHero.get_hero_for_page('projects')
 
     ctx = {
         "services": services,               # left rail shows only services with imaged projects
@@ -506,6 +514,7 @@ def projects_index(request, service_slug=None):
         "page_obj": page_obj,               # items are image-only & grouped by service
         "meta_title": meta_title,
         "meta_desc": meta_desc,
+        "hero": hero,                       # Add hero content
     }
     return render(request, "projects/index.html", ctx)
 
@@ -556,8 +565,16 @@ def about(request):
         .filter(is_active=True, is_featured=True)
         .order_by('sort_order', 'id')[:16]
     )
+    
+    # Get hero content for about page
+    hero = PageHero.get_hero_for_page('about')
+    
+    # Fallback hero image URL for about page
+    hero_image_url = hero.hero_image_url if hero and hero.hero_image_url else 'https://images.unsplash.com/photo-1501004318641-b39e6451bec6?q=80&w=2000&auto=format&fit=crop'
 
     ctx = {
+        "hero": hero,
+        "hero_image_url": hero_image_url,
         "metrics": [
             {"value": "1000+", "label": "Projects Delivered"},
             {"value": "20+ yrs", "label": "Operating in Dubai"},
@@ -1928,3 +1945,133 @@ def dashboard_team_delete(request, pk: int):
     team_member.delete()
     messages.success(request, f"Team member '{name}' has been deleted.")
     return redirect("dashboard_team_list")
+
+
+# -------------------------------------------------------------------------------------- 
+# Hero Management (Superuser only)
+# -------------------------------------------------------------------------------------- 
+
+@admin_required
+def dashboard_heroes_list(request):
+    """List all page heroes"""
+    heroes = PageHero.objects.all().order_by('page')
+    return render(request, "dashboard/heroes_list.html", {"heroes": heroes})
+
+
+@admin_required
+def dashboard_hero_create(request):
+    """Create a new page hero"""
+    if request.method == "POST":
+        # Parse form data
+        page = request.POST.get('page')
+        title = request.POST.get('title')
+        eyebrow = request.POST.get('eyebrow', '')
+        headline = request.POST.get('headline')
+        subtext = request.POST.get('subtext', '')
+        hero_image_url = request.POST.get('hero_image_url', '')
+        image_position = request.POST.get('image_position', '50% 50%')
+        is_active = request.POST.get('is_active') == 'on'
+        
+        # Parse buttons (JSON)
+        buttons_json = request.POST.get('buttons', '[]')
+        try:
+            buttons = json.loads(buttons_json)
+        except json.JSONDecodeError:
+            buttons = []
+        
+        # Parse pills (JSON or comma-separated)
+        pills_json = request.POST.get('pills', '[]')
+        try:
+            pills = json.loads(pills_json)
+        except json.JSONDecodeError:
+            # Try comma-separated fallback
+            pills = [p.strip() for p in pills_json.split(',') if p.strip()]
+        
+        # Create hero
+        try:
+            hero = PageHero.objects.create(
+                page=page,
+                title=title,
+                eyebrow=eyebrow,
+                headline=headline,
+                subtext=subtext,
+                hero_image_url=hero_image_url,
+                image_position=image_position,
+                buttons=buttons,
+                pills=pills,
+                is_active=is_active
+            )
+            messages.success(request, f"Hero for '{hero.get_page_display()}' page created successfully!")
+            return redirect("dashboard_heroes_list")
+        except Exception as e:
+            messages.error(request, f"Error creating hero: {str(e)}")
+    
+    # Available pages that don't have a hero yet
+    existing_pages = PageHero.objects.values_list('page', flat=True)
+    available_pages = [
+        (code, label) for code, label in PageHero.PAGE_CHOICES 
+        if code not in existing_pages
+    ]
+    
+    return render(request, "dashboard/hero_form.html", {
+        "mode": "create",
+        "available_pages": available_pages,
+        "page_choices": PageHero.PAGE_CHOICES
+    })
+
+
+@admin_required
+def dashboard_hero_edit(request, pk: int):
+    """Edit a page hero"""
+    hero = get_object_or_404(PageHero, pk=pk)
+    
+    if request.method == "POST":
+        # Parse form data
+        hero.title = request.POST.get('title', hero.title)
+        hero.eyebrow = request.POST.get('eyebrow', '')
+        hero.headline = request.POST.get('headline')
+        hero.subtext = request.POST.get('subtext', '')
+        hero.hero_image_url = request.POST.get('hero_image_url', '')
+        hero.image_position = request.POST.get('image_position', '50% 50%')
+        hero.is_active = request.POST.get('is_active') == 'on'
+        
+        # Parse buttons (JSON)
+        buttons_json = request.POST.get('buttons', '[]')
+        try:
+            hero.buttons = json.loads(buttons_json)
+        except json.JSONDecodeError:
+            hero.buttons = []
+        
+        # Parse pills (JSON or comma-separated)
+        pills_json = request.POST.get('pills', '[]')
+        try:
+            hero.pills = json.loads(pills_json)
+        except json.JSONDecodeError:
+            # Try comma-separated fallback
+            hero.pills = [p.strip() for p in pills_json.split(',') if p.strip()]
+        
+        try:
+            hero.save()
+            messages.success(request, f"Hero for '{hero.get_page_display()}' page updated successfully!")
+            return redirect("dashboard_heroes_list")
+        except Exception as e:
+            messages.error(request, f"Error updating hero: {str(e)}")
+    
+    return render(request, "dashboard/hero_form.html", {
+        "mode": "edit",
+        "hero": hero,
+        "page_choices": PageHero.PAGE_CHOICES,
+        "buttons_json": json.dumps(hero.buttons),
+        "pills_json": json.dumps(hero.pills)
+    })
+
+
+@admin_required
+@require_POST
+def dashboard_hero_delete(request, pk: int):
+    """Delete a page hero"""
+    hero = get_object_or_404(PageHero, pk=pk)
+    page_name = hero.get_page_display()
+    hero.delete()
+    messages.success(request, f"Hero for '{page_name}' page has been deleted.")
+    return redirect("dashboard_heroes_list")

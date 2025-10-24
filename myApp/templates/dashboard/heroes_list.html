@@ -1,0 +1,128 @@
+{% extends "dashboard/base.html" %}
+{% block page_title %}Page Heroes{% endblock %}
+
+{% block content %}
+<div class="flex items-center justify-between mb-6">
+  <div>
+    <h1 class="text-2xl font-bold text-gray-900">Page Heroes</h1>
+    <p class="text-gray-600 mt-1">Manage hero images and content for each page</p>
+  </div>
+  <a href="{% url 'dashboard_hero_create' %}" 
+     class="inline-flex items-center px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition">
+    <i class="fa-solid fa-plus mr-2"></i>
+    Add New Hero
+  </a>
+</div>
+
+{% if messages %}
+  {% for message in messages %}
+    <div class="mb-4 p-4 rounded-lg {% if message.tags == 'success' %}bg-green-50 text-green-800{% elif message.tags == 'error' %}bg-red-50 text-red-800{% else %}bg-blue-50 text-blue-800{% endif %}">
+      {{ message }}
+    </div>
+  {% endfor %}
+{% endif %}
+
+{% if heroes %}
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+  {% for hero in heroes %}
+  <div class="bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition overflow-hidden">
+    <!-- Hero Image Preview -->
+    {% if hero.hero_image_url %}
+    <div class="h-40 bg-gray-100 relative overflow-hidden">
+      <img src="{{ hero.hero_image_url }}" 
+           alt="{{ hero.title }}" 
+           class="w-full h-full object-cover">
+      <div class="absolute inset-0 bg-gradient-to-b from-black/50 via-transparent to-black/70"></div>
+      <div class="absolute top-3 right-3">
+        {% if hero.is_active %}
+        <span class="px-2 py-1 text-xs font-medium bg-green-500 text-white rounded-full">Active</span>
+        {% else %}
+        <span class="px-2 py-1 text-xs font-medium bg-gray-500 text-white rounded-full">Inactive</span>
+        {% endif %}
+      </div>
+      <div class="absolute bottom-3 left-3 right-3">
+        <div class="text-white text-sm font-medium">{{ hero.get_page_display }} Page</div>
+      </div>
+    </div>
+    {% else %}
+    <div class="h-40 bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center relative">
+      <i class="fa-solid fa-image text-4xl text-gray-400"></i>
+      <div class="absolute top-3 right-3">
+        {% if hero.is_active %}
+        <span class="px-2 py-1 text-xs font-medium bg-green-500 text-white rounded-full">Active</span>
+        {% else %}
+        <span class="px-2 py-1 text-xs font-medium bg-gray-500 text-white rounded-full">Inactive</span>
+        {% endif %}
+      </div>
+      <div class="absolute bottom-3 left-3 right-3">
+        <div class="text-gray-600 text-sm font-medium">{{ hero.get_page_display }} Page</div>
+      </div>
+    </div>
+    {% endif %}
+    
+    <!-- Hero Content -->
+    <div class="p-5">
+      <h3 class="font-bold text-gray-900 mb-2">{{ hero.title }}</h3>
+      
+      {% if hero.eyebrow %}
+      <p class="text-xs text-teal-600 font-medium mb-2">{{ hero.eyebrow }}</p>
+      {% endif %}
+      
+      <p class="text-sm text-gray-800 font-medium mb-2 line-clamp-2">{{ hero.headline }}</p>
+      
+      {% if hero.subtext %}
+      <p class="text-xs text-gray-600 mb-3 line-clamp-2">{{ hero.subtext }}</p>
+      {% endif %}
+      
+      <!-- Metadata -->
+      <div class="flex items-center gap-4 text-xs text-gray-500 mb-4 pb-4 border-b border-gray-100">
+        <div>
+          <i class="fa-solid fa-image mr-1"></i>
+          {% if hero.hero_image_url %}Has Image{% else %}No Image{% endif %}
+        </div>
+        <div>
+          <i class="fa-solid fa-mouse-pointer mr-1"></i>
+          {{ hero.buttons|length }} Button{% if hero.buttons|length != 1 %}s{% endif %}
+        </div>
+        <div>
+          <i class="fa-solid fa-tags mr-1"></i>
+          {{ hero.pills|length }} Pill{% if hero.pills|length != 1 %}s{% endif %}
+        </div>
+      </div>
+      
+      <!-- Actions -->
+      <div class="flex gap-2">
+        <a href="{% url 'dashboard_hero_edit' hero.pk %}" 
+           class="flex-1 inline-flex items-center justify-center px-3 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition">
+          <i class="fa-solid fa-edit mr-1"></i>
+          Edit
+        </a>
+        <form method="post" action="{% url 'dashboard_hero_delete' hero.pk %}" 
+              onsubmit="return confirm('Delete hero for {{ hero.get_page_display }} page?');"
+              class="flex-1">
+          {% csrf_token %}
+          <button type="submit" 
+                  class="w-full inline-flex items-center justify-center px-3 py-2 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700 transition">
+            <i class="fa-solid fa-trash mr-1"></i>
+            Delete
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<div class="bg-white rounded-xl border border-gray-200 p-12 text-center">
+  <i class="fa-solid fa-image text-5xl text-gray-300 mb-4"></i>
+  <h3 class="text-xl font-semibold text-gray-900 mb-2">No Page Heroes Yet</h3>
+  <p class="text-gray-600 mb-6">Create hero sections for your pages to customize their appearance.</p>
+  <a href="{% url 'dashboard_hero_create' %}" 
+     class="inline-flex items-center px-6 py-3 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition">
+    <i class="fa-solid fa-plus mr-2"></i>
+    Create Your First Hero
+  </a>
+</div>
+{% endif %}
+{% endblock %}
+

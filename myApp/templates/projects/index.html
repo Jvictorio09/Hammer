@@ -34,6 +34,17 @@
         radial-gradient(900px 480px at 85% 15%, rgba(24,175,171,.10), transparent 60%),
         linear-gradient(180deg, #0B0E14 0%, #131826 100%);
     }
+    /* If hero has background image */
+    #projectsPage .hero.has-bg-image{
+      background-size: cover;
+      background-position: {{ hero.image_position|default:"50% 50%" }};
+    }
+    #projectsPage .hero.has-bg-image::before{
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, rgba(11,14,20,0.7) 0%, rgba(11,14,20,0.5) 50%, rgba(11,14,20,0.8) 100%);
+    }
     #projectsPage .hero .noise{ 
       position:absolute; inset:0; opacity:.025; mix-blend-mode:overlay; pointer-events:none;
       background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence baseFrequency='0.8' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.35'/%3E%3C/svg%3E");
@@ -212,12 +223,19 @@
 {% block content %}
 <section id="projectsPage">
   <!-- Hero -->
-  <header class="hero">
+  <header class="hero {% if hero and hero.hero_image_url %}has-bg-image{% endif %}" 
+          {% if hero and hero.hero_image_url %}style="background-image: url('{{ hero.hero_image_url }}');"{% endif %}>
     <div class="noise"></div>
     <div class="hero-content">
-      <p class="hero-eyebrow">Our Portfolio</p>
-      <h1>Signature <span style="color:var(--teal)">Projects</span></h1>
-      <p class="hero-subtitle">Explore our curated collection of exceptional work across architecture, interiors, and design.</p>
+      {% if hero %}
+        {% if hero.eyebrow %}<p class="hero-eyebrow">{{ hero.eyebrow }}</p>{% endif %}
+        <h1>{{ hero.headline }}</h1>
+        {% if hero.subtext %}<p class="hero-subtitle">{{ hero.subtext }}</p>{% endif %}
+      {% else %}
+        <p class="hero-eyebrow">Our Portfolio</p>
+        <h1>Signature <span style="color:var(--teal)">Projects</span></h1>
+        <p class="hero-subtitle">Explore our curated collection of exceptional work across architecture, interiors, and design.</p>
+      {% endif %}
     </div>
   </header>
 
