@@ -95,6 +95,7 @@ class ServiceForm(forms.ModelForm):
             "stat_projects","stat_years","stat_specialists",
             "pinned_heading","pinned_title","pinned_body_1","pinned_body_2",
             "insights_heading","insights_subcopy",
+            "featured_case_study",
             "is_active","sort_order",
             "seo_meta_title","seo_meta_description","canonical_path",
         ]
@@ -128,6 +129,18 @@ class ServiceForm(forms.ModelForm):
         if len(d) > 200:
             raise forms.ValidationError("Keep meta description concise (≤ 200 chars).")
         return d
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Filter featured_case_study dropdown to only show case studies for this service
+        if self.instance and self.instance.pk:
+            self.fields['featured_case_study'].queryset = self.instance.case_studies.all()
+            self.fields['featured_case_study'].label_from_instance = lambda obj: f"{obj.title}"
+        else:
+            # For new services, show empty queryset until service is created
+            from .models import CaseStudy
+            self.fields['featured_case_study'].queryset = CaseStudy.objects.none()
+            self.fields['featured_case_study'].help_text = "Save the service first, then add projects before selecting a featured one."
 
 
 

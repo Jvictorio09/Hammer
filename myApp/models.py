@@ -32,6 +32,11 @@ class Service(TimeStamped):
     insights_heading = models.CharField(max_length=200, blank=True, help_text="Heading for Insights block on this service page.")
     insights_subcopy = models.CharField(max_length=300, blank=True, help_text="Short description under the Insights heading.")
 
+    # Featured case study for landing page
+    featured_case_study = models.ForeignKey('CaseStudy', on_delete=models.SET_NULL, null=True, blank=True, 
+                                            related_name='featured_in_service',
+                                            help_text="Select which project will be featured on the landing page for this service")
+
     is_active = models.BooleanField(default=True, db_index=True)
     sort_order = models.PositiveIntegerField(default=0, db_index=True)
 

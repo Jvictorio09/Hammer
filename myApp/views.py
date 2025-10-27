@@ -213,21 +213,28 @@ from .models import Service, CaseStudy
 def home(request):
     services = Service.objects.filter(is_active=True).order_by("sort_order", "title")
 
-    # Get first case study for each service (excluding joinery and facility management)
+    # Get featured case study for each service (excluding joinery and facility management)
     case_studies_by_service = {}
     services_with_projects = []
     excluded_services = ['joinery', 'facility-management']
     
     for service in services:
         if service.slug not in excluded_services:
-            first_case_study = (
-                CaseStudy.objects
-                .filter(service=service)
-                .order_by("sort_order", "title")
-                .first()
-            )
-            if first_case_study:
-                case_studies_by_service[service.slug] = first_case_study
+            # Prioritize the featured_case_study if set, otherwise get the first one
+            featured_case_study = None
+            if hasattr(service, 'featured_case_study') and service.featured_case_study:
+                featured_case_study = service.featured_case_study
+            else:
+                # Fallback to first case study if no featured one is selected
+                featured_case_study = (
+                    CaseStudy.objects
+                    .filter(service=service)
+                    .order_by("sort_order", "title")
+                    .first()
+                )
+            
+            if featured_case_study:
+                case_studies_by_service[service.slug] = featured_case_study
                 services_with_projects.append(service)
 
     # Choose the first featured case study; fallback to any case study; fallback to None.
