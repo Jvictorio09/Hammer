@@ -457,9 +457,11 @@ def projects_index(request, service_slug=None):
     )
 
     # Left-rail services: only active services that actually have imaged projects
+    # Exclude Facility Management from the projects page
     services = (
         Service.objects.only("id", "title", "slug", "sort_order")
         .filter(is_active=True)
+        .exclude(slug="facility-management")
         .annotate(has_imaged_cs=Exists(imaged_cs_exists))
         .filter(has_imaged_cs=True)
         .order_by("sort_order", "title")
@@ -467,17 +469,22 @@ def projects_index(request, service_slug=None):
 
     current_service = None
 
-    # Base queryset: only imaged case studies, ordered by service grouping then project priority
+    # Base queryset: only imaged case studies, ordered by featured status first, then sort order
+    # This ensures a diverse mix of projects from all services on the first page
+    # Exclude Facility Management projects
     case_studies_qs = (
         CaseStudy.objects.select_related("service")
         .only(
             "id", "service_id", "title", "thumb_url", "full_url",
-            "summary", "is_featured", "sort_order"
+            "summary", "is_featured", "sort_order", "slug"
         )
         .exclude(Q(full_url__isnull=True) | Q(full_url__exact=""))
+        .exclude(service__slug="facility-management")
         .order_by(
-            "service__sort_order", "service__title",    # group & order by service
-            "-is_featured", "sort_order", "title", "id" # order within a service
+            "-is_featured",           # featured projects first
+            "sort_order",             # then by sort order
+            "title",                  # then alphabetically
+            "id"                      # tie-breaker
         )
     )
 
@@ -486,8 +493,8 @@ def projects_index(request, service_slug=None):
         current_service = get_object_or_404(services, slug=service_slug)
         case_studies_qs = case_studies_qs.filter(service=current_service)
 
-    # paginate (12 per page)
-    paginator = Paginator(case_studies_qs, 12)
+    # paginate (30 per page for better showcase)
+    paginator = Paginator(case_studies_qs, 30)
     page_number = request.GET.get("page") or 1
     try:
         page_obj = paginator.page(page_number)
