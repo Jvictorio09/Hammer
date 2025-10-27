@@ -381,3 +381,4 @@ python seed_heroes.py
 
 Then visit `/dashboard/heroes/` and start customizing your heroes!
 
+

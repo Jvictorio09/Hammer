@@ -16,7 +16,10 @@ class Service(TimeStamped):
     eyebrow = models.CharField(max_length=80, blank=True)
     hero_headline = models.CharField(max_length=250)
     hero_subcopy = models.TextField(blank=True)
-    hero_media_url = models.URLField(blank=True)  # <- Cloudinary URL (optional)
+    hero_media_url = models.URLField(blank=True)  # <- Original/full Cloudinary URL
+    hero_cropped_url = models.URLField(blank=True, help_text="Cropped hero image (21:9 aspect ratio)")
+    hero_image_position = models.CharField(max_length=50, default='50% 40%',
+                                          help_text="CSS background-position for hero image (e.g., '50% 40%')")
     stat_projects = models.CharField(max_length=20, default="650+")
     stat_years = models.CharField(max_length=20, default="20+")
     stat_specialists = models.CharField(max_length=20, default="1000+")

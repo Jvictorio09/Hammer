@@ -250,3 +250,4 @@ You now have a **professional-grade image crop tool** that:
 
 **Refresh and try it - you'll LOVE this!** 😍
 
+

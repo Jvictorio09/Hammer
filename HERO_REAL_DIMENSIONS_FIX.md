@@ -199,3 +199,4 @@ min-height: 420px;
 
 **Refresh and try it - the cropping will now match perfectly!** 🚀✨
 
+

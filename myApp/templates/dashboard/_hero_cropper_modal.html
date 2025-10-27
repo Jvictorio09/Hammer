@@ -1,0 +1,301 @@
+<!-- Cropper.js CSS -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css">
+
+<!-- Cropper.js JavaScript -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+
+<style>
+#cropHeroContainer {
+  position: relative;
+  height: 500px;
+  width: 100%;
+  background: #f3f4f6;
+  border-radius: 0.5rem;
+  overflow: hidden;
+}
+
+#cropHeroImage {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+.cropper-container {
+  max-height: 500px !important;
+  max-width: 100% !important;
+}
+</style>
+
+<!-- Hero Image Cropper Modal (Hidden by default) -->
+<div id="cropHeroModal" class="fixed inset-0 bg-black bg-opacity-70 z-[9999] hidden items-center justify-center p-4">
+  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-5xl max-h-[95vh] overflow-hidden">
+    <!-- Header -->
+    <div class="flex items-center justify-between p-5 border-b border-gray-200 bg-gradient-to-r from-teal-50 to-white">
+      <div>
+        <h3 class="text-xl font-bold text-gray-900">✂️ Crop Hero Image (21:9 Ratio)</h3>
+        <p class="text-sm text-gray-600 mt-1">Drag to reposition, scroll to zoom. Will be uploaded automatically.</p>
+      </div>
+      <button type="button" id="closeCropHeroModal" class="text-gray-400 hover:text-gray-600 transition-colors">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+        </svg>
+      </button>
+    </div>
+    
+    <!-- Content -->
+    <div class="p-6">
+      <!-- Cropper Container -->
+      <div class="mb-4">
+        <div id="cropHeroContainer">
+          <img id="cropHeroImage" src="" alt="Crop this image">
+        </div>
+      </div>
+      
+      <div class="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+        <p class="text-xs text-blue-800 text-center">
+          <i class="fa-solid fa-info-circle text-blue-600 mr-1"></i>
+          <strong>21:9 Aspect Ratio:</strong> Perfect for hero sections. Drag to reposition, scroll to zoom.
+        </p>
+      </div>
+      
+      <!-- Controls -->
+      <div class="flex items-center justify-between mt-4">
+        <div class="flex items-center gap-4">
+          <button id="cropHeroReset" type="button" class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-lg hover:bg-gray-200 transition">
+            🔄 Reset
+          </button>
+          <button id="cropHeroRotate" type="button" class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-lg hover:bg-gray-200 transition">
+            🔃 Rotate
+          </button>
+          <button id="cropHeroFlip" type="button" class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-lg hover:bg-gray-200 transition">
+            ↔️ Flip
+          </button>
+        </div>
+        
+        <div class="flex items-center gap-3">
+          <button id="cropHeroCancel" type="button" class="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition">
+            Cancel
+          </button>
+          <button id="cropHeroApply" type="button" class="px-6 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition font-medium">
+            ✂️ Save Crop
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============================================================================
+// HERO IMAGE CROPPER (HD Quality - No Compression)
+// ============================================================================
+
+let heroCropper = null;
+
+// Event listeners for hero crop functionality
+document.addEventListener('click', (e) => {
+  // Open crop modal
+  if (e.target.id === 'openCropHeroModal' || e.target.closest('#openCropHeroModal')) {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    // Try both field names (PageHero uses hero_image_url, Service uses hero_media_url)
+    const heroImageInput = document.querySelector('#hero_image_url') || document.querySelector('#id_hero_media_url');
+    const heroImageUrl = heroImageInput ? heroImageInput.value : '';
+    
+    if (!heroImageUrl) {
+      alert('⚠️ Please enter a hero image URL first!');
+      return;
+    }
+    
+    console.log('✂️ Opening hero crop modal for:', heroImageUrl);
+    
+    // Show modal
+    const modal = document.getElementById('cropHeroModal');
+    const cropImage = document.getElementById('cropHeroImage');
+    
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+    cropImage.src = heroImageUrl;
+    
+    // Initialize cropper when image loads
+    cropImage.onload = function() {
+      if (heroCropper) {
+        heroCropper.destroy();
+      }
+      
+      heroCropper = new Cropper(cropImage, {
+        aspectRatio: 21/9, // Fixed 21:9 aspect ratio for hero
+        viewMode: 2,
+        dragMode: 'move',
+        autoCropArea: 0.9,
+        restore: false,
+        guides: true,
+        center: true,
+        highlight: true,
+        cropBoxMovable: true,
+        cropBoxResizable: true,
+        toggleDragModeOnDblclick: false,
+        responsive: true,
+        checkOrientation: true,
+      });
+      
+      console.log('✅ Hero cropper initialized with 21:9 aspect ratio');
+    };
+  }
+  
+  // Close crop modal
+  if (e.target.id === 'closeCropHeroModal' || e.target.id === 'cropHeroCancel') {
+    const modal = document.getElementById('cropHeroModal');
+    modal.classList.add('hidden');
+    modal.classList.remove('flex');
+    
+    if (heroCropper) {
+      heroCropper.destroy();
+      heroCropper = null;
+    }
+  }
+  
+  // Apply crop and upload
+  if (e.target.id === 'cropHeroApply') {
+    if (heroCropper) {
+      try {
+        // Show loading
+        const applyBtn = document.getElementById('cropHeroApply');
+        const originalText = applyBtn.innerHTML;
+        applyBtn.innerHTML = '⏳ Processing...';
+        applyBtn.disabled = true;
+        
+        // Get cropped canvas at ORIGINAL RESOLUTION (no size limits - keep HD!)
+        const canvas = heroCropper.getCroppedCanvas({
+          imageSmoothingEnabled: true,
+          imageSmoothingQuality: 'high',
+          fillColor: '#ffffff',
+        });
+        
+        if (!canvas) {
+          throw new Error('Failed to crop image');
+        }
+        
+        console.log(`📐 Cropped canvas: ${canvas.width}×${canvas.height}px`);
+        
+        // Convert canvas to blob directly at 95% WebP quality (like gallery)
+        canvas.toBlob(async (blob) => {
+          try {
+            if (!blob) {
+              throw new Error('Canvas conversion failed');
+            }
+            
+            const sizeMB = blob.size / 1024 / 1024;
+            console.log(`📦 WebP blob: ${sizeMB.toFixed(2)}MB at 95% quality`);
+            
+            // Create file from blob (already optimized WebP)
+            const croppedFile = new File([blob], 'hero-cropped.webp', {
+              type: 'image/webp',
+              lastModified: Date.now()
+            });
+            
+            // Upload to Cloudinary
+            const formData = new FormData();
+            formData.append('file', croppedFile);
+            
+            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]');
+            const response = await fetch('/u/editor-image/', {
+              method: 'POST',
+              body: formData,
+              headers: {
+                'X-CSRFToken': csrfToken.value
+              }
+            });
+            
+            if (!response.ok) {
+              const text = await response.text();
+              console.error('Upload failed. Response:', text);
+              throw new Error(`Server error: ${response.status}`);
+            }
+            
+            const result = await response.json();
+            console.log('✅ Hero image cropped and uploaded:', result);
+            
+            if (!result.url) {
+              throw new Error(result.error || 'Upload failed');
+            }
+            
+            // Update the hero image URL field with the cropped version
+            const heroImageInput = document.querySelector('#hero_image_url') || document.querySelector('#id_hero_media_url');
+            if (heroImageInput) {
+              heroImageInput.value = result.web_url || result.url;
+              // Trigger input event to update preview
+              heroImageInput.dispatchEvent(new Event('input', { bubbles: true }));
+            }
+            
+            // Also update cropped field if it exists (for Services)
+            const croppedField = document.getElementById('hero_cropped_url');
+            if (croppedField) {
+              croppedField.value = result.web_url || result.url;
+            }
+            
+            // Close modal
+            const modal = document.getElementById('cropHeroModal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+            
+            if (heroCropper) {
+              heroCropper.destroy();
+              heroCropper = null;
+            }
+            
+            alert('✅ Hero image cropped and saved successfully!');
+            
+          } catch (error) {
+            console.error('❌ Failed to upload cropped hero:', error);
+            alert('❌ Failed to upload cropped image: ' + error.message);
+          } finally {
+            // Reset button
+            applyBtn.innerHTML = originalText;
+            applyBtn.disabled = false;
+          }
+        }, 'image/webp', 0.95); // High quality WebP - 95% (like gallery images)
+      } catch (error) {
+        console.error('❌ Crop error:', error);
+        alert('❌ Failed to crop image: ' + error.message);
+      }
+    }
+  }
+  
+  // Reset crop
+  if (e.target.id === 'cropHeroReset') {
+    if (heroCropper) heroCropper.reset();
+  }
+  
+  // Rotate crop
+  if (e.target.id === 'cropHeroRotate') {
+    if (heroCropper) heroCropper.rotate(90);
+  }
+  
+  // Flip crop
+  if (e.target.id === 'cropHeroFlip') {
+    if (heroCropper) {
+      const canvas = heroCropper.getCanvasData();
+      heroCropper.scaleX(canvas.scaleX * -1);
+    }
+  }
+});
+
+// Close on ESC key
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') {
+    const modal = document.getElementById('cropHeroModal');
+    if (modal && !modal.classList.contains('hidden')) {
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+      if (heroCropper) {
+        heroCropper.destroy();
+        heroCropper = null;
+      }
+    }
+  }
+});
+
+console.log('✅ Hero cropper module loaded');
+</script>

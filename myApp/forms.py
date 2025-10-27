@@ -91,7 +91,7 @@ class ServiceForm(forms.ModelForm):
         model = Service
         fields = [
             "title","slug","eyebrow",
-            "hero_headline","hero_subcopy","hero_media_url",
+            "hero_headline","hero_subcopy","hero_media_url","hero_cropped_url","hero_image_position",
             "stat_projects","stat_years","stat_specialists",
             "pinned_heading","pinned_title","pinned_body_1","pinned_body_2",
             "insights_heading","insights_subcopy",
