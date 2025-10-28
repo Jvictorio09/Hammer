@@ -178,7 +178,8 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
 RESEND_API_KEY   = os.getenv('RESEND_API_KEY', '')
-RESEND_FROM      = os.getenv('RESEND_FROM', 'Hammer <no-reply@hammer.ae>')
+# Use hammer-services.com for FROM address (must be verified in Resend)
+RESEND_FROM      = os.getenv('RESEND_FROM', 'Hammer <noreply@hammer-services.com>')
 RESEND_REPLY_TO  = os.getenv('RESEND_REPLY_TO', 'info@hammer-services.com')
 RESEND_BASE_URL  = os.getenv('RESEND_BASE_URL', 'https://api.resend.com')
 

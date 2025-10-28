@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import logging
+import time
 from typing import Iterable, Mapping, Any
 
 import requests
@@ -662,6 +663,11 @@ class ContactForm(forms.Form):
         required=False,
         widget=forms.TextInput(attrs={"placeholder": "+971 … (optional)"}),
     )
+    location = forms.CharField(
+        max_length=200,
+        required=False,
+        widget=forms.TextInput(attrs={"placeholder": "e.g., Dubai - Jumeirah Park (optional)"}),
+    )
     service = forms.ChoiceField(
         choices=SERVICE_CHOICES,
         required=False,
@@ -805,6 +811,7 @@ def contact(request: HttpRequest) -> HttpResponse:
 
     data = form.cleaned_data
     service = data.get("service") or "General"
+    location = data.get("location", "")
     subject = f"[Enquiry] {service} — {data['name']}"
 
     # Build safe plain text (readable in any client)
@@ -813,33 +820,43 @@ def contact(request: HttpRequest) -> HttpResponse:
         f"Email: {data['email']}",
         f"Phone: {data.get('phone', '')}",
         f"Service: {service}",
+    ]
+    if location:
+        text_lines.append(f"Location: {location}")
+    text_lines.extend([
         "",
         "Message:",
         data["message"],
         "",
-    ]
+    ])
     text = "\n".join(text_lines)
 
     # SAFELY escape + convert newlines -> <br> for HTML version
     safe_message_html = escape(data["message"]).replace("\n", "<br>")
 
-    html = (
-        "<div style='font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;'>"
-        "<h2 style='margin:0 0 12px 0;'>New enquiry</h2>"
-        "<p><strong>Name:</strong> " + escape(data["name"]) + "</p>"
-        "<p><strong>Email:</strong> " + escape(data["email"]) + "</p>"
-        "<p><strong>Phone:</strong> " + escape(data.get("phone", "")) + "</p>"
-        "<p><strong>Service:</strong> " + escape(service) + "</p>"
-        "<hr style='border:none;border-top:1px solid #e5e7eb;margin:12px 0'>"
-        "<p><strong>Message:</strong><br>" + safe_message_html + "</p>"
+    html_parts = [
+        "<div style='font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;'>",
+        "<h2 style='margin:0 0 12px 0;'>New enquiry</h2>",
+        "<p><strong>Name:</strong> " + escape(data["name"]) + "</p>",
+        "<p><strong>Email:</strong> " + escape(data["email"]) + "</p>",
+        "<p><strong>Phone:</strong> " + escape(data.get("phone", "")) + "</p>",
+        "<p><strong>Service:</strong> " + escape(service) + "</p>",
+    ]
+    if location:
+        html_parts.append("<p><strong>Location:</strong> " + escape(location) + "</p>")
+    html_parts.extend([
+        "<hr style='border:none;border-top:1px solid #e5e7eb;margin:12px 0'>",
+        "<p><strong>Message:</strong><br>" + safe_message_html + "</p>",
         "</div>"
-    )
+    ])
+    html = "".join(html_parts)
 
     to_addr = getattr(settings, "CONTACT_TO_EMAIL", getattr(settings, "DEFAULT_FROM_EMAIL", None))
     if not to_addr:
         # fall back hard to avoid silent drop
         to_addr = data["email"]
 
+    # Send notification email to Hammer team
     ok, detail = send_email_resend(
         subject=subject,
         to=[to_addr],
@@ -848,17 +865,108 @@ def contact(request: HttpRequest) -> HttpResponse:
         reply_to=data["email"],
         tags={"env": getattr(settings, "ENVIRONMENT", "prod"), "type": "contact"},
     )
+    
+    if ok:
+        logger.info(f"✅ Contact notification sent to {to_addr} from {data['email']}")
+    else:
+        logger.error(f"❌ Contact notification failed: {detail}")
+
+    # Send auto-response confirmation to user
+    if ok:
+        # Add delay to avoid Resend rate limit (2 requests/second)
+        time.sleep(0.6)
+        
+        auto_response_subject = f"Thank you for your enquiry - {service}"
+        
+        # Build user-facing text
+        user_text_parts = [
+            f"Dear {data['name']},",
+            "",
+            f"Thank you for submitting your booking request for {service}",
+        ]
+        if location:
+            user_text_parts[2] += f" in {location}"
+        user_text_parts[2] += "."
+        
+        user_text_parts.extend([
+            "",
+            "Your request details:",
+            f"- Project Type: {service}",
+        ])
+        if location:
+            user_text_parts.append(f"- Location: {location}")
+        if data.get("message"):
+            user_text_parts.extend([
+                f"- Message: {data['message'][:100]}{'...' if len(data['message']) > 100 else ''}",
+            ])
+        
+        user_text_parts.extend([
+            "",
+            "We have received your request and will review it shortly. Our team will contact you within 24-48 hours to discuss your project requirements and provide you with a detailed quote.",
+            "",
+            "If you have any urgent questions, please don't hesitate to contact us directly.",
+            "",
+            "Best regards,",
+            "The Hammer Group Team",
+        ])
+        user_text = "\n".join(user_text_parts)
+        
+        # Build HTML version
+        user_html_parts = [
+            "<div style='font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;max-width:600px;margin:0 auto;'>",
+            f"<p>Dear {escape(data['name'])},</p>",
+            f"<p>Thank you for submitting your booking request for <strong>{escape(service)}</strong>",
+        ]
+        if location:
+            user_html_parts[-1] += f" in <strong>{escape(location)}</strong>"
+        user_html_parts[-1] += ".</p>"
+        
+        user_html_parts.extend([
+            "<div style='background-color:#f9fafb;border-left:4px solid #18AFAB;padding:16px;margin:20px 0;'>",
+            "<h3 style='margin:0 0 12px 0;color:#18AFAB;font-size:16px;'>Your request details:</h3>",
+            f"<p style='margin:4px 0;'><strong>Project Type:</strong> {escape(service)}</p>",
+        ])
+        if location:
+            user_html_parts.append(f"<p style='margin:4px 0;'><strong>Location:</strong> {escape(location)}</p>")
+        if data.get("message"):
+            user_html_parts.append(f"<p style='margin:4px 0;'><strong>Message:</strong> {escape(data['message'][:150])}{'...' if len(data['message']) > 150 else ''}</p>")
+        
+        user_html_parts.extend([
+            "</div>",
+            "<p>We have received your request and will review it shortly. <strong>Our team will contact you within 24-48 hours</strong> to discuss your project requirements and provide you with a detailed quote.</p>",
+            "<p>If you have any urgent questions, please don't hesitate to contact us directly.</p>",
+            "<p style='margin-top:30px;'>Best regards,<br><strong style='color:#18AFAB;'>The Hammer Group Team</strong></p>",
+            "</div>",
+        ])
+        user_html = "".join(user_html_parts)
+        
+        # Send auto-response (don't fail if this doesn't work)
+        try:
+            auto_ok, auto_detail = send_email_resend(
+                subject=auto_response_subject,
+                to=[data["email"]],
+                text=user_text,
+                html=user_html,
+                reply_to=to_addr,
+                tags={"env": getattr(settings, "ENVIRONMENT", "prod"), "type": "auto_response"},
+            )
+            if auto_ok:
+                logger.info(f"✅ Auto-response sent successfully to {data['email']}")
+            else:
+                logger.warning(f"⚠️ Auto-response failed to {data['email']}: {auto_detail}")
+        except Exception as e:
+            logger.error(f"❌ Failed to send auto-response to {data['email']}: {e}")
 
     if _is_ajax(request):
         status = 200 if ok else 502
         return JsonResponse({"ok": ok, "detail": detail}, status=status)
 
     if ok:
-        messages.success(request, "Thanks — your message is on its way. We’ll get back to you shortly.")
+        messages.success(request, "Thanks — your message is on its way. We'll get back to you shortly.")
         # Optional: redirect to a lightweight thank-you route if you have one
         return redirect(f"{reverse('contact')}?sent=1")
     else:
-        messages.error(request, "Sorry, we couldn’t send your message. Please try again in a moment.")
+        messages.error(request, "Sorry, we couldn't send your message. Please try again in a moment.")
         return render(request, "contact.html", {"form": form})
 
 

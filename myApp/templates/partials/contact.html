@@ -87,6 +87,33 @@
 
         <label class="relative block">
           <span class="pointer-events-none absolute left-4 top-3 text-gray-400">
+            <i class="fa-solid fa-location-dot"></i>
+          </span>
+          <input name="location" type="text"
+                 class="peer input-fx"
+                 placeholder=" "/>
+          <span class="float-label">Location (e.g., Dubai - Jumeirah Park)</span>
+        </label>
+
+        <label class="relative block">
+          <span class="pointer-events-none absolute left-4 top-3 text-gray-400">
+            <i class="fa-solid fa-briefcase"></i>
+          </span>
+          <select name="service" class="peer input-fx appearance-none bg-white cursor-pointer">
+            <option value="">Select a service</option>
+            <option value="General">General Enquiry</option>
+            <option value="Landscape">Landscape</option>
+            <option value="Interior">Interior</option>
+            <option value="Marble">Marble</option>
+          </select>
+          <span class="float-label">Service</span>
+          <span class="pointer-events-none absolute right-4 top-3 text-gray-400">
+            <i class="fa-solid fa-chevron-down text-xs"></i>
+          </span>
+        </label>
+
+        <label class="relative block">
+          <span class="pointer-events-none absolute left-4 top-3 text-gray-400">
             <i class="fa-regular fa-pen-to-square"></i>
           </span>
           <textarea name="message" rows="4" required
