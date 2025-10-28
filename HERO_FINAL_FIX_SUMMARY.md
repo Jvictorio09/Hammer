@@ -164,3 +164,4 @@ background-position: 50% 35%;  ← SAME!
 Modal preview = Page reality! ✨
 
 
+
