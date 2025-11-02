@@ -392,6 +392,91 @@ def legacy_interior(request):
     """Legacy view for /interior/ - serves interior-design-build service"""
     return service_detail(request, "interior-design-build")
 
+def legacy_interior_catchall(request, sub_path=None):
+    """
+    Handle legacy /interior/* sub-paths by serving content at the same URL (no redirects).
+    This keeps the URL visible to Google while showing the appropriate content.
+    
+    Handles:
+    - /interior/faqs/ -> renders interior service page (has FAQs)
+    - /interior/interior-company-about-us/ -> renders about page
+    - /interior/ourproject/* -> renders case study detail or projects page if found
+    - Any other /interior/* -> renders interior service page (fallback)
+    """
+    from django.utils.text import slugify
+    
+    # Extract sub_path from request if not provided as argument
+    if sub_path is None:
+        # Get the path from the request
+        path = request.path.strip('/')
+        if path.startswith('interior/'):
+            sub_path = path.replace('interior/', '', 1).strip('/')
+        else:
+            sub_path = ''
+    
+    if sub_path:
+        sub_path = sub_path.strip('/').lower()
+    else:
+        sub_path = ''
+    
+    # If empty or just whitespace, serve main interior page
+    if not sub_path:
+        return service_detail(request, "interior-design-build")
+    
+    # Handle specific known patterns
+    if sub_path == 'faqs':
+        # FAQs are on the main service page - serve it at this URL
+        return service_detail(request, "interior-design-build")
+    
+    if 'about' in sub_path or sub_path == 'interior-company-about-us':
+        # About page - serve it at this URL
+        return about(request)
+    
+    # Handle project URLs: /interior/ourproject/slug/
+    if sub_path.startswith('ourproject/'):
+        project_slug = sub_path.replace('ourproject/', '').strip('/')
+        
+        # Try to find matching case study by slug
+        # First try exact match, then try partial match on title/slug
+        try:
+            case_study = CaseStudy.objects.filter(
+                slug=project_slug
+            ).first()
+            
+            if not case_study:
+                # Try to match by partial slug (handle variations like "kitchen-and-dinning" vs "kitchen-and-dining")
+                # Extract keywords from the project slug
+                keywords = [w for w in project_slug.split('-') if len(w) > 3]
+                if keywords:
+                    # Try to find case study with matching keywords in title or slug
+                    from django.db.models import Q
+                    query = Q()
+                    for keyword in keywords:
+                        query |= Q(slug__icontains=keyword) | Q(title__icontains=keyword)
+                    
+                    case_studies = CaseStudy.objects.filter(query).filter(
+                        service__slug='interior-design-build'
+                    )[:5]  # Limit to 5 results
+                    
+                    if case_studies.exists():
+                        # Serve the first match at this URL
+                        return case_study_detail(request, case_studies.first().slug)
+            
+            if case_study:
+                # Serve the case study at this URL
+                return case_study_detail(request, case_study.slug)
+        except Exception:
+            pass  # If lookup fails, fall through to projects page
+        
+        # Fallback: serve projects page filtered by interior at this URL
+        try:
+            return projects_index(request, service_slug='interior-design-build')
+        except:
+            return projects_index(request, service_slug=None)
+    
+    # Default fallback: serve main interior service page at this URL
+    return service_detail(request, "interior-design-build")
+
 def legacy_facility(request):
     """Legacy view for /facility/ - serves facility-management service"""
     return service_detail(request, "facility-management")

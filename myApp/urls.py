@@ -30,6 +30,11 @@ urlpatterns = [
     path("interior", views.legacy_interior, name="legacy_interior"),
 
     path("interior/residential-fit-out-company-in-dubai/", views.legacy_interior, name="legacy_interior"),
+    
+    # Legacy interior sub-paths - catch-all for /interior/* paths that don't exist
+    # This handles: /interior/faqs/, /interior/interior-company-about-us/, /interior/ourproject/*, etc.
+    # MUST come after the base /interior/ route to avoid conflicts
+    path("interior/<path:sub_path>/", views.legacy_interior_catchall, name="legacy_interior_catchall"),
     path("facility/", views.legacy_facility, name="legacy_facility"),
     path("facility", views.legacy_facility, name="legacy_facility"),
     path("aboutus/", views.legacy_aboutus, name="legacy_aboutus"),
