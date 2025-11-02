@@ -1,0 +1,183 @@
+{% extends "dashboard/base.html" %}
+{% block page_title %}Page Metadata{% endblock %}
+
+{% block content %}
+<!-- Header -->
+<div class="mb-8">
+  <div class="flex items-center justify-between mb-4">
+    <div>
+      <h1 class="text-3xl font-bold text-gray-900">Page Metadata</h1>
+      <p class="text-sm text-gray-500 mt-1">Manage SEO metadata for all pages</p>
+    </div>
+    <div class="flex items-center gap-2 flex-wrap">
+      <a href="{% url 'dashboard_metadata_export_csv' %}"
+         class="inline-flex items-center gap-2 rounded-lg border border-green-600 bg-white px-4 py-2.5 text-green-700 font-medium hover:bg-green-50 transition shadow-sm">
+        <i class="fa-solid fa-file-csv"></i>
+        Export CSV
+      </a>
+      <a href="{% url 'dashboard_metadata_export_pdf' %}"
+         class="inline-flex items-center gap-2 rounded-lg border border-red-600 bg-white px-4 py-2.5 text-red-700 font-medium hover:bg-red-50 transition shadow-sm">
+        <i class="fa-solid fa-file-pdf"></i>
+        Export PDF
+      </a>
+      <a href="{% url 'dashboard_metadata_upload_csv' %}"
+         class="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-5 py-2.5 text-white font-medium hover:bg-indigo-700 transition shadow-sm">
+        <i class="fa-solid fa-upload"></i>
+        Upload CSV
+      </a>
+      <a href="{% url 'dashboard_metadata_create' %}"
+         class="inline-flex items-center gap-2 rounded-lg bg-gray-900 px-5 py-2.5 text-white font-medium hover:bg-black transition shadow-sm">
+        <i class="fa-solid fa-plus"></i>
+        Add Metadata
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- Stats Cards -->
+<div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+  <div class="bg-white rounded-xl border border-gray-200 p-4">
+    <div class="flex items-center justify-between">
+      <div>
+        <p class="text-sm text-gray-600">Total Pages</p>
+        <p class="text-2xl font-bold text-gray-900">{{ total_pages }}</p>
+      </div>
+      <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+        <i class="fa-solid fa-file-lines text-blue-600"></i>
+      </div>
+    </div>
+  </div>
+  <div class="bg-white rounded-xl border border-gray-200 p-4">
+    <div class="flex items-center justify-between">
+      <div>
+        <p class="text-sm text-gray-600">With Metadata</p>
+        <p class="text-2xl font-bold text-green-600">{{ with_metadata }}</p>
+      </div>
+      <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+        <i class="fa-solid fa-check-circle text-green-600"></i>
+      </div>
+    </div>
+  </div>
+  <div class="bg-white rounded-xl border border-gray-200 p-4">
+    <div class="flex items-center justify-between">
+      <div>
+        <p class="text-sm text-gray-600">Missing Metadata</p>
+        <p class="text-2xl font-bold text-orange-600">{{ missing_metadata }}</p>
+      </div>
+      <div class="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
+        <i class="fa-solid fa-exclamation-circle text-orange-600"></i>
+      </div>
+    </div>
+  </div>
+  <div class="bg-white rounded-xl border border-gray-200 p-4">
+    <div class="flex items-center justify-between">
+      <div>
+        <p class="text-sm text-gray-600">Active</p>
+        <p class="text-2xl font-bold text-gray-900">{{ active_count }}</p>
+      </div>
+      <div class="w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center">
+        <i class="fa-solid fa-toggle-on text-indigo-600"></i>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Metadata Cards Grid -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-8">
+  {% for metadata in metadata_list %}
+  <div class="bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition p-5">
+    <div class="flex items-start justify-between mb-3">
+      <div class="flex-1">
+        <h3 class="text-lg font-semibold text-gray-900 mb-1">{{ metadata.page_name }}</h3>
+        <div class="flex items-center gap-2">
+          <code class="text-xs bg-gray-100 px-2 py-1 rounded text-gray-700 font-mono">{{ metadata.url_path }}</code>
+          <div class="flex gap-1">
+            <a href="http://localhost:8000{{ metadata.url_path }}" target="_blank" 
+               class="text-blue-600 hover:text-blue-800 transition" title="Open local">
+              <i class="fa-solid fa-house"></i>
+            </a>
+            <a href="https://www.hammer-services.com{{ metadata.url_path }}" target="_blank" 
+               class="text-green-600 hover:text-green-800 transition" title="Open production">
+              <i class="fa-solid fa-rocket"></i>
+            </a>
+          </div>
+        </div>
+      </div>
+      <div>
+        {% if metadata.meta_title %}
+        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700">
+          <i class="fa-solid fa-check-circle mr-1"></i> Has Metadata
+        </span>
+        {% else %}
+        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-700">
+          <i class="fa-solid fa-exclamation-circle mr-1"></i> No Metadata
+        </span>
+        {% endif %}
+      </div>
+    </div>
+    
+    {% if metadata.meta_title %}
+    <div class="mb-3 p-3 bg-gray-50 rounded-lg">
+      <p class="text-sm font-medium text-gray-700 mb-1">
+        <i class="fa-solid fa-heading mr-1 text-blue-600"></i> Title
+      </p>
+      <p class="text-sm text-gray-900 line-clamp-2">{{ metadata.meta_title }}</p>
+    </div>
+    {% endif %}
+    
+    <div class="flex items-center justify-between pt-3 border-t border-gray-100">
+      <div class="text-xs text-gray-500">
+        <i class="fa-solid fa-clock mr-1"></i> Updated {{ metadata.updated_at|date:"M j, Y" }}
+      </div>
+      <div class="flex gap-2">
+        <a href="{% url 'dashboard_metadata_edit' metadata.pk %}" 
+           class="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-indigo-600 hover:text-indigo-800 hover:bg-indigo-50 rounded-lg transition">
+          <i class="fa-solid fa-pencil text-xs"></i>
+          Edit
+        </a>
+        <form method="post" action="{% url 'dashboard_metadata_delete' metadata.pk %}" class="inline">
+          {% csrf_token %}
+          <button type="submit" 
+                  onclick="return confirm('Delete metadata for {{ metadata.page_name }}?')"
+                  class="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-red-600 hover:text-red-800 hover:bg-red-50 rounded-lg transition">
+            <i class="fa-solid fa-trash text-xs"></i>
+            Delete
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+  {% empty %}
+  <div class="col-span-full">
+    <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-12 text-center">
+      <div class="text-gray-400 mb-4">
+        <i class="fa-solid fa-tags text-6xl"></i>
+      </div>
+      <h3 class="text-xl font-semibold text-gray-900 mb-2">No metadata entries yet</h3>
+      <p class="text-gray-600 mb-6">Get started by adding metadata to improve your site's SEO</p>
+      <div class="flex items-center justify-center gap-3">
+        <a href="{% url 'dashboard_metadata_upload_csv' %}" 
+           class="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-5 py-2.5 text-white font-medium hover:bg-indigo-700 transition">
+          <i class="fa-solid fa-file-csv"></i>
+          Upload CSV
+        </a>
+        <a href="{% url 'dashboard_metadata_create' %}" 
+           class="inline-flex items-center gap-2 rounded-lg border border-gray-300 px-5 py-2.5 text-gray-700 font-medium hover:bg-gray-50 transition">
+          <i class="fa-solid fa-plus"></i>
+          Add Metadata
+        </a>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+<style>
+  .line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+</style>
+{% endblock %}

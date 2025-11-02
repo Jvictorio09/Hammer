@@ -1,0 +1,32 @@
+========================================
+METADATA SYSTEM SETUP
+========================================
+
+Follow these simple steps:
+
+1. Drop old table (if you had issues before):
+   python drop_old_pagemetadata.py
+
+2. Run migrations:
+   python manage.py makemigrations
+   python manage.py migrate
+
+3. Seed metadata:
+   python seed_metadata.py
+
+4. Done! Visit /dashboard/metadata/
+
+========================================
+WHAT YOU GET:
+========================================
+
+✅ Dashboard at /dashboard/metadata/
+✅ 26 URLs pre-filled with metadata
+✅ 140-character titles
+✅ Auto-injection on all pages
+✅ Ready for Semrush!
+
+See METADATA_SETUP_README.md for details
+
+========================================
+

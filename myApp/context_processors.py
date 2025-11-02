@@ -1,5 +1,5 @@
 # myApp/context_processors.py
-from .models import Service
+from .models import Service, PageMetadata
 
 def nav_services(request):
     """
@@ -23,7 +23,7 @@ def nav_services(request):
 
     if rm:
         current_slug = rm.kwargs.get("slug")
-        # If you’re looking at preview, keep menu links on preview
+        # If you're looking at preview, keep menu links on preview
         if rm.view_name == "service_detail_preview":
             detail_urlname = "service_detail_preview"
 
@@ -31,4 +31,27 @@ def nav_services(request):
         "nav_services": services,
         "nav_current_slug": current_slug,
         "nav_detail_urlname": detail_urlname,
+    }
+
+
+def page_metadata(request):
+    """
+    Provides page metadata for SEO based on current URL path.
+    Returns metadata context if a PageMetadata entry exists for the current path.
+    """
+    page_meta = None
+    
+    # Try to get metadata for current path
+    if hasattr(request, 'path'):
+        try:
+            page_meta = PageMetadata.objects.filter(
+                url_path=request.path,
+                is_active=True
+            ).first()
+        except Exception:
+            # If table doesn't exist yet (before migration), return empty
+            pass
+    
+    return {
+        "page_metadata": page_meta,
     }

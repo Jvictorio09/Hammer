@@ -565,3 +565,62 @@ class PageHero(models.Model):
             return cls.objects.get(page=page_identifier, is_active=True)
         except cls.DoesNotExist:
             return None
+
+
+class PageMetadata(models.Model):
+    """
+    Store SEO metadata for pages that don't have it built into their models.
+    This allows managing meta tags for all URLs including static pages.
+    """
+    url_path = models.CharField(
+        max_length=500, 
+        unique=True,
+        help_text="URL path (e.g., '/about/', '/projects/', '/landscape/')"
+    )
+    page_name = models.CharField(
+        max_length=200,
+        help_text="Human-readable name for this page"
+    )
+    meta_title = models.CharField(
+        max_length=140,
+        blank=True,
+        help_text="Page title for SEO (max 140 characters recommended)"
+    )
+    meta_description = models.CharField(
+        max_length=200,
+        blank=True,
+        help_text="Meta description for SEO (max 200 characters)"
+    )
+    meta_keywords = models.CharField(
+        max_length=255,
+        blank=True,
+        help_text="Optional keywords (comma-separated)"
+    )
+    og_title = models.CharField(
+        max_length=140,
+        blank=True,
+        help_text="Open Graph title for social sharing"
+    )
+    og_description = models.CharField(
+        max_length=200,
+        blank=True,
+        help_text="Open Graph description for social sharing"
+    )
+    og_image = models.URLField(
+        blank=True,
+        help_text="Open Graph image URL for social sharing"
+    )
+    is_active = models.BooleanField(
+        default=True,
+        db_index=True
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        ordering = ['url_path']
+        verbose_name = 'Page Metadata'
+        verbose_name_plural = 'Pages Metadata'
+    
+    def __str__(self):
+        return f"{self.page_name} - {self.url_path}"

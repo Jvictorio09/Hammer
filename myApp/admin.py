@@ -13,6 +13,7 @@ from .models import (
     ServicePartnerBrand, ServiceTestimonial,
     CaseStudy, TeamMember,
     MediaAlbum, MediaAsset, InsightAuditLog, UserProfile,
+    PageMetadata,
 )
 from .utils.cloudinary_utils import smart_compress_to_bytes, upload_to_cloudinary, TARGET_BYTES
 
@@ -490,3 +491,22 @@ class MediaAssetAdmin(admin.ModelAdmin):
         bulk_url = reverse(f"admin:{self.model._meta.app_label}_{self.model._meta.model_name}_bulk_upload")
         extra_context["bulk_upload_url"] = bulk_url
         return super().changelist_view(request, extra_context=extra_context)
+
+
+@admin.register(PageMetadata)
+class PageMetadataAdmin(admin.ModelAdmin):
+    list_display = ("page_name", "url_path", "is_active", "updated_at")
+    list_filter = ("is_active",)
+    search_fields = ("page_name", "url_path", "meta_title", "meta_description")
+    fieldsets = (
+        ('Page Info', {
+            'fields': ('page_name', 'url_path', 'is_active')
+        }),
+        ('SEO Metadata', {
+            'fields': ('meta_title', 'meta_description', 'meta_keywords')
+        }),
+        ('Open Graph / Social', {
+            'fields': ('og_title', 'og_description', 'og_image')
+        }),
+    )
+    ordering = ('url_path',)

@@ -109,4 +109,12 @@ urlpatterns = [
     path("dashboard/heroes/new/", views.dashboard_hero_create, name="dashboard_hero_create"),
     path("dashboard/heroes/<int:pk>/edit/", views.dashboard_hero_edit, name="dashboard_hero_edit"),
     path("dashboard/heroes/<int:pk>/delete/", views.dashboard_hero_delete, name="dashboard_hero_delete"),
+    # Page Metadata (Superuser/Admin only)
+    path("dashboard/metadata/", views.dashboard_metadata_list, name="dashboard_metadata_list"),
+    path("dashboard/metadata/new/", views.dashboard_metadata_create, name="dashboard_metadata_create"),
+    path("dashboard/metadata/upload-csv/", views.dashboard_metadata_upload_csv, name="dashboard_metadata_upload_csv"),
+    path("dashboard/metadata/export-csv/", views.dashboard_metadata_export_csv, name="dashboard_metadata_export_csv"),
+    path("dashboard/metadata/export-pdf/", views.dashboard_metadata_export_pdf, name="dashboard_metadata_export_pdf"),
+    path("dashboard/metadata/<int:pk>/edit/", views.dashboard_metadata_edit, name="dashboard_metadata_edit"),
+    path("dashboard/metadata/<int:pk>/delete/", views.dashboard_metadata_delete, name="dashboard_metadata_delete"),
 ]

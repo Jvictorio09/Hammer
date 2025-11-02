@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>{% block title %}Hammer Group{% endblock %}</title>
+  <title>{% block title %}{% if page_metadata and page_metadata.meta_title %}{{ page_metadata.meta_title }}{% else %}Hammer Group{% endif %}{% endblock %}</title>
 
   <!-- Google Analytics -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-QF007QSC06"></script>
@@ -19,18 +19,30 @@
   <link rel="icon" type="image/jpeg" href="{% static 'hammer_icon.jpg' %}" />
   <link rel="apple-touch-icon" href="{% static 'hammer_icon.jpg' %}" />
 
+  <!-- SEO Meta Tags -->
+  {% if page_metadata %}
+    {% if page_metadata.meta_description %}
+    <meta name="description" content="{{ page_metadata.meta_description }}">
+    {% endif %}
+    {% if page_metadata.meta_keywords %}
+    <meta name="keywords" content="{{ page_metadata.meta_keywords }}">
+    {% endif %}
+  {% else %}
+    <meta name="description" content="{% block meta_description %}Premier construction, landscaping, and interior design services in Dubai. Transforming visions into exceptional living spaces.{% endblock %}">
+  {% endif %}
+
   <!-- Open Graph / Facebook -->
   <meta property="og:type" content="website" />
-  <meta property="og:title" content="{% block og_title %}Hammer Group - Luxury Villa Construction, Landscaping & Interior Design{% endblock %}" />
-  <meta property="og:description" content="{% block og_description %}Premier construction, landscaping, and interior design services in Dubai. Transforming visions into exceptional living spaces.{% endblock %}" />
-  <meta property="og:image" content="{% block og_image %}{{ request.scheme }}://{{ request.get_host }}{% static 'hammer_icon.jpg' %}{% endblock %}" />
+  <meta property="og:title" content="{% block og_title %}{% if page_metadata and page_metadata.og_title %}{{ page_metadata.og_title }}{% elif page_metadata and page_metadata.meta_title %}{{ page_metadata.meta_title }}{% else %}Hammer Group - Luxury Villa Construction, Landscaping & Interior Design{% endif %}{% endblock %}" />
+  <meta property="og:description" content="{% block og_description %}{% if page_metadata and page_metadata.og_description %}{{ page_metadata.og_description }}{% elif page_metadata and page_metadata.meta_description %}{{ page_metadata.meta_description }}{% else %}Premier construction, landscaping, and interior design services in Dubai. Transforming visions into exceptional living spaces.{% endif %}{% endblock %}" />
+  <meta property="og:image" content="{% block og_image %}{% if page_metadata and page_metadata.og_image %}{{ page_metadata.og_image }}{% else %}{{ request.scheme }}://{{ request.get_host }}{% static 'hammer_icon.jpg' %}{% endif %}{% endblock %}" />
   <meta property="og:url" content="{% block og_url %}{{ request.build_absolute_uri }}{% endblock %}" />
 
   <!-- Twitter -->
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="{% block twitter_title %}Hammer Group - Luxury Villa Construction, Landscaping & Interior Design{% endblock %}" />
-  <meta name="twitter:description" content="{% block twitter_description %}Premier construction, landscaping, and interior design services in Dubai. Transforming visions into exceptional living spaces.{% endblock %}" />
-  <meta name="twitter:image" content="{% block twitter_image %}{{ request.scheme }}://{{ request.get_host }}{% static 'hammer_icon.jpg' %}{% endblock %}" />
+  <meta name="twitter:title" content="{% block twitter_title %}{% if page_metadata and page_metadata.og_title %}{{ page_metadata.og_title }}{% elif page_metadata and page_metadata.meta_title %}{{ page_metadata.meta_title }}{% else %}Hammer Group - Luxury Villa Construction, Landscaping & Interior Design{% endif %}{% endblock %}" />
+  <meta name="twitter:description" content="{% block twitter_description %}{% if page_metadata and page_metadata.og_description %}{{ page_metadata.og_description }}{% elif page_metadata and page_metadata.meta_description %}{{ page_metadata.meta_description }}{% else %}Premier construction, landscaping, and interior design services in Dubai. Transforming visions into exceptional living spaces.{% endif %}{% endblock %}" />
+  <meta name="twitter:image" content="{% block twitter_image %}{% if page_metadata and page_metadata.og_image %}{{ page_metadata.og_image }}{% else %}{{ request.scheme }}://{{ request.get_host }}{% static 'hammer_icon.jpg' %}{% endif %}{% endblock %}" />
 
   <!-- Tailwind CDN (v4) -->
   <script src="https://cdn.tailwindcss.com"></script>

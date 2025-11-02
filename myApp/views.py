@@ -13,6 +13,7 @@ from django.http import (
     HttpRequest,
     HttpResponse,
     JsonResponse,
+    HttpResponseRedirect,
 )
 from django.shortcuts import render, redirect
 from django.urls import reverse
@@ -51,10 +52,12 @@ from .models import (
     CaseStudy,
     InsightAuditLog,
     PageHero,
+    PageMetadata,
 )
 from .forms import ServiceForm, InsightForm, ServiceCapabilityFormSet, ServiceEditorialImageFormSet, ServiceProjectImageFormSet, CaseStudyFormSet, ServiceProcessStepFormSet
 from .utils.google_drive_utils import upload_from_google_drive_to_cloudinary, extract_file_id_from_url, bulk_upload_from_drive_folder
 from .utils.cloudinary_utils import smart_compress_to_bytes, upload_to_cloudinary, TARGET_BYTES
+from .utils.ai_metadata_generator import generate_metadata_with_ai
 
 # -----------------------------
 # Utility Functions
@@ -2282,3 +2285,424 @@ def dashboard_hero_delete(request, pk: int):
     hero.delete()
     messages.success(request, f"Hero for '{page_name}' page has been deleted.")
     return redirect("dashboard_heroes_list")
+
+
+# ============================================
+# Metadata Management Dashboard Views
+# ============================================
+
+@admin_required
+def dashboard_metadata_list(request):
+    """List all page metadata entries"""
+    metadata_list = PageMetadata.objects.order_by("url_path")
+    
+    # Calculate stats
+    total_pages = metadata_list.count()
+    with_metadata = sum(1 for m in metadata_list if m.meta_title)
+    missing_metadata = total_pages - with_metadata
+    active_count = sum(1 for m in metadata_list if m.is_active)
+    
+    context = {
+        "metadata_list": metadata_list,
+        "total_pages": total_pages,
+        "with_metadata": with_metadata,
+        "missing_metadata": missing_metadata,
+        "active_count": active_count,
+    }
+    return render(request, "dashboard/metadata_list.html", context)
+
+
+@admin_required
+def dashboard_metadata_create(request):
+    """Create new page metadata"""
+    if request.method == "POST":
+        try:
+            metadata = PageMetadata.objects.create(
+                url_path=request.POST.get('url_path', '').strip(),
+                page_name=request.POST.get('page_name', '').strip(),
+                meta_title=request.POST.get('meta_title', '').strip(),
+                meta_description=request.POST.get('meta_description', '').strip(),
+                meta_keywords=request.POST.get('meta_keywords', '').strip(),
+                og_title=request.POST.get('og_title', '').strip(),
+                og_description=request.POST.get('og_description', '').strip(),
+                og_image=request.POST.get('og_image', '').strip(),
+                is_active=request.POST.get('is_active') == 'on'
+            )
+            messages.success(request, f"Metadata for '{metadata.page_name}' created successfully!")
+            return redirect("dashboard_metadata_list")
+        except Exception as e:
+            messages.error(request, f"Error creating metadata: {str(e)}")
+    
+    return render(request, "dashboard/metadata_form.html", {"mode": "create"})
+
+
+@admin_required
+def dashboard_metadata_edit(request, pk: int):
+    """Edit page metadata"""
+    metadata = get_object_or_404(PageMetadata, pk=pk)
+    
+    if request.method == "POST":
+        try:
+            metadata.url_path = request.POST.get('url_path', '').strip()
+            metadata.page_name = request.POST.get('page_name', '').strip()
+            metadata.meta_title = request.POST.get('meta_title', '').strip()
+            metadata.meta_description = request.POST.get('meta_description', '').strip()
+            metadata.meta_keywords = request.POST.get('meta_keywords', '').strip()
+            metadata.og_title = request.POST.get('og_title', '').strip()
+            metadata.og_description = request.POST.get('og_description', '').strip()
+            metadata.og_image = request.POST.get('og_image', '').strip()
+            metadata.is_active = request.POST.get('is_active') == 'on'
+            metadata.save()
+            messages.success(request, f"Metadata for '{metadata.page_name}' updated successfully!")
+            return redirect("dashboard_metadata_list")
+        except Exception as e:
+            messages.error(request, f"Error updating metadata: {str(e)}")
+    
+    return render(request, "dashboard/metadata_form.html", {"mode": "edit", "metadata": metadata})
+
+
+@admin_required
+@require_POST
+def dashboard_metadata_delete(request, pk: int):
+    """Delete page metadata"""
+    metadata = get_object_or_404(PageMetadata, pk=pk)
+    page_name = metadata.page_name
+    metadata.delete()
+    messages.success(request, f"Metadata for '{page_name}' has been deleted.")
+    return redirect("dashboard_metadata_list")
+
+
+@admin_required
+def dashboard_metadata_upload_csv(request):
+    """Upload CSV file with URLs and auto-generate metadata using AI"""
+    if request.method == 'POST' and request.FILES.get('csv_file'):
+        csv_file = request.FILES['csv_file']
+        
+        # Check if it's a CSV file
+        if not csv_file.name.endswith('.csv'):
+            messages.error(request, "Please upload a CSV file.")
+            return redirect("dashboard_metadata_list")
+        
+        try:
+            import csv
+            import io
+            
+            # Read CSV content
+            csv_content = csv_file.read().decode('utf-8')
+            csv_reader = csv.DictReader(io.StringIO(csv_content))
+            
+            # Get column names (case-insensitive)
+            fieldnames_lower = {name.lower(): name for name in csv_reader.fieldnames or []}
+            
+            # Find URL column (try multiple variations)
+            url_column = None
+            for possible in ['url_path', 'page url', 'url', 'link', 'address']:
+                if possible in fieldnames_lower:
+                    url_column = fieldnames_lower[possible]
+                    break
+            
+            if not url_column:
+                messages.error(request, "CSV must have a 'url_path', 'Page URL', 'URL', or 'Link' column.")
+                return redirect("dashboard_metadata_list")
+            
+            # Find page_name column (optional)
+            page_name_column = None
+            for possible in ['page_name', 'page name', 'name', 'title']:
+                if possible in fieldnames_lower:
+                    page_name_column = fieldnames_lower[possible]
+                    break
+            
+            created_count = 0
+            skipped_count = 0
+            errors = []
+            
+            def extract_path_from_url(url_input):
+                """Extract URL path from full URL or path"""
+                if not url_input:
+                    return None
+                
+                url_input = url_input.strip()
+                
+                # If it's a full URL, extract the path
+                if url_input.startswith('http://') or url_input.startswith('https://'):
+                    try:
+                        from urllib.parse import urlparse
+                        parsed = urlparse(url_input)
+                        path = parsed.path
+                        # Ensure it starts with /
+                        if not path.startswith('/'):
+                            path = '/' + path
+                        return path
+                    except Exception:
+                        # If parsing fails, try simple extraction
+                        if '/' in url_input:
+                            # Find the path after domain
+                            parts = url_input.split('/', 3)
+                            if len(parts) >= 4:
+                                return '/' + parts[3]
+                        return None
+                
+                # If it's already a path, ensure it starts with /
+                if not url_input.startswith('/'):
+                    return '/' + url_input
+                
+                return url_input
+            
+            for row_num, row in enumerate(csv_reader, start=2):  # Start at 2 for header row
+                url_input = row.get(url_column, '').strip()
+                page_name = row.get(page_name_column, '').strip() if page_name_column else ''
+                
+                if not url_input:
+                    errors.append(f"Row {row_num}: Missing URL in '{url_column}' column")
+                    continue
+                
+                # Extract path from full URL or use as-is if already a path
+                url_path = extract_path_from_url(url_input)
+                
+                if not url_path:
+                    errors.append(f"Row {row_num}: Could not extract path from '{url_input}'")
+                    continue
+                
+                # Check if entry already exists
+                if PageMetadata.objects.filter(url_path=url_path).exists():
+                    skipped_count += 1
+                    continue
+                
+                try:
+                    # Generate metadata with AI
+                    use_ai = request.POST.get('use_ai', 'on') == 'on'
+                    
+                    if use_ai:
+                        try:
+                            ai_metadata = generate_metadata_with_ai(url_path, page_name)
+                            meta_title = ai_metadata.get('meta_title', '')
+                            meta_description = ai_metadata.get('meta_description', '')
+                            meta_keywords = ai_metadata.get('meta_keywords', '')
+                        except Exception as ai_error:
+                            # Fallback to basic generation if AI fails
+                            from .utils.ai_metadata_generator import generate_fallback_metadata
+                            fallback = generate_fallback_metadata(url_path, page_name)
+                            meta_title = fallback.get('meta_title', '')
+                            meta_description = fallback.get('meta_description', '')
+                            meta_keywords = fallback.get('meta_keywords', '')
+                            messages.warning(request, f"AI generation failed for {url_path}, used fallback")
+                    else:
+                        # Use basic fallback only
+                        from .utils.ai_metadata_generator import generate_fallback_metadata
+                        fallback = generate_fallback_metadata(url_path, page_name)
+                        meta_title = fallback.get('meta_title', '')
+                        meta_description = fallback.get('meta_description', '')
+                        meta_keywords = fallback.get('meta_keywords', '')
+                    
+                    # Create PageMetadata entry
+                    PageMetadata.objects.create(
+                        url_path=url_path,
+                        page_name=page_name or url_path.strip('/').replace('-', ' ').title(),
+                        meta_title=meta_title,
+                        meta_description=meta_description,
+                        meta_keywords=meta_keywords,
+                        is_active=True,
+                    )
+                    created_count += 1
+                    
+                except Exception as e:
+                    errors.append(f"Row {row_num}: {str(e)}")
+                    continue
+            
+            # Show results
+            if created_count > 0:
+                messages.success(request, f"Successfully created {created_count} metadata entries from CSV!")
+            if skipped_count > 0:
+                messages.info(request, f"Skipped {skipped_count} entries (already exist)")
+            if errors:
+                for error in errors[:10]:  # Show first 10 errors
+                    messages.error(request, error)
+                if len(errors) > 10:
+                    messages.error(request, f"... and {len(errors) - 10} more errors")
+            
+            return redirect("dashboard_metadata_list")
+            
+        except Exception as e:
+            messages.error(request, f"Error processing CSV file: {str(e)}")
+            return redirect("dashboard_metadata_list")
+    
+    # GET request - show upload form
+    return render(request, "dashboard/metadata_upload_csv.html")
+
+
+@admin_required
+def dashboard_metadata_export_csv(request):
+    """Export all metadata as CSV file"""
+    import csv
+    from datetime import datetime
+    
+    # Get all metadata
+    metadata_list = PageMetadata.objects.order_by("url_path")
+    
+    # Create CSV response
+    response = HttpResponse(content_type='text/csv')
+    timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+    filename = f"page_metadata_export_{timestamp}.csv"
+    response['Content-Disposition'] = f'attachment; filename="{filename}"'
+    
+    writer = csv.writer(response)
+    
+    # Write header
+    writer.writerow([
+        'Page Name', 
+        'URL Path', 
+        'Meta Title', 
+        'Meta Description',
+        'Meta Keywords',
+        'OG Title',
+        'OG Description',
+        'OG Image',
+        'Is Active',
+        'Created',
+        'Updated'
+    ])
+    
+    # Write data
+    for metadata in metadata_list:
+        writer.writerow([
+            metadata.page_name,
+            metadata.url_path,
+            metadata.meta_title or '',
+            metadata.meta_description or '',
+            metadata.meta_keywords or '',
+            metadata.og_title or '',
+            metadata.og_description or '',
+            metadata.og_image or '',
+            'Yes' if metadata.is_active else 'No',
+            metadata.created_at.strftime('%Y-%m-%d %H:%M:%S') if metadata.created_at else '',
+            metadata.updated_at.strftime('%Y-%m-%d %H:%M:%S') if metadata.updated_at else '',
+        ])
+    
+    return response
+
+
+@admin_required
+def dashboard_metadata_export_pdf(request):
+    """Export all metadata as PDF file"""
+    try:
+        from reportlab.lib.pagesizes import letter
+        from reportlab.lib import colors
+        from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+        from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+        from reportlab.lib.units import inch
+        from datetime import datetime
+    except ImportError:
+        messages.error(request, "ReportLab library not installed. Run: pip install reportlab")
+        return redirect("dashboard_metadata_list")
+    
+    # Get all metadata
+    metadata_list = PageMetadata.objects.order_by("url_path")
+    
+    # Create PDF response
+    response = HttpResponse(content_type='application/pdf')
+    timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+    filename = f"page_metadata_export_{timestamp}.pdf"
+    response['Content-Disposition'] = f'attachment; filename="{filename}"'
+    
+    # Create PDF document
+    doc = SimpleDocTemplate(response, pagesize=letter)
+    elements = []
+    styles = getSampleStyleSheet()
+    
+    # Custom styles
+    title_style = ParagraphStyle(
+        'CustomTitle',
+        parent=styles['Heading1'],
+        fontSize=20,
+        textColor=colors.HexColor('#1e293b'),
+        spaceAfter=20,
+    )
+    
+    heading_style = ParagraphStyle(
+        'CustomHeading',
+        parent=styles['Heading2'],
+        fontSize=14,
+        textColor=colors.HexColor('#475569'),
+        spaceAfter=12,
+    )
+    
+    # Title
+    elements.append(Paragraph("Page Metadata Export", title_style))
+    elements.append(Paragraph(f"Generated: {datetime.now().strftime('%B %d, %Y at %I:%M %p')}", styles['Normal']))
+    elements.append(Spacer(1, 0.3*inch))
+    
+    # Summary
+    total_pages = metadata_list.count()
+    with_metadata = sum(1 for m in metadata_list if m.meta_title)
+    elements.append(Paragraph(f"Total Pages: {total_pages} | With Metadata: {with_metadata}", styles['Normal']))
+    elements.append(Spacer(1, 0.2*inch))
+    
+    # Create table data
+    table_data = []
+    
+    # Header
+    table_data.append([
+        Paragraph('<b>Page Name</b>', styles['Normal']),
+        Paragraph('<b>URL</b>', styles['Normal']),
+        Paragraph('<b>Title</b>', styles['Normal']),
+        Paragraph('<b>Status</b>', styles['Normal']),
+    ])
+    
+    # Rows
+    for metadata in metadata_list:
+        status = '✓ Active' if metadata.is_active else 'Inactive'
+        status_color = colors.green if metadata.is_active else colors.grey
+        status_text = f'<font color="{status_color}">{status}</font>'
+        
+        # Truncate long titles for table display
+        title = metadata.meta_title[:60] + '...' if metadata.meta_title and len(metadata.meta_title) > 60 else (metadata.meta_title or 'No title')
+        
+        table_data.append([
+            Paragraph(metadata.page_name, styles['Normal']),
+            Paragraph(metadata.url_path, styles['Normal']),
+            Paragraph(title, styles['Normal']),
+            Paragraph(status_text, styles['Normal']),
+        ])
+    
+    # Create table
+    table = Table(table_data, colWidths=[1.5*inch, 1.5*inch, 3*inch, 0.8*inch])
+    table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#f1f5f9')),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.HexColor('#1e293b')),
+        ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, 0), 9),
+        ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+        ('BACKGROUND', (0, 1), (-1, -1), colors.white),
+        ('TEXTCOLOR', (0, 1), (-1, -1), colors.black),
+        ('FONTNAME', (0, 1), (-1, -1), 'Helvetica'),
+        ('FONTSIZE', (0, 1), (-1, -1), 8),
+        ('GRID', (0, 0), (-1, -1), 1, colors.grey),
+        ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+        ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, colors.HexColor('#fafafa')]),
+    ]))
+    
+    elements.append(table)
+    elements.append(Spacer(1, 0.3*inch))
+    
+    # Add detailed information section
+    elements.append(Paragraph("Detailed Information", heading_style))
+    
+    for metadata in metadata_list:
+        if metadata.meta_title:  # Only show pages with metadata
+            elements.append(Paragraph(f"<b>{metadata.page_name}</b>", styles['Heading3']))
+            elements.append(Paragraph(f"URL: {metadata.url_path}", styles['Normal']))
+            
+            if metadata.meta_title:
+                elements.append(Paragraph(f"<b>Meta Title:</b> {metadata.meta_title}", styles['Normal']))
+            if metadata.meta_description:
+                elements.append(Paragraph(f"<b>Meta Description:</b> {metadata.meta_description}", styles['Normal']))
+            if metadata.meta_keywords:
+                elements.append(Paragraph(f"<b>Keywords:</b> {metadata.meta_keywords}", styles['Normal']))
+            
+            elements.append(Spacer(1, 0.15*inch))
+    
+    # Build PDF
+    doc.build(elements)
+    
+    return response
