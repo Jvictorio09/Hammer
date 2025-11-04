@@ -33,6 +33,21 @@ CSRF_TRUSTED_ORIGINS = [
     
 ]
 
+# Security Settings - HTTPS Redirect
+# Redirect all HTTP requests to HTTPS
+# Note: Railway/nginx should handle this, but Django setting ensures it works
+SECURE_SSL_REDIRECT = True  # Set to False for local development
+# Only redirect in production (when DEBUG is False)
+if DEBUG:
+    SECURE_SSL_REDIRECT = False
+
+# Additional security headers
+SECURE_HSTS_SECONDS = 31536000  # 1 year - tells browsers to only use HTTPS
+SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+SECURE_HSTS_PRELOAD = True
+SECURE_CONTENT_TYPE_NOSNIFF = True
+X_FRAME_OPTIONS = 'DENY'
+
 
 INSTALLED_APPS = [
     'django.contrib.admin',
