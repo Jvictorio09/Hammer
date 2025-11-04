@@ -17,12 +17,14 @@ urlpatterns = [
     path("services/commercial-fit-out/", views.legacy_interior, name="legacy_interior"),
     path("services/maintenance/", views.legacy_facility, name="legacy_facility"),
     path("services/swimming-pools/", views.legacy_landscape, name="legacy_landscape"),
-    path("services/home-renovation/", views.home, name="home"),
+    path("services/home-renovation/", views.home, name="home_legacy"),
     
     # Service detail (canonical) - must come AFTER specific redirects
     path("services/<slug:slug>/", views.service_detail, name="service_detail"),
 
-    path("villas", views.home, name="home"),
+    # Legacy /villas URL for SEO - kept for indexing purposes
+    # Note: No name="home" so {% url 'home' %} always resolves to root "/"
+    path("villas", views.home),
 
     path("landscape/", views.legacy_landscape, name="legacy_landscape"),
     path("landscape", views.legacy_landscape, name="legacy_landscape"),
