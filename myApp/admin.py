@@ -13,7 +13,7 @@ from .models import (
     ServicePartnerBrand, ServiceTestimonial,
     CaseStudy, TeamMember,
     MediaAlbum, MediaAsset, InsightAuditLog, UserProfile,
-    PageMetadata,
+    PageMetadata, BlockedEmail, BlockedIP, FormSubmission,
 )
 from .utils.cloudinary_utils import smart_compress_to_bytes, upload_to_cloudinary, TARGET_BYTES
 
@@ -510,3 +510,72 @@ class PageMetadataAdmin(admin.ModelAdmin):
         }),
     )
     ordering = ('url_path',)
+
+
+# -------------------------------------------------------------------
+# Spam Blocking Admin
+# -------------------------------------------------------------------
+
+@admin.register(BlockedEmail)
+class BlockedEmailAdmin(admin.ModelAdmin):
+    list_display = ("email", "reason", "is_active", "blocked_at")
+    list_filter = ("is_active", "blocked_at")
+    search_fields = ("email", "reason")
+    list_editable = ("is_active",)
+    ordering = ("-blocked_at",)
+    readonly_fields = ("blocked_at",)
+    
+    fieldsets = (
+        ("Block Information", {
+            "fields": ("email", "reason", "is_active")
+        }),
+        ("Timestamps", {
+            "fields": ("blocked_at",),
+            "classes": ("collapse",)
+        }),
+    )
+
+
+@admin.register(BlockedIP)
+class BlockedIPAdmin(admin.ModelAdmin):
+    list_display = ("ip_address", "reason", "is_active", "blocked_at")
+    list_filter = ("is_active", "blocked_at")
+    search_fields = ("ip_address", "reason")
+    list_editable = ("is_active",)
+    ordering = ("-blocked_at",)
+    readonly_fields = ("blocked_at",)
+    
+    fieldsets = (
+        ("Block Information", {
+            "fields": ("ip_address", "reason", "is_active")
+        }),
+        ("Timestamps", {
+            "fields": ("blocked_at",),
+            "classes": ("collapse",)
+        }),
+    )
+
+
+@admin.register(FormSubmission)
+class FormSubmissionAdmin(admin.ModelAdmin):
+    list_display = ("email", "name", "ip_address", "service", "submitted_at")
+    list_filter = ("service", "submitted_at")
+    search_fields = ("email", "name", "ip_address", "message_preview")
+    ordering = ("-submitted_at",)
+    readonly_fields = ("email", "name", "ip_address", "service", "message_preview", "submitted_at")
+    
+    fieldsets = (
+        ("Submission Details", {
+            "fields": ("email", "name", "ip_address", "service", "message_preview")
+        }),
+        ("Timestamps", {
+            "fields": ("submitted_at",),
+            "classes": ("collapse",)
+        }),
+    )
+    
+    def has_add_permission(self, request):
+        return False  # Submissions are only created by the form
+    
+    def has_change_permission(self, request, obj=None):
+        return False  # Submissions are read-only

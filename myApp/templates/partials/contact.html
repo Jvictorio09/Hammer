@@ -54,6 +54,10 @@
       <form id="contactForm" method="post" action="{% url 'contact' %}" class="relative grid gap-5 bg-white text-[#0A0A0B] rounded-2xl shadow-[0_20px_60px_rgba(0,0,0,.45)] p-6 md:p-8">
         {% csrf_token %}
         
+        <!-- Honeypot fields (hidden from users, trap for bots) -->
+        <input type="text" name="honeypot" autocomplete="off" tabindex="-1" style="position:absolute;left:-9999px;" aria-hidden="true">
+        <input type="text" name="website" autocomplete="off" tabindex="-1" style="display:none;" aria-hidden="true">
+        
         <!-- floating field -->
         <label class="relative block">
           <span class="pointer-events-none absolute left-4 top-3 text-gray-400">
@@ -240,7 +244,14 @@
         'X-Requested-With': 'XMLHttpRequest',
       },
     })
-    .then(response => response.json())
+    .then(response => {
+      if (!response.ok && response.status === 400) {
+        return response.json().then(data => {
+          throw new Error(data.errors ? Object.values(data.errors).flat().join(' ') : 'Submission rejected');
+        });
+      }
+      return response.json();
+    })
     .then(data => {
       btn.classList.remove('is-loading');
       btn.removeAttribute('disabled');
@@ -251,15 +262,17 @@
         showToast('Thanks! We\'ve received your details—expect a reply within 24h.', 'success');
       } else {
         // Error
-        showToast('Sorry, we couldn\'t send your message. Please try again.', 'error');
+        const errorMsg = data.errors ? Object.values(data.errors).flat().join(' ') : 'Sorry, we couldn\'t send your message. Please try again.';
+        showToast(errorMsg, 'error');
         console.error('Form submission error:', data.errors);
       }
     })
     .catch(error => {
       btn.classList.remove('is-loading');
       btn.removeAttribute('disabled');
-      showToast('Sorry, we couldn\'t send your message. Please try again.', 'error');
-      console.error('Network error:', error);
+      const errorMsg = error.message || 'Sorry, we couldn\'t send your message. Please try again.';
+      showToast(errorMsg, 'error');
+      console.error('Form submission error:', error);
     });
   });
   

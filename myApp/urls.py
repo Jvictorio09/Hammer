@@ -119,4 +119,8 @@ urlpatterns = [
     path("dashboard/metadata/export-pdf/", views.dashboard_metadata_export_pdf, name="dashboard_metadata_export_pdf"),
     path("dashboard/metadata/<int:pk>/edit/", views.dashboard_metadata_edit, name="dashboard_metadata_edit"),
     path("dashboard/metadata/<int:pk>/delete/", views.dashboard_metadata_delete, name="dashboard_metadata_delete"),
+    # Spam Blocking (Admin only)
+    path("dashboard/spam/emails/", views.dashboard_spam_blocked_emails, name="dashboard_spam_blocked_emails"),
+    path("dashboard/spam/ips/", views.dashboard_spam_blocked_ips, name="dashboard_spam_blocked_ips"),
+    path("dashboard/spam/submissions/", views.dashboard_spam_submissions, name="dashboard_spam_submissions"),
 ]

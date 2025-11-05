@@ -624,3 +624,63 @@ class PageMetadata(models.Model):
     
     def __str__(self):
         return f"{self.page_name} - {self.url_path}"
+
+
+# --------------------------------------------------------------------------------------
+# Spam Blocking Models
+# --------------------------------------------------------------------------------------
+
+class BlockedEmail(models.Model):
+    """Blocked email addresses that should be rejected"""
+    email = models.EmailField(unique=True, db_index=True)
+    reason = models.CharField(max_length=255, blank=True, help_text="Why this email was blocked")
+    blocked_at = models.DateTimeField(auto_now_add=True)
+    is_active = models.BooleanField(default=True, db_index=True)
+    
+    class Meta:
+        ordering = ['-blocked_at']
+        verbose_name = 'Blocked Email'
+        verbose_name_plural = 'Blocked Emails'
+    
+    def __str__(self):
+        return f"{self.email} (blocked: {self.blocked_at.strftime('%Y-%m-%d')})"
+
+
+class BlockedIP(models.Model):
+    """Blocked IP addresses that should be rejected"""
+    ip_address = models.GenericIPAddressField(unique=True, db_index=True)
+    reason = models.CharField(max_length=255, blank=True, help_text="Why this IP was blocked")
+    blocked_at = models.DateTimeField(auto_now_add=True)
+    is_active = models.BooleanField(default=True, db_index=True)
+    
+    class Meta:
+        ordering = ['-blocked_at']
+        verbose_name = 'Blocked IP'
+        verbose_name_plural = 'Blocked IPs'
+    
+    def __str__(self):
+        return f"{self.ip_address} (blocked: {self.blocked_at.strftime('%Y-%m-%d')})"
+
+
+class FormSubmission(models.Model):
+    """Track form submissions for rate limiting and spam detection"""
+    email = models.EmailField(db_index=True)
+    ip_address = models.GenericIPAddressField(null=True, blank=True, db_index=True)
+    name = models.CharField(max_length=120)
+    submitted_at = models.DateTimeField(auto_now_add=True, db_index=True)
+    
+    # Store submission data for analysis
+    service = models.CharField(max_length=100, blank=True)
+    message_preview = models.CharField(max_length=200, blank=True, help_text="First 200 chars of message")
+    
+    class Meta:
+        ordering = ['-submitted_at']
+        indexes = [
+            models.Index(fields=['email', 'submitted_at']),
+            models.Index(fields=['ip_address', 'submitted_at']),
+        ]
+        verbose_name = 'Form Submission'
+        verbose_name_plural = 'Form Submissions'
+    
+    def __str__(self):
+        return f"{self.email} - {self.submitted_at.strftime('%Y-%m-%d %H:%M')}"

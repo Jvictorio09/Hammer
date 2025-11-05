@@ -96,6 +96,11 @@
               <span class="flex items-center gap-2"><i class="fa-solid fa-tags"></i> Metadata</span>
               <i class="fa-solid fa-chevron-right text-xs opacity-60 group-hover:translate-x-0.5 transition"></i>
             </a>
+            <a href="{% url 'dashboard_spam_blocked_emails' %}"
+               class="group flex items-center justify-between rounded-lg px-3 py-2 border border-transparent hover:border-slate-200 transition {% if 'dashboard_spam' in request.resolver_match.url_name %}bg-indigo-50 text-indigo-900 font-semibold{% else %}text-slate-700 hover:bg-slate-50{% endif %}">
+              <span class="flex items-center gap-2"><i class="fa-solid fa-shield-halved"></i> Spam Blocking</span>
+              <i class="fa-solid fa-chevron-right text-xs opacity-60 group-hover:translate-x-0.5 transition"></i>
+            </a>
             {% endif %}
           </nav>
           <div class="my-4 h-px bg-slate-100"></div>

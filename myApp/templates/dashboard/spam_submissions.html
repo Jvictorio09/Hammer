@@ -1,0 +1,127 @@
+{% extends "dashboard/base.html" %}
+{% block page_title %}Form Submissions{% endblock %}
+
+{% block content %}
+<!-- Header -->
+<div class="mb-6 flex items-center justify-between">
+  <div>
+    <div class="text-xs uppercase tracking-widest text-gray-500">Spam Blocking</div>
+    <h1 class="text-2xl font-semibold text-gray-900">Form Submissions</h1>
+  </div>
+  <div class="flex items-center gap-2">
+    <a href="{% url 'dashboard_spam_blocked_emails' %}" class="px-3 py-2 rounded-lg border border-gray-300 hover:bg-gray-50">Blocked Emails</a>
+    <a href="{% url 'dashboard_spam_blocked_ips' %}" class="px-3 py-2 rounded-lg border border-gray-300 hover:bg-gray-50">Blocked IPs</a>
+  </div>
+</div>
+
+<!-- Stats Cards -->
+<div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+  <div class="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
+    <div class="text-xs text-gray-500 uppercase tracking-wide mb-1">Total Submissions</div>
+    <div class="text-2xl font-bold text-gray-900">{{ stats.total }}</div>
+  </div>
+  <div class="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
+    <div class="text-xs text-gray-500 uppercase tracking-wide mb-1">Today</div>
+    <div class="text-2xl font-bold text-gray-900">{{ stats.today }}</div>
+  </div>
+  <div class="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
+    <div class="text-xs text-gray-500 uppercase tracking-wide mb-1">Blocked Emails</div>
+    <div class="text-2xl font-bold text-red-600">{{ stats.blocked_emails }}</div>
+  </div>
+  <div class="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
+    <div class="text-xs text-gray-500 uppercase tracking-wide mb-1">Blocked IPs</div>
+    <div class="text-2xl font-bold text-red-600">{{ stats.blocked_ips }}</div>
+  </div>
+</div>
+
+<!-- Search -->
+<div class="mb-4 rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
+  <form method="get" class="flex gap-3">
+    <div class="relative flex-1">
+      <input type="search" name="search" value="{{ search_query }}" placeholder="Search by email, name, IP, or message..."
+             class="w-full rounded-xl border border-gray-300 pl-10 pr-4 py-2 focus:outline-none focus:ring-2 focus:ring-gray-900/10 focus:border-gray-400">
+      <i class="fa-solid fa-search absolute left-3 top-2.5 text-gray-400"></i>
+    </div>
+    <button type="submit" class="rounded-xl bg-gray-900 px-6 py-2 text-white hover:bg-black transition">
+      Search
+    </button>
+    {% if search_query %}
+      <a href="{% url 'dashboard_spam_submissions' %}" class="rounded-xl border border-gray-300 px-6 py-2 hover:bg-gray-50 transition">
+        Clear
+      </a>
+    {% endif %}
+  </form>
+</div>
+
+<!-- Submissions List -->
+<div class="rounded-2xl border border-gray-200 bg-white shadow-sm overflow-hidden">
+  <table class="min-w-full text-sm">
+    <thead class="bg-gray-50 text-left text-gray-600">
+      <tr>
+        <th class="px-6 py-3 font-semibold">Email</th>
+        <th class="px-6 py-3 font-semibold">Name</th>
+        <th class="px-6 py-3 font-semibold">IP Address</th>
+        <th class="px-6 py-3 font-semibold">Service</th>
+        <th class="px-6 py-3 font-semibold">Message Preview</th>
+        <th class="px-6 py-3 font-semibold">Submitted</th>
+        <th class="px-6 py-3 font-semibold text-right">Actions</th>
+      </tr>
+    </thead>
+    <tbody class="divide-y divide-gray-100">
+      {% for submission in submissions %}
+      <tr class="hover:bg-gray-50">
+        <td class="px-6 py-4 font-medium text-gray-900">{{ submission.email }}</td>
+        <td class="px-6 py-4 text-gray-700">{{ submission.name }}</td>
+        <td class="px-6 py-4 font-mono text-gray-600">{{ submission.ip_address|default:"—" }}</td>
+        <td class="px-6 py-4">
+          <span class="inline-flex items-center rounded-full bg-blue-100 px-2.5 py-1 text-xs font-medium text-blue-800">
+            {{ submission.service|default:"General" }}
+          </span>
+        </td>
+        <td class="px-6 py-4 text-gray-600 max-w-xs truncate" title="{{ submission.message_preview }}">
+          {{ submission.message_preview|truncatewords:10 }}
+        </td>
+        <td class="px-6 py-4 text-gray-600">{{ submission.submitted_at|date:"Y-m-d H:i" }}</td>
+        <td class="px-6 py-4">
+          <div class="flex items-center justify-end gap-2">
+            <a href="{% url 'dashboard_spam_blocked_emails' %}?email={{ submission.email }}" 
+               class="text-sm text-red-600 hover:text-red-800" title="Block this email">
+              <i class="fa-solid fa-ban"></i>
+            </a>
+            {% if submission.ip_address %}
+              <a href="{% url 'dashboard_spam_blocked_ips' %}?ip={{ submission.ip_address }}" 
+                 class="text-sm text-red-600 hover:text-red-800" title="Block this IP">
+                <i class="fa-solid fa-network-wired"></i>
+              </a>
+            {% endif %}
+          </div>
+        </td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="7" class="px-6 py-12 text-center text-gray-500">
+          <i class="fa-solid fa-inbox text-4xl mb-3 block text-gray-300"></i>
+          <p>No submissions found.</p>
+          {% if search_query %}
+            <p class="text-sm text-gray-400 mt-1">Try a different search term.</p>
+          {% else %}
+            <p class="text-sm text-gray-400 mt-1">Form submissions will appear here.</p>
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<div class="mt-6 rounded-xl bg-blue-50 border border-blue-200 p-4">
+  <div class="flex items-start gap-3">
+    <i class="fa-solid fa-info-circle text-blue-600 mt-0.5"></i>
+    <div class="text-sm text-blue-800">
+      <p class="font-medium mb-1">About Form Submissions</p>
+      <p>All contact form submissions are logged here for monitoring and spam detection. You can quickly block emails or IPs by clicking the action buttons. Only the last 500 submissions are shown.</p>
+    </div>
+  </div>
+</div>
+{% endblock %}
+

@@ -22,18 +22,61 @@ class ContactForm(forms.Form):
     message = forms.CharField(widget=forms.Textarea(attrs={"rows": 6}))
     consent = forms.BooleanField(required=False, initial=True, label="")
 
-    # Simple honeypot (hidden in CSS via the template or your base)
+    # Enhanced honeypot (hidden in CSS via the template or your base)
     honeypot = forms.CharField(
         required=False,
         widget=forms.TextInput(
             attrs={"autocomplete": "off", "tabindex": "-1", "style": "position:absolute;left:-9999px;"}
         ),
     )
+    
+    # Additional honeypot field with different name
+    website = forms.CharField(
+        required=False,
+        widget=forms.TextInput(
+            attrs={"autocomplete": "off", "tabindex": "-1", "style": "display:none;"}
+        ),
+        label="",  # No label
+    )
 
     def clean_honeypot(self):
         if self.cleaned_data.get("honeypot"):
             raise forms.ValidationError("Spam detected.")
         return ""
+    
+    def clean_website(self):
+        # If this field is filled, it's likely a bot
+        if self.cleaned_data.get("website"):
+            raise forms.ValidationError("Spam detected.")
+        return ""
+    
+    def clean_name(self):
+        name = self.cleaned_data.get("name", "").strip()
+        if len(name) < 2:
+            raise forms.ValidationError("Name must be at least 2 characters long.")
+        if len(name) > 120:
+            raise forms.ValidationError("Name is too long.")
+        return name
+    
+    def clean_message(self):
+        message = self.cleaned_data.get("message", "").strip()
+        if len(message) < 10:
+            raise forms.ValidationError("Message must be at least 10 characters long.")
+        if len(message) > 5000:
+            raise forms.ValidationError("Message is too long (max 5000 characters).")
+        return message
+    
+    def clean_email(self):
+        email = self.cleaned_data.get("email", "").strip().lower()
+        # Basic email validation is done by EmailField, but we can add more checks
+        if email:
+            # Check for suspicious patterns
+            if email.count('@') != 1:
+                raise forms.ValidationError("Invalid email format.")
+            # Check for consecutive dots
+            if '..' in email:
+                raise forms.ValidationError("Invalid email format.")
+        return email
 
 
 # -----------------------------

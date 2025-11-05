@@ -21,6 +21,7 @@ from django.utils.html import escape
 from django.views.decorators.http import require_http_methods
 from django.shortcuts import render, get_object_or_404
 from django.db import IntegrityError
+from django.db.models import Q
 from django.utils import timezone
 from django.db.models import Prefetch
 from django.contrib.auth.decorators import login_required
@@ -58,6 +59,8 @@ from .forms import ServiceForm, InsightForm, ServiceCapabilityFormSet, ServiceEd
 from .utils.google_drive_utils import upload_from_google_drive_to_cloudinary, extract_file_id_from_url, bulk_upload_from_drive_folder
 from .utils.cloudinary_utils import smart_compress_to_bytes, upload_to_cloudinary, TARGET_BYTES
 from .utils.ai_metadata_generator import generate_metadata_with_ai
+from .spam_detection import validate_contact_submission, record_submission, get_client_ip
+from .models import BlockedEmail, BlockedIP, FormSubmission
 
 # -----------------------------
 # Utility Functions
@@ -898,6 +901,47 @@ def contact(request: HttpRequest) -> HttpResponse:
         return render(request, "contact.html", {"form": form})
 
     data = form.cleaned_data
+    
+    # SPAM DETECTION - Check before processing
+    is_valid, error_message, should_block = validate_contact_submission(request, data)
+    
+    if not is_valid:
+        logger.warning(f"Spam/rejected submission: {data.get('email')} - {error_message}")
+        
+        # If spam score is very high, optionally block the email/IP automatically
+        if should_block:
+            email = data.get('email', '').strip().lower()
+            ip_address = get_client_ip(request)
+            
+            # Auto-block if spam score is very high (you can disable this if preferred)
+            if email and getattr(settings, 'AUTO_BLOCK_SPAM', False):
+                from .models import BlockedEmail, BlockedIP
+                BlockedEmail.objects.get_or_create(
+                    email=email,
+                    defaults={'reason': 'Auto-blocked due to high spam score', 'is_active': True}
+                )
+            if ip_address and getattr(settings, 'AUTO_BLOCK_SPAM', False):
+                from .models import BlockedIP
+                BlockedIP.objects.get_or_create(
+                    ip_address=ip_address,
+                    defaults={'reason': 'Auto-blocked due to high spam score', 'is_active': True}
+                )
+        
+        if _is_ajax(request):
+            return JsonResponse({"ok": False, "errors": {"__all__": [error_message]}}, status=400)
+        messages.error(request, error_message)
+        return render(request, "contact.html", {"form": form})
+    
+    # Record submission for rate limiting (before sending email)
+    ip_address = get_client_ip(request)
+    record_submission(
+        email=data['email'],
+        ip_address=ip_address,
+        name=data['name'],
+        service=data.get('service', ''),
+        message=data.get('message', '')
+    )
+    
     service = data.get("service") or "General"
     location = data.get("location", "")
     subject = f"[Enquiry] {service} — {data['name']}"
@@ -2706,3 +2750,132 @@ def dashboard_metadata_export_pdf(request):
     doc.build(elements)
     
     return response
+
+
+# --------------------------------------------------------------------------------------
+# Spam Blocking Dashboard Views
+# --------------------------------------------------------------------------------------
+
+@admin_required
+def dashboard_spam_blocked_emails(request):
+    """List blocked emails with ability to add/remove"""
+    blocked_emails = BlockedEmail.objects.all().order_by('-blocked_at')
+    
+    # Pre-fill email from query parameter
+    prefill_email = request.GET.get('email', '').strip()
+    
+    if request.method == "POST":
+        action = request.POST.get('action')
+        if action == 'add':
+            email = request.POST.get('email', '').strip().lower()
+            reason = request.POST.get('reason', '').strip()
+            if email:
+                BlockedEmail.objects.get_or_create(
+                    email=email,
+                    defaults={'reason': reason or 'Manually blocked', 'is_active': True}
+                )
+                messages.success(request, f"Email {email} has been blocked.")
+        elif action == 'toggle':
+            email_id = request.POST.get('id')
+            try:
+                blocked = BlockedEmail.objects.get(id=email_id)
+                blocked.is_active = not blocked.is_active
+                blocked.save()
+                messages.success(request, f"Email {blocked.email} has been {'activated' if blocked.is_active else 'deactivated'}.")
+            except BlockedEmail.DoesNotExist:
+                messages.error(request, "Email not found.")
+        elif action == 'delete':
+            email_id = request.POST.get('id')
+            try:
+                blocked = BlockedEmail.objects.get(id=email_id)
+                email = blocked.email
+                blocked.delete()
+                messages.success(request, f"Email {email} has been removed from blocklist.")
+            except BlockedEmail.DoesNotExist:
+                messages.error(request, "Email not found.")
+        return redirect('dashboard_spam_blocked_emails')
+    
+    return render(request, "dashboard/spam_blocked_emails.html", {
+        "blocked_emails": blocked_emails,
+        "prefill_email": prefill_email
+    })
+
+
+@admin_required
+def dashboard_spam_blocked_ips(request):
+    """List blocked IPs with ability to add/remove"""
+    blocked_ips = BlockedIP.objects.all().order_by('-blocked_at')
+    
+    # Pre-fill IP from query parameter
+    prefill_ip = request.GET.get('ip', '').strip()
+    
+    if request.method == "POST":
+        action = request.POST.get('action')
+        if action == 'add':
+            ip_address = request.POST.get('ip_address', '').strip()
+            reason = request.POST.get('reason', '').strip()
+            if ip_address:
+                BlockedIP.objects.get_or_create(
+                    ip_address=ip_address,
+                    defaults={'reason': reason or 'Manually blocked', 'is_active': True}
+                )
+                messages.success(request, f"IP {ip_address} has been blocked.")
+        elif action == 'toggle':
+            ip_id = request.POST.get('id')
+            try:
+                blocked = BlockedIP.objects.get(id=ip_id)
+                blocked.is_active = not blocked.is_active
+                blocked.save()
+                messages.success(request, f"IP {blocked.ip_address} has been {'activated' if blocked.is_active else 'deactivated'}.")
+            except BlockedIP.DoesNotExist:
+                messages.error(request, "IP not found.")
+        elif action == 'delete':
+            ip_id = request.POST.get('id')
+            try:
+                blocked = BlockedIP.objects.get(id=ip_id)
+                ip = blocked.ip_address
+                blocked.delete()
+                messages.success(request, f"IP {ip} has been removed from blocklist.")
+            except BlockedIP.DoesNotExist:
+                messages.error(request, "IP not found.")
+        return redirect('dashboard_spam_blocked_ips')
+    
+    return render(request, "dashboard/spam_blocked_ips.html", {
+        "blocked_ips": blocked_ips,
+        "prefill_ip": prefill_ip
+    })
+
+
+@admin_required
+def dashboard_spam_submissions(request):
+    """List all form submissions for monitoring"""
+    submissions = FormSubmission.objects.all().order_by('-submitted_at')[:500]  # Last 500
+    
+    # Filtering
+    search_query = request.GET.get('search', '').strip()
+    if search_query:
+        submissions = submissions.filter(
+            Q(email__icontains=search_query) |
+            Q(name__icontains=search_query) |
+            Q(ip_address__icontains=search_query) |
+            Q(message_preview__icontains=search_query)
+        )
+    
+    # Stats
+    total_submissions = FormSubmission.objects.count()
+    today_submissions = FormSubmission.objects.filter(
+        submitted_at__gte=timezone.now().replace(hour=0, minute=0, second=0, microsecond=0)
+    ).count()
+    blocked_emails_count = BlockedEmail.objects.filter(is_active=True).count()
+    blocked_ips_count = BlockedIP.objects.filter(is_active=True).count()
+    
+    return render(request, "dashboard/spam_submissions.html", {
+        "submissions": submissions,
+        "search_query": search_query,
+        "stats": {
+            "total": total_submissions,
+            "today": today_submissions,
+            "blocked_emails": blocked_emails_count,
+            "blocked_ips": blocked_ips_count,
+        }
+    })
