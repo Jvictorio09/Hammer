@@ -134,49 +134,15 @@
 
 {% block content %}
 
-<!-- HERO -->
+<!-- HERO - Simplified for About page -->
 <section class="hero hero--image grain" aria-label="About Hammer hero"
-         style="--hero-img: url('{{ hero_image_url|default:"https://res.cloudinary.com/dstlxtvar/image/upload/v1759765286/uploads/copy-of-img_0750-enhanced-nr.jpg" }}');">
+style="--hero-img: url('{{ hero_image_url|default:"https://res.cloudinary.com/dstlxtvar/image/upload/v1759765286/uploads/copy-of-img_0750-enhanced-nr.jpg" }}');">
   <div class="hero__overlay"></div>
   <div class="container hero__inner">
     <div class="hero__content">
-      {% if hero %}
-        {% if hero.eyebrow %}<p class="eyebrow">{{ hero.eyebrow }}</p>{% else %}<p class="eyebrow">About Hammer</p>{% endif %}
-        <h1 class="h1" style="margin-top:.5rem">{{ hero.headline|default:"Design & Build, done properly." }}</h1>
-        {% if hero.subtext %}
-        <p class="lead" style="margin-top:1rem;max-width:48ch">{{ hero.subtext }}</p>
-        {% else %}
-        <p class="lead" style="margin-top:1rem;max-width:48ch">
-          We create spaces that live beautifully — from quiet-luxury landscapes and interiors to bespoke joinery, marble, and aftercare.
-          One accountable team. Clear milestones. On-time handover.
-        </p>
-        {% endif %}
-        {% if hero.pills %}
-        <div class="chips">
-          {% for pill in hero.pills %}
-          <span class="chip">{{ pill }}</span>
-          {% endfor %}
-        </div>
-        {% else %}
-        <div class="chips">
-          <span class="chip">Dubai • UAE</span>
-          <span class="chip">Residential & Commercial</span>
-          <span class="chip">Concept → Aftercare</span>
-        </div>
-        {% endif %}
-      {% else %}
-        <p class="eyebrow">About Hammer</p>
-        <h1 class="h1" style="margin-top:.5rem">Design & Build, done properly.</h1>
-        <p class="lead" style="margin-top:1rem;max-width:48ch">
-          We create spaces that live beautifully — from quiet-luxury landscapes and interiors to bespoke joinery, marble, and aftercare.
-          One accountable team. Clear milestones. On-time handover.
-        </p>
-        <div class="chips">
-          <span class="chip">Dubai • UAE</span>
-          <span class="chip">Residential & Commercial</span>
-          <span class="chip">Concept → Aftercare</span>
-        </div>
-      {% endif %}
+      <h1 class="h1">
+        Transforming Spaces, Redefining Living
+      </h1>
     </div>
   </div>
 </section>
@@ -190,7 +156,6 @@
   .hero{
     position:relative; overflow:hidden; color:#fff;
     min-height:62vh; 
-    display:flex; align-items:flex-start; /* text at top */
     background:#0b0e14; /* safe fallback */
   }
   @media (min-width:768px){ .hero{ min-height:78vh } }
@@ -203,12 +168,11 @@
     will-change:transform;
   }
 
-  /* overlay for legibility - lighter on left side to show face clearly */
+  /* overlay for legibility - darker at bottom for text, lighter at top to show faces */
   .hero__overlay{
     position:absolute; inset:0; pointer-events:none;
     background:
-      radial-gradient(120% 80% at 50% 10%, rgba(0,0,0,.25), transparent 50%),
-      linear-gradient(90deg, rgba(0,0,0,.05) 0%, rgba(0,0,0,.10) 30%, rgba(0,0,0,.50) 60%, rgba(0,0,0,.75) 80%, rgba(0,0,0,.85) 100%);
+      linear-gradient(to top, rgba(0,0,0,.80) 0%, rgba(0,0,0,.50) 30%, rgba(0,0,0,.20) 60%, transparent 100%);
   }
 
   /* gentle texture for sophistication */
@@ -218,64 +182,57 @@
   }
 
   .hero__inner{
-    position:relative; z-index:1; width:100%;
-    padding:3rem 1.5rem; /* tighter on mobile, at top */
-    display:grid;
-    grid-template-columns:1fr;
-    gap:0;
+    position:absolute; 
+    bottom:0.2in; /* half inch from bottom */
+    left:0;
+    right:0;
+    z-index:1; 
+    width:100%;
+    padding:0;
+    margin:0;
   }
   
-  /* Content wrapper - positioned at top, right column on desktop */
+  /* Override container padding for hero inner - must override .hero .container */
+  .hero .hero__inner.container{
+    padding:0 !important;
+    max-width:100%;
+    margin:0;
+  }
+  
+  /* Content wrapper - single line at bottom */
   .hero__content{
     position:relative;
     width:100%;
+    max-width:72rem;
+    margin:0 auto;
+    padding:0 1.5rem 0;
+    text-align:left;
+  }
+  
+  .hero__content .h1{
+    font-size: clamp(1.5rem, 3.5vw + 1rem, 3rem);
+    line-height: 1.2;
+    margin: 0;
+    padding: 0;
+    font-weight: 700;
+    display: block;
   }
   
   @media (min-width:640px){
-    .hero__inner{
-      padding:4rem 2rem;
-    }
     .hero__content{
-      margin-left:auto;
-      max-width:70%;
+      padding:0 2rem 0;
     }
   }
   
   @media (min-width:768px){
-    .hero__inner{ 
-      padding:5rem 2rem;
-    }
-    .hero__content{
-      max-width:65%;
-      margin-left:auto;
+    .hero__content{ 
+      padding:0 2rem 0;
     }
   }
   
   @media (min-width:1024px){
-    .hero__inner{
-      /* Two-column grid: left for image/face, right for text */
-      grid-template-columns: 1fr 1fr;
-      gap:3rem;
-      align-items:start;
-      padding-top:5rem;
-      padding-bottom:5rem;
-    }
     .hero__content{
-      /* Right column - text positioned lower */
-      grid-column:2;
-      max-width:100%;
-      margin-left:0;
-      margin-top:16rem; /* Lower the text content */
-    }
-  }
-  
-  @media (min-width:1280px){
-    .hero__inner{
-      gap:4rem;
-      padding-top:6rem;
-    }
-    .hero__content{
-      margin-top:18rem; /* Even lower on larger screens */
+      padding:0 3rem 0;
     }
   }
   .hero .eyebrow{ letter-spacing:.45em; text-transform:uppercase; color:var(--teal); font-size:.7rem }

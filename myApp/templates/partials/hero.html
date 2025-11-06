@@ -6,52 +6,70 @@
 {# Get hero data - either from context or use defaults #}
 {% if hero %}
   {% comment %} Use dynamic hero content {% endcomment %}
-  <section class="relative min-h-[92vh] bg-cover bg-center" id="heroSection" 
-           data-bg="{% if hero.hero_image_url %}{{ hero.hero_image_url }}{% else %}https://res.cloudinary.com/dstlxtvar/image/upload/f_auto,q_auto/v1759757960/projects/duabi_hills%2C_parkways/IMG_0783-Enhanced-NR.jpg{% endif %}">
-    <div class="absolute inset-0 bg-gradient-to-b from-black/70 via-black/40 to-black/70"></div>
+  {% if hero.page == 'about' %}
+    {# Simplified hero for About page - text at bottom to not cover faces #}
+    <section class="relative min-h-[92vh] bg-cover bg-center flex items-end" id="heroSection" 
+             data-bg="{% if hero.hero_image_url %}{{ hero.hero_image_url }}{% else %}https://res.cloudinary.com/dstlxtvar/image/upload/f_auto,q_auto/v1759757960/projects/duabi_hills%2C_parkways/IMG_0783-Enhanced-NR.jpg{% endif %}">
+      <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent"></div>
 
-    <div class="relative z-10 max-w-7xl mx-auto px-6 py-32 md:py-48 text-white">
-      <!-- Eyebrow -->
-      {% if hero.eyebrow %}
-      <p class="eyebrow opacity-0 animate-fadeInUp [animation-delay:100ms]">{{ hero.eyebrow }}</p>
-      {% endif %}
-
-      <!-- Headline -->
-      <h1 class="text-4xl md:text-6xl font-extrabold leading-tight max-w-5xl tracking-tight opacity-0 animate-fadeInUp [animation-delay:200ms]">
-        {{ hero.headline }}
-      </h1>
-
-      <!-- Subtext -->
-      {% if hero.subtext %}
-      <p class="mt-6 max-w-2xl text-lg/7 text-white/90 opacity-0 animate-fadeInUp [animation-delay:300ms]">
-        {{ hero.subtext }}
-      </p>
-      {% endif %}
-
-      <!-- Buttons -->
-      {% if hero.buttons %}
-      <div class="mt-10 flex flex-wrap gap-4 opacity-0 animate-fadeInUp [animation-delay:400ms]">
-        {% for button in hero.buttons %}
-        <a href="{{ button.url }}"
-           class="inline-flex items-center justify-center rounded-full px-6 py-3 font-semibold transition
-                  {% if button.style == 'filled' %}bg-[#18AFAB] text-white shadow-lg hover:bg-[#0e8d89]{% else %}border border-white text-white hover:bg-white hover:text-[#0A0A0B]{% endif %}">
-          {% if button.icon %}<i class="{{ button.icon }} mr-2"></i>{% endif %}
-          {{ button.text }}
-        </a>
-        {% endfor %}
+      <!-- Simple text at bottom - positioned to not cover faces -->
+      <div class="relative z-10 w-full px-6 pb-16 md:pb-20 text-white">
+        <div class="max-w-7xl mx-auto">
+          <h1 class="text-3xl md:text-5xl lg:text-6xl font-bold leading-tight tracking-tight text-center opacity-0 animate-fadeInUp [animation-delay:200ms]">
+            Transforming Spaces, Redefining Living
+          </h1>
+        </div>
       </div>
-      {% endif %}
+    </section>
+  {% else %}
+    {# Standard hero layout for all other pages #}
+    <section class="relative min-h-[92vh] bg-cover bg-center" id="heroSection" 
+             data-bg="{% if hero.hero_image_url %}{{ hero.hero_image_url }}{% else %}https://res.cloudinary.com/dstlxtvar/image/upload/f_auto,q_auto/v1759757960/projects/duabi_hills%2C_parkways/IMG_0783-Enhanced-NR.jpg{% endif %}">
+      <div class="absolute inset-0 bg-gradient-to-b from-black/70 via-black/40 to-black/70"></div>
 
-      <!-- Pills -->
-      {% if hero.pills %}
-      <div class="mt-8 flex flex-wrap gap-3 text-sm opacity-0 animate-fadeInUp [animation-delay:500ms]">
-        {% for pill in hero.pills %}
-        <span class="px-3 py-1 rounded-full bg-white/10 backdrop-blur">{{ pill }}</span>
-        {% endfor %}
+      <div class="relative z-10 max-w-7xl mx-auto px-6 py-32 md:py-48 text-white">
+        <!-- Eyebrow -->
+        {% if hero.eyebrow %}
+        <p class="eyebrow opacity-0 animate-fadeInUp [animation-delay:100ms]">{{ hero.eyebrow }}</p>
+        {% endif %}
+
+        <!-- Headline -->
+        <h1 class="text-4xl md:text-6xl font-extrabold leading-tight max-w-5xl tracking-tight opacity-0 animate-fadeInUp [animation-delay:200ms]">
+          {{ hero.headline }}
+        </h1>
+
+        <!-- Subtext -->
+        {% if hero.subtext %}
+        <p class="mt-6 max-w-2xl text-lg/7 text-white/90 opacity-0 animate-fadeInUp [animation-delay:300ms]">
+          {{ hero.subtext }}
+        </p>
+        {% endif %}
+
+        <!-- Buttons -->
+        {% if hero.buttons %}
+        <div class="mt-10 flex flex-wrap gap-4 opacity-0 animate-fadeInUp [animation-delay:400ms]">
+          {% for button in hero.buttons %}
+          <a href="{{ button.url }}"
+             class="inline-flex items-center justify-center rounded-full px-6 py-3 font-semibold transition
+                    {% if button.style == 'filled' %}bg-[#18AFAB] text-white shadow-lg hover:bg-[#0e8d89]{% else %}border border-white text-white hover:bg-white hover:text-[#0A0A0B]{% endif %}">
+            {% if button.icon %}<i class="{{ button.icon }} mr-2"></i>{% endif %}
+            {{ button.text }}
+          </a>
+          {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Pills -->
+        {% if hero.pills %}
+        <div class="mt-8 flex flex-wrap gap-3 text-sm opacity-0 animate-fadeInUp [animation-delay:500ms]">
+          {% for pill in hero.pills %}
+          <span class="px-3 py-1 rounded-full bg-white/10 backdrop-blur">{{ pill }}</span>
+          {% endfor %}
+        </div>
+        {% endif %}
       </div>
-      {% endif %}
-    </div>
-  </section>
+    </section>
+  {% endif %}
 {% else %}
   {# Fallback to default static hero content #}
   <section class="relative min-h-[92vh] bg-cover bg-center" id="heroSection" 

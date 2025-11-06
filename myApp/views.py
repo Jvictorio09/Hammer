@@ -14,7 +14,6 @@ from django.http import (
     HttpResponse,
     JsonResponse,
     HttpResponseRedirect,
-    HttpResponseNotFound,
 )
 from django.shortcuts import render, redirect
 from django.urls import reverse
@@ -2880,32 +2879,3 @@ def dashboard_spam_submissions(request):
             "blocked_ips": blocked_ips_count,
         }
     })
-
-
-# -----------------------------
-# SEO Files (robots.txt, sitemap.xml)
-# -----------------------------
-
-def robots_txt(request: HttpRequest) -> HttpResponse:
-    """Serve robots.txt file for SEO"""
-    domain = request.get_host()
-    # Build sitemap URL
-    scheme = 'https' if request.is_secure() else 'http'
-    sitemap_url = f"{scheme}://{domain}/sitemap.xml"
-    
-    content = f"""User-agent: *
-Allow: /
-Disallow: /dashboard/
-Disallow: /admin/
-Disallow: /accounts/
-Disallow: /u/editor-image/
-
-# Sitemap
-Sitemap: {sitemap_url}
-"""
-    return HttpResponse(content, content_type='text/plain')
-
-
-def llms_txt(request: HttpRequest) -> HttpResponse:
-    """Return 404 for llms.txt - not needed for this site"""
-    return HttpResponseNotFound("File not found")
