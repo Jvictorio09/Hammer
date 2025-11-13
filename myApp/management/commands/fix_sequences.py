@@ -3,6 +3,7 @@ Django management command to fix PostgreSQL sequences
 Usage: python manage.py fix_sequences
 """
 
+from django.apps import apps
 from django.core.management.base import BaseCommand
 from django.db import connection
 
@@ -12,35 +13,50 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         """Reset sequences to prevent duplicate key errors"""
-        
-        tables = [
-            'myApp_insightauditlog',
-            'myApp_service',
-            'myApp_insight',
-            'myApp_casestudy',
-            'myApp_teammember',
-            'myApp_pagehero',
-            'myApp_mediaasset',
-            'myApp_mediaalbum',
+
+        model_labels = [
+            'myApp.InsightAuditLog',
+            'myApp.Service',
+            'myApp.Insight',
+            'myApp.CaseStudy',
+            'myApp.TeamMember',
+            'myApp.PageHero',
+            'myApp.MediaAsset',
+            'myApp.MediaAlbum',
         ]
-        
+
+        models = []
+        for label in model_labels:
+            try:
+                models.append(apps.get_model(label))
+            except LookupError:
+                self.stdout.write(self.style.WARNING(f'⚠️  Could not find model {label}'))
+
+        if not models:
+            self.stdout.write(self.style.WARNING('No models were loaded; aborting.'))
+            return
+
         self.stdout.write(self.style.WARNING('Fixing PostgreSQL sequences...'))
-        
+
         with connection.cursor() as cursor:
-            for table in tables:
+            for model in models:
+                table = model._meta.db_table
+                display_name = table.replace('myApp_', '') if table.startswith('myApp_') else table
+                quoted_table = connection.ops.quote_name(table)
+                pg_table_literal = f'"{table}"'
+
                 try:
-                    # Get table name without prefix for display
-                    display_name = table.replace('myApp_', '')
-                    
-                    # Reset sequence
-                    cursor.execute(f"""
+                    cursor.execute(
+                        """
                         SELECT setval(
-                            pg_get_serial_sequence('{table}', 'id'),
+                            pg_get_serial_sequence(%s, 'id'),
                             COALESCE((SELECT MAX(id) FROM {table}), 1),
                             true
                         );
-                    """)
-                    
+                        """.format(table=quoted_table),
+                        [pg_table_literal],
+                    )
+
                     result = cursor.fetchone()
                     if result:
                         new_seq = result[0]
@@ -51,7 +67,7 @@ class Command(BaseCommand):
                     self.stdout.write(
                         self.style.WARNING(f'⚠️  {display_name}: {str(e)}')
                     )
-        
+
         self.stdout.write(self.style.SUCCESS('\n✅ All sequences fixed!'))
         self.stdout.write('You can now create/edit records without duplicate key errors.')
 
