@@ -1,16 +1,70 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}Landscape Design & Build in Dubai | Hammer Group{% endblock %}
+{% block title %}
+  {% if service.slug == 'landscape-design-build' %}
+    Quiet-Luxury Landscape Design & Build in Dubai | Hammer Group
+  {% elif service.slug == 'interior-design-build' %}
+    Bespoke Interior Design & Build in Dubai | Hammer Group
+  {% elif service.slug == 'facility-management' %}
+    24/7 Facility Management & Aftercare in Dubai | Hammer Group
+  {% else %}
+    {{ service.seo_meta_title|default:service.title }}
+  {% endif %}
+{% endblock %}
 
 {% block extra_head %}
-  <meta name="description" content="Premium landscape design & build in Dubai. Hammer Group creates timeless outdoor spaces—native planting, custom pools, pergolas and architectural lighting—with fixed milestones and one accountable team.">
-  <link rel="canonical" href="{{ request.build_absolute_uri|cut:'?' }}">
-  <meta property="og:title" content="Landscape Design & Build in Dubai | Hammer Group">
-  <meta property="og:description" content="Quiet‑luxury outdoor architecture. Native planting, custom pools, pergolas, lighting—end‑to‑end by one accountable team.">
-  <meta property="og:type" content="website">
-  <meta property="og:image" content="{{ service.hero_media_url|default:'https://picsum.photos/1920/1080?random=9001' }}">
-  <meta name="twitter:card" content="summary_large_image">
+  {% with default_title=service.seo_meta_title|default:service.title default_description=service.seo_meta_description|default:service.hero_subcopy|default:service.title %}
+    {% if service.slug == 'landscape-design-build' %}
+      {% with meta_title="Quiet-Luxury Landscape Design & Build in Dubai | Hammer Group" meta_description="Fall in love with your outdoors again. Hammer Group delivers garden design Dubai villas crave—native planting, pool landscaping Dubai families enjoy, and sculptural lighting crafted by one accountable team." og_description="Quiet-luxury outdoor architecture for Dubai’s villas, blending garden design, pool landscaping and architectural lighting under one accountable team." %}
+        <meta name="description" content="{{ meta_description }}">
+        <link rel="canonical" href="{{ request.build_absolute_uri|cut:'?' }}">
+        <meta property="og:title" content="{{ meta_title }}">
+        <meta property="og:description" content="{{ og_description }}">
+        <meta property="og:type" content="website">
+        <meta property="og:image" content="{{ service.hero_media_url|default:'https://picsum.photos/1920/1080?random=9001' }}">
+        <meta name="twitter:title" content="{{ meta_title }}">
+        <meta name="twitter:description" content="{{ og_description }}">
+        <meta name="twitter:card" content="summary_large_image">
+      {% endwith %}
+    {% elif service.slug == 'interior-design-build' %}
+      {% with meta_title="Bespoke Interior Design & Build in Dubai | Hammer Group" meta_description="From moodboards to hand-finished custom joinery Dubai homeowners adore, Hammer Group weaves every layer of your villa interior with one accountable design-build partner." og_description="Turn-key interior architecture, custom joinery, lighting and styling—delivered by Hammer Group’s integrated design-build studio in Dubai." %}
+        <meta name="description" content="{{ meta_description }}">
+        <link rel="canonical" href="{{ request.build_absolute_uri|cut:'?' }}">
+        <meta property="og:title" content="{{ meta_title }}">
+        <meta property="og:description" content="{{ og_description }}">
+        <meta property="og:type" content="website">
+        <meta property="og:image" content="{{ service.hero_media_url|default:'https://picsum.photos/1920/1080?random=9001' }}">
+        <meta name="twitter:title" content="{{ meta_title }}">
+        <meta name="twitter:description" content="{{ og_description }}">
+        <meta name="twitter:card" content="summary_large_image">
+      {% endwith %}
+    {% elif service.slug == 'facility-management' %}
+      {% with meta_title="24/7 Facility Management & Aftercare in Dubai | Hammer Group" meta_description="Protect every detail of your property with Hammer Group’s facility management team—hard & soft services, preventive maintenance and rapid response across Dubai." og_description="Dubai facility management specialists delivering 24/7 preventive maintenance, MEP care and white-glove aftercare for luxury properties." %}
+        <meta name="description" content="{{ meta_description }}">
+        <link rel="canonical" href="{{ request.build_absolute_uri|cut:'?' }}">
+        <meta property="og:title" content="{{ meta_title }}">
+        <meta property="og:description" content="{{ og_description }}">
+        <meta property="og:type" content="website">
+        <meta property="og:image" content="{{ service.hero_media_url|default:'https://picsum.photos/1920/1080?random=9001' }}">
+        <meta name="twitter:title" content="{{ meta_title }}">
+        <meta name="twitter:description" content="{{ og_description }}">
+        <meta name="twitter:card" content="summary_large_image">
+      {% endwith %}
+    {% else %}
+      {% with meta_title=default_title meta_description=default_description og_description=default_description %}
+        <meta name="description" content="{{ meta_description }}">
+        <link rel="canonical" href="{{ request.build_absolute_uri|cut:'?' }}">
+        <meta property="og:title" content="{{ meta_title }}">
+        <meta property="og:description" content="{{ og_description }}">
+        <meta property="og:type" content="website">
+        <meta property="og:image" content="{{ service.hero_media_url|default:'https://picsum.photos/1920/1080?random=9001' }}">
+        <meta name="twitter:title" content="{{ meta_title }}">
+        <meta name="twitter:description" content="{{ og_description }}">
+        <meta name="twitter:card" content="summary_large_image">
+      {% endwith %}
+    {% endif %}
+  {% endwith %}
 
  <!-- Premium font: Outfit (clean) + Playfair (accent) -->
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -649,6 +703,196 @@ details[open] .faq-content{ height:auto; }      /* fallback if JS off */
   </script>
 </section>
 
+<section id="service-story" class="bg-[#F7F9FA] text-[#0B0F14] py-16 md:py-24">
+  <div class="max-w-6xl mx-auto px-6 space-y-12">
+
+    {% if service.slug == 'landscape-design-build' %}
+      <div class="space-y-10">
+        <!-- Eyebrow / Label -->
+        <div class="flex items-center gap-3 text-xs font-semibold tracking-[0.18em] uppercase text-[#00BFB0]">
+          <span class="h-px w-8 bg-[#A9F2EA]"></span>
+          <span>Landscape Design &amp; Build</span>
+        </div>
+
+        <!-- Main two-column layout -->
+        <div class="grid gap-10 lg:grid-cols-12 lg:items-start">
+          <div class="space-y-6 lg:col-span-7">
+            <h2 class="text-3xl md:text-[2.5rem] font-extrabold leading-tight">
+              Dubai landscapes that feel like private resorts
+            </h2>
+            <p class="text-base md:text-lg leading-relaxed text-[#4A5563]">
+              Every villa plot in Dubai fights fierce sun, saline breezes, and sand that shifts overnight. Hammer Group’s
+              landscape studio treats those constraints as creative fuel. Our horticulturists and architects begin with soil
+              profiles and solar studies before sketching garden rooms that borrow views, calm the microclimate, and frame
+              architecture with signature silhouettes. When clients search for <strong>garden design Dubai</strong> ideas,
+              they want more than inspiration—they want a partner who can balance sculptural planting, water cooling, and
+              hospitality-ready circulation without burdening their schedule. That’s why we keep strategy, design,
+              engineering, and build trades inside one accountable team.
+            </p>
+            <p class="text-base md:text-lg leading-relaxed text-[#4A5563]">
+              Concept visuals evolve into technical packages that satisfy every authority—from Dubai Municipality to your
+              community developer. Materials, lighting temperatures, irrigation automation, and MEP routing are coordinated
+              in-house so you never hear “that’s not our scope.” By the time our site crew breaks ground, every milestone,
+              payment, and inspection pathway sits inside a transparent dashboard you can review each Friday morning from
+              anywhere in the world.
+            </p>
+          </div>
+
+          <!-- Feature card side column -->
+          <aside class="lg:col-span-5">
+            <div class="p-6 md:p-8 rounded-2xl bg-white shadow-[0_18px_40px_rgba(2,6,23,0.08)] ring-1 ring-black/5 space-y-4">
+              <h3 class="text-lg md:text-xl font-semibold text-[#0B0F14]">
+                How Hammer builds enduring outdoor architecture
+              </h3>
+              <ul class="space-y-2 text-sm md:text-base text-[#4A5563]">
+                <li>Detailed site reconnaissance covering sun paths, drainage, privacy corridors, and wind behaviour before we name a single plant.</li>
+                <li>Studio-to-site collaboration that fuses 3D visualisation, planting palettes, lighting scenes, and water feature engineering in one BIM-backed model.</li>
+                <li>Self-performed hardscape, carpentry, and <strong>pool landscaping Dubai</strong> services so pergolas, decks, and mosaics install without trade silos.</li>
+                <li>Native and adaptive species curation, organic soil conditioning, and smart irrigation schedules tuned for minimal water waste.</li>
+              </ul>
+            </div>
+          </aside>
+        </div>
+
+        <!-- Bottom body copy full-width -->
+        <div class="space-y-6 border-t border-[#E5E7EB] pt-8 md:pt-10 text-[#4A5563]">
+          <p class="text-base md:text-lg leading-relaxed">
+            Signature elements—zero-edge pools that mirror the skyline, basalt fire lounges, sculptural cacti against
+            lime-washed masonry—arrive prefabricated from our joinery and stone workshops. Our technicians program lighting
+            scenes for different hosting moods and calibrate pumps, heaters, and filtration so you glide into the water on
+            handover day with perfect balance. Aftercare crews remain on call for seasonal pruning, pH checks, and lighting
+            refinements, ensuring the atmosphere stays as precise as the brochures promised.
+          </p>
+          <p class="text-base md:text-lg leading-relaxed">
+            Clients tell us their greatest luxury is time. We protect it through weekly reporting, WhatsApp-ready snag
+            tracking, and proactive authority coordination. The result is a landscape that softens every sunrise, hosts
+            every celebration, and matures beautifully through Dubai’s seasons—crafted once, cherished for decades.
+          </p>
+        </div>
+      </div>
+
+    {% elif service.slug == 'interior-design-build' %}
+      <div class="space-y-10">
+        <div class="flex items-center gap-3 text-xs font-semibold tracking-[0.18em] uppercase text-[#00BFB0]">
+          <span class="h-px w-8 bg-[#A9F2EA]"></span>
+          <span>Interior Design &amp; Build</span>
+        </div>
+
+        <div class="grid gap-10 lg:grid-cols-12 lg:items-start">
+          <div class="space-y-6 lg:col-span-7">
+            <h2 class="text-3xl md:text-[2.5rem] font-extrabold leading-tight">
+              Interiors tailored to the rhythm of Dubai living
+            </h2>
+            <p class="text-base md:text-lg leading-relaxed text-[#4A5563]">
+              Our interior studio choreographs everything a refined villa needs—from arrival sequence to the hidden
+              charging drawer by your favourite reading chair. We map rituals, family schedules, and hospitality moments
+              before ever sketching cabinetry. Moodboards follow, translating the brief into tactile stories: brushed
+              bronze, reeded glass, and burnished oak that echo the view beyond your sliding doors. When you hear us
+              describe “quiet luxury,” it’s shorthand for spaces where the eye glides effortlessly because every junction,
+              reveal, and shadowline has been rehearsed.
+            </p>
+            <p class="text-base md:text-lg leading-relaxed text-[#4A5563]">
+              The headline difference is our direct control over trades. Lighting designers, MEP engineers, FF&amp;E
+              specialists, and our in-house carpentry teams collaborate daily within one Revit model. That means ceiling
+              coffers line up with duct routes, marble slabs are templated before demolition, and wardrobes arrive wrapped
+              and labelled for each room. Our atelier in Dubai Investments Park produces the <strong>custom joinery Dubai</strong>
+              circles talk about—hand-finished kitchen islands, acoustic wall panelling, and concealed storage that closes
+              with a silent click.
+            </p>
+          </div>
+
+          <aside class="lg:col-span-5">
+            <div class="p-6 md:p-8 rounded-2xl bg-white shadow-[0_18px_40px_rgba(2,6,23,0.08)] ring-1 ring-black/5 space-y-4">
+              <h3 class="text-lg md:text-xl font-semibold text-[#0B0F14]">
+                What to expect from Hammer’s interior journey
+              </h3>
+              <ul class="space-y-2 text-sm md:text-base text-[#4A5563]">
+                <li>Discovery sessions that capture household routines, storage priorities, acoustics, and technology integration before line drawings begin.</li>
+                <li>3D walkthroughs and material boards signed off alongside budget checkpoints, so creative ambition and commercial clarity stay aligned.</li>
+                <li>Joinery, metal, and stone fabrication performed internally for immaculate sequencing—kitchens, dressing suites, and home offices install without rework.</li>
+                <li>Styling, art placement, and soft furnishing curation that leaves the residence ready for its first dinner party on handover night.</li>
+              </ul>
+            </div>
+          </aside>
+        </div>
+
+        <div class="space-y-6 border-t border-[#E5E7EB] pt-8 md:pt-10 text-[#4A5563]">
+          <p class="text-base md:text-lg leading-relaxed">
+            Because we stay on the project from demolition to dressing, you’re never mediating between suppliers or
+            deciphering technical jargon. You receive weekly status films, transparent variation logs, and a concierge who
+            handles authority inspections and elevator bookings. When we hand over, smart home presets, climate settings,
+            and lighting scenes are tuned to your preferences—and our aftercare team remains a WhatsApp away for seasonal
+            refreshes or the inevitable addition of art you fall in love with on your travels.
+          </p>
+          <p class="text-base md:text-lg leading-relaxed">
+            The result is a residence that feels cohesive from foyer to rooftop terrace, balanced between formal
+            entertaining and intimate downtime, and unmistakably yours.
+          </p>
+        </div>
+      </div>
+
+    {% elif service.slug == 'facility-management' %}
+      <div class="space-y-10">
+        <div class="flex items-center gap-3 text-xs font-semibold tracking-[0.18em] uppercase text-[#00BFB0]">
+          <span class="h-px w-8 bg-[#A9F2EA]"></span>
+          <span>Facility Management</span>
+        </div>
+
+        <div class="grid gap-10 lg:grid-cols-12 lg:items-start">
+          <div class="space-y-6 lg:col-span-7">
+            <h2 class="text-3xl md:text-[2.5rem] font-extrabold leading-tight">
+              Facility management that protects every crafted detail
+            </h2>
+            <p class="text-base md:text-lg leading-relaxed text-[#4A5563]">
+              Luxury properties in Dubai rely on precise calibration—HVAC differentials across triple-height spaces, water
+              features tuned to desert humidity, marble that needs the right pH to stay luminous. Hammer Group built many of
+              those assets, so our facility team understands their tolerances better than anyone. We integrate hard and soft
+              services under a single SLA: preventive MEP maintenance, rapid-response engineers, white-glove housekeeping,
+              façade cleaning, pool and spa technicians, even landscape arborists who maintain the sculpted palms framing
+              your driveway.
+            </p>
+            <p class="text-base md:text-lg leading-relaxed text-[#4A5563]">
+              Our command centre tracks assets in real time using IoT sensors and CAFM software. That means air quality,
+              chiller efficiency, lift performance, and irrigation volumes are benchmarked against manufacturer guidance.
+              Alerts trigger predictive maintenance long before residents notice a fluctuation. Each visit is documented with
+              photographic evidence, time stamps, and technician notes, pushed to an owner dashboard so governance teams and
+              estate managers can audit any moment in the service history.
+            </p>
+          </div>
+
+          <aside class="lg:col-span-5">
+            <div class="p-6 md:p-8 rounded-2xl bg-white shadow-[0_18px_40px_rgba(2,6,23,0.08)] ring-1 ring-black/5 space-y-4">
+              <h3 class="text-lg md:text-xl font-semibold text-[#0B0F14]">
+                An integrated aftercare program you can trust
+              </h3>
+              <ul class="space-y-2 text-sm md:text-base text-[#4A5563]">
+                <li>24/7 helpdesk with guaranteed engineer dispatch windows and escalation paths for mission-critical assets.</li>
+                <li>Authority compliance handling, from civil defense renewals to Legionella testing and pool water certification.</li>
+                <li>Soft services tailored to luxury estates—concierge, valet coordination, housekeeping rotations, and guest-ready staging.</li>
+                <li>Landscape nurture plans covering irrigation audits, seasonal pruning, and turf renovations to keep outdoor architecture performing like day one.</li>
+              </ul>
+            </div>
+          </aside>
+        </div>
+
+        <div class="space-y-6 border-t border-[#E5E7EB] pt-8 md:pt-10 text-[#4A5563]">
+          <p class="text-base md:text-lg leading-relaxed">
+            Developers and family offices entrust us with mixed-use towers, boutique hospitality assets, and private
+            compounds because we operate as stewards, not just contractors. Budgets are transparent, spare-parts inventories
+            are reconciled monthly, and we conduct quarterly strategic reviews that surface optimisation opportunities.
+            Whether we built your property or inherited it, Hammer Group delivers the same precision: assets that perform
+            flawlessly, residents who feel cared for, and ownership teams who enjoy peace of mind.
+          </p>
+          <p class="text-base md:text-lg leading-relaxed">
+            When every detail of a space has been tailored for impact, facility management should do more than keep the
+            lights on—it should preserve the entire brand experience of the property. That’s the promise we commit to, day
+            and night.
+          </p>
+        </div>
+      </div>
+    {% endif %}
+  </div>
+</section>
 
 <section id="case-gallery" class="bg-white py-16">
   <style>
@@ -1274,8 +1518,16 @@ details[open] .faq-content{ height:auto; }      /* fallback if JS off */
     <div class="wrap">
       <div class="card">
         <div>
-          <h3>Ready to plan your landscape?</h3>
-          <p class="mt-1">We’ll map scope, timeline and budget—then craft something enduring.</p>
+          {% if service.slug == 'interior-design-build' %}
+            <h3>Ready to reimagine your interior?</h3>
+            <p class="mt-1">Let’s align style, storage, and smart technology into one seamless design-build program.</p>
+          {% elif service.slug == 'facility-management' %}
+            <h3>Need proactive facility management?</h3>
+            <p class="mt-1">We’ll audit your assets, tune preventive schedules, and put 24/7 response on standby.</p>
+          {% else %}
+            <h3>Ready to plan your landscape?</h3>
+            <p class="mt-1">We’ll map scope, timeline and budget—then craft something enduring.</p>
+          {% endif %}
         </div>
 
         <a href="{% url 'contact' %}" class="cta-btn">
@@ -1306,6 +1558,296 @@ details[open] .faq-content{ height:auto; }      /* fallback if JS off */
   </script>
 </section>
 
+
+{% with faqs_list=service.faqs.all %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {% if faqs_list %}
+      {% for f in faqs_list %}
+      {
+        "@type": "Question",
+        "name": "{{ f.question|striptags|escapejs }}",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "{{ f.answer|striptags|escapejs }}"
+        }
+      }{% if not forloop.last %},{% endif %}
+      {% endfor %}
+    {% else %}
+      {
+        "@type": "Question",
+        "name": "How soon can you start?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Typically 2\u20134 weeks from concept sign-off."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Do you handle permits and MEP?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes \u2014 drawings, authority submissions, and MEP coordination are handled in-house."
+        }
+      }
+    {% endif %}
+  ]
+}
+</script>
+{% endwith %}
+
+{% if service.slug == 'landscape-design-build' %}
+  {% with service_type="Landscape Design & Build" %}
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "HomeAndConstructionBusiness",
+      "@id": "https://www.hammer-services.com/#localbusiness",
+      "name": "Hammer Group",
+      "url": "https://www.hammer-services.com/",
+      "logo": "https://res.cloudinary.com/dstlxtvar/image/upload/v1759923995/Hammer_Logo13_drxh0j.png",
+      "image": "{{ service.hero_media_url|default:'https://res.cloudinary.com/dstlxtvar/image/upload/f_auto,q_auto/v1761114435/uploads/img_0858-enhanced-nr.jpg' }}",
+      "telephone": "+971564145045",
+      "priceRange": "$$$$",
+      "serviceType": "{{ service_type|striptags|escapejs }}",
+      "address": {
+        "@type": "PostalAddress",
+        "addressLocality": "Dubai",
+        "addressRegion": "Dubai",
+        "addressCountry": "AE"
+      },
+      "geo": {
+        "@type": "GeoCoordinates",
+        "latitude": 25.06353,
+        "longitude": 55.2485008
+      },
+      "areaServed": [
+        {
+          "@type": "City",
+          "name": "Dubai"
+        },
+        {
+          "@type": "Country",
+          "name": "United Arab Emirates"
+        }
+      ],
+      "openingHoursSpecification": [
+        {
+          "@type": "OpeningHoursSpecification",
+          "dayOfWeek": [
+            "Monday",
+            "Tuesday",
+            "Wednesday",
+            "Thursday",
+            "Friday",
+            "Saturday",
+            "Sunday"
+          ],
+          "opens": "00:00",
+          "closes": "23:59"
+        }
+      ],
+      "sameAs": [
+        "https://www.instagram.com/hammer.landscape/?hl=en",
+        "https://www.instagram.com/hammer.interiors/?hl=en",
+        "https://www.linkedin.com/company/hammerservices/",
+        "https://www.facebook.com/hammer.groupUAE/",
+        "https://www.pinterest.com/hammergroup_/",
+        "https://www.youtube.com/@HAMMERGROUP_"
+      ]
+    }
+    </script>
+  {% endwith %}
+{% elif service.slug == 'interior-design-build' %}
+  {% with service_type="Interior Design & Build" %}
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "HomeAndConstructionBusiness",
+      "@id": "https://www.hammer-services.com/#localbusiness",
+      "name": "Hammer Group",
+      "url": "https://www.hammer-services.com/",
+      "logo": "https://res.cloudinary.com/dstlxtvar/image/upload/v1759923995/Hammer_Logo13_drxh0j.png",
+      "image": "{{ service.hero_media_url|default:'https://res.cloudinary.com/dstlxtvar/image/upload/f_auto,q_auto/v1761114435/uploads/img_0858-enhanced-nr.jpg' }}",
+      "telephone": "+971564145045",
+      "priceRange": "$$$$",
+      "serviceType": "{{ service_type|striptags|escapejs }}",
+      "address": {
+        "@type": "PostalAddress",
+        "addressLocality": "Dubai",
+        "addressRegion": "Dubai",
+        "addressCountry": "AE"
+      },
+      "geo": {
+        "@type": "GeoCoordinates",
+        "latitude": 25.06353,
+        "longitude": 55.2485008
+      },
+      "areaServed": [
+        {
+          "@type": "City",
+          "name": "Dubai"
+        },
+        {
+          "@type": "Country",
+          "name": "United Arab Emirates"
+        }
+      ],
+      "openingHoursSpecification": [
+        {
+          "@type": "OpeningHoursSpecification",
+          "dayOfWeek": [
+            "Monday",
+            "Tuesday",
+            "Wednesday",
+            "Thursday",
+            "Friday",
+            "Saturday",
+            "Sunday"
+          ],
+          "opens": "00:00",
+          "closes": "23:59"
+        }
+      ],
+      "sameAs": [
+        "https://www.instagram.com/hammer.landscape/?hl=en",
+        "https://www.instagram.com/hammer.interiors/?hl=en",
+        "https://www.linkedin.com/company/hammerservices/",
+        "https://www.facebook.com/hammer.groupUAE/",
+        "https://www.pinterest.com/hammergroup_/",
+        "https://www.youtube.com/@HAMMERGROUP_"
+      ]
+    }
+    </script>
+  {% endwith %}
+{% elif service.slug == 'facility-management' %}
+  {% with service_type="Facility Management & Aftercare" %}
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "HomeAndConstructionBusiness",
+      "@id": "https://www.hammer-services.com/#localbusiness",
+      "name": "Hammer Group",
+      "url": "https://www.hammer-services.com/",
+      "logo": "https://res.cloudinary.com/dstlxtvar/image/upload/v1759923995/Hammer_Logo13_drxh0j.png",
+      "image": "{{ service.hero_media_url|default:'https://res.cloudinary.com/dstlxtvar/image/upload/f_auto,q_auto/v1761114435/uploads/img_0858-enhanced-nr.jpg' }}",
+      "telephone": "+971564145045",
+      "priceRange": "$$$$",
+      "serviceType": "{{ service_type|striptags|escapejs }}",
+      "address": {
+        "@type": "PostalAddress",
+        "addressLocality": "Dubai",
+        "addressRegion": "Dubai",
+        "addressCountry": "AE"
+      },
+      "geo": {
+        "@type": "GeoCoordinates",
+        "latitude": 25.06353,
+        "longitude": 55.2485008
+      },
+      "areaServed": [
+        {
+          "@type": "City",
+          "name": "Dubai"
+        },
+        {
+          "@type": "Country",
+          "name": "United Arab Emirates"
+        }
+      ],
+      "openingHoursSpecification": [
+        {
+          "@type": "OpeningHoursSpecification",
+          "dayOfWeek": [
+            "Monday",
+            "Tuesday",
+            "Wednesday",
+            "Thursday",
+            "Friday",
+            "Saturday",
+            "Sunday"
+          ],
+          "opens": "00:00",
+          "closes": "23:59"
+        }
+      ],
+      "sameAs": [
+        "https://www.instagram.com/hammer.landscape/?hl=en",
+        "https://www.instagram.com/hammer.interiors/?hl=en",
+        "https://www.linkedin.com/company/hammerservices/",
+        "https://www.facebook.com/hammer.groupUAE/",
+        "https://www.pinterest.com/hammergroup_/",
+        "https://www.youtube.com/@HAMMERGROUP_"
+      ]
+    }
+    </script>
+  {% endwith %}
+{% else %}
+  {% with service_type=service.title %}
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "HomeAndConstructionBusiness",
+      "@id": "https://www.hammer-services.com/#localbusiness",
+      "name": "Hammer Group",
+      "url": "https://www.hammer-services.com/",
+      "logo": "https://res.cloudinary.com/dstlxtvar/image/upload/v1759923995/Hammer_Logo13_drxh0j.png",
+      "image": "{{ service.hero_media_url|default:'https://res.cloudinary.com/dstlxtvar/image/upload/f_auto,q_auto/v1761114435/uploads/img_0858-enhanced-nr.jpg' }}",
+      "telephone": "+971564145045",
+      "priceRange": "$$$$",
+      "serviceType": "{{ service_type|striptags|escapejs }}",
+      "address": {
+        "@type": "PostalAddress",
+        "addressLocality": "Dubai",
+        "addressRegion": "Dubai",
+        "addressCountry": "AE"
+      },
+      "geo": {
+        "@type": "GeoCoordinates",
+        "latitude": 25.06353,
+        "longitude": 55.2485008
+      },
+      "areaServed": [
+        {
+          "@type": "City",
+          "name": "Dubai"
+        },
+        {
+          "@type": "Country",
+          "name": "United Arab Emirates"
+        }
+      ],
+      "openingHoursSpecification": [
+        {
+          "@type": "OpeningHoursSpecification",
+          "dayOfWeek": [
+            "Monday",
+            "Tuesday",
+            "Wednesday",
+            "Thursday",
+            "Friday",
+            "Saturday",
+            "Sunday"
+          ],
+          "opens": "00:00",
+          "closes": "23:59"
+        }
+      ],
+      "sameAs": [
+        "https://www.instagram.com/hammer.landscape/?hl=en",
+        "https://www.instagram.com/hammer.interiors/?hl=en",
+        "https://www.linkedin.com/company/hammerservices/",
+        "https://www.facebook.com/hammer.groupUAE/",
+        "https://www.pinterest.com/hammergroup_/",
+        "https://www.youtube.com/@HAMMERGROUP_"
+      ]
+    }
+    </script>
+  {% endwith %}
+{% endif %}
 
 <script>
 

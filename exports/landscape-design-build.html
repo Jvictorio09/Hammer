@@ -1,0 +1,2718 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Landscape Design & Build in Dubai | Hammer Group</title>
+
+  <!-- Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-QF007QSC06"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-QF007QSC06');
+  </script>
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/jpeg" href="/static/hammer_icon.jpg" />
+  <link rel="apple-touch-icon" href="/static/hammer_icon.jpg" />
+
+  <!-- SEO Meta Tags -->
+  
+    <meta name="description" content="Premier construction, landscaping, and interior design services in Dubai. Transforming visions into exceptional living spaces.">
+  
+
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Hammer Group - Luxury Villa Construction, Landscaping & Interior Design" />
+  <meta property="og:description" content="Premier construction, landscaping, and interior design services in Dubai. Transforming visions into exceptional living spaces." />
+  <meta property="og:image" content=":///static/hammer_icon.jpg" />
+  <meta property="og:url" content="" />
+
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Hammer Group - Luxury Villa Construction, Landscaping & Interior Design" />
+  <meta name="twitter:description" content="Premier construction, landscaping, and interior design services in Dubai. Transforming visions into exceptional living spaces." />
+  <meta name="twitter:image" content=":///static/hammer_icon.jpg" />
+
+  <!-- Tailwind CDN (v4) -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Icons -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet"/>
+
+  <!-- Hammer tokens & small tweaks (must be AFTER Tailwind) -->
+  <link href="/static/css/hammer.css" rel="stylesheet">
+
+  <!-- Optional: Preload your hero image to improve LCP -->
+  
+
+  <!-- Enhanced preloader CSS - echoes brand identity -->
+  <style>
+    :root { --ink:#0B0E14; --teal:#18AFAB; --slate:#475569; }
+    /* container paints instantly */
+    #preloader{
+      position:fixed; inset:0; z-index:9999; display:flex;
+      align-items:center; justify-content:center; background:#fff;
+      transition:opacity .6s ease;
+    }
+    #preloader[hidden]{display:none!important}
+
+    /* card */
+    .hg-card{
+      width:min(92vw, 420px); padding:22px 20px; border-radius:16px;
+      box-shadow:0 20px 60px rgba(0,0,0,.08), 0 2px 8px rgba(0,0,0,.05);
+      background:#fff; text-align:left; will-change:transform,opacity;
+      transform:translateY(6px); opacity:0; animation:cardIn .8s ease .1s forwards;
+    }
+
+    /* header row: mark + wordmark + divider */
+    .hg-row{display:flex; align-items:center; gap:14px}
+    .hg-mark{
+      width:42px; height:42px; border-radius:10px; overflow:hidden; position:relative;
+      background:var(--teal);
+    }
+    /* subtle "steel shimmer" pass over the teal block */
+    .hg-mark::after{
+      content:""; position:absolute; inset:-40% -60% auto auto;
+      width:60%; height:160%;
+      background:linear-gradient(115deg, rgba(255,255,255,0) 0%, rgba(255,255,255,.35) 45%, rgba(255,255,255,0) 80%);
+      transform:rotate(18deg); animation:shimmer 2.2s ease-in-out .3s infinite;
+    }
+    .hg-word{
+      font:700 18px/1.15 Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      letter-spacing:.01em; color:var(--ink);
+    }
+    .hg-sub{ font:500 11px/1.1 Inter, system-ui, sans-serif; color:#6b7280; letter-spacing:.18em }
+    .hg-div{
+      flex:1 1 auto; height:1px; margin-left:10px; background:linear-gradient(to right, #e5e7eb, #c7cad1);
+    }
+
+    /* tagline & sectors */
+    .hg-tag{ margin-top:10px; color:var(--slate); font:500 12px/1.35 Inter, system-ui, sans-serif; opacity:0; animation:fadeIn .8s ease .4s forwards }
+    .hg-sec{ margin-top:6px; color:#94a3b8; font:600 10px/1 Inter, system-ui, sans-serif; letter-spacing:.22em; opacity:0; animation:fadeIn .8s ease .55s forwards }
+
+    /* progress hairline (left→right, very subtle) */
+    .hg-bar{
+      margin-top:14px; height:2px; width:0; background:linear-gradient(90deg, var(--teal), #4f46e5);
+      border-radius:2px; animation:bar 1.6s cubic-bezier(.22,.61,.36,1) .3s forwards;
+    }
+
+    /* keyframes */
+    @keyframes shimmer { 0%{transform:translateX(-40%) rotate(18deg)} 100%{transform:translateX(160%) rotate(18deg)} }
+    @keyframes fadeIn { from{opacity:0} to{opacity:1} }
+    @keyframes cardIn { from{opacity:0; transform:translateY(6px)} to{opacity:1; transform:translateY(0)} }
+    @keyframes bar { from{width:0} to{width:100%} }
+
+    /* accessibility */
+    @media (prefers-reduced-motion:reduce){
+      .hg-mark::after, .hg-bar, .hg-tag, .hg-sec, .hg-card { animation:none }
+      .hg-card{opacity:1; transform:none}
+    }
+  </style>
+
+  
+  <meta name="description" content="Premium landscape design & build in Dubai. Hammer Group creates timeless outdoor spaces—native planting, custom pools, pergolas and architectural lighting—with fixed milestones and one accountable team.">
+  <link rel="canonical" href="">
+  <meta property="og:title" content="Landscape Design & Build in Dubai | Hammer Group">
+  <meta property="og:description" content="Quiet‑luxury outdoor architecture. Native planting, custom pools, pergolas, lighting—end‑to‑end by one accountable team.">
+  <meta property="og:type" content="website">
+  <meta property="og:image" content="https://res.cloudinary.com/dstlxtvar/image/upload/f_auto,q_auto/v1761114435/uploads/img_0858-enhanced-nr.jpg">
+  <meta name="twitter:card" content="summary_large_image">
+
+ <!-- Premium font: Outfit (clean) + Playfair (accent) -->
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Playfair+Display:ital,wght@0,600;0,800;1,600&display=swap" rel="stylesheet">
+
+<style>
+  /* ======================
+   BRAND TOKENS & FONTS
+   ====================== */
+:root{
+  --ink:#0B0E14;
+  --ink-2:#121722;
+  --teal:#18AFAB;
+  --sand:#EDE8DF;
+  --bone:#F6F3EE;
+  --gold:#C7A76A;
+}
+.font-outfit{ font-family:"Outfit",ui-sans-serif,system-ui; }
+.font-playfair{ font-family:"Playfair Display",ui-serif,Georgia; }
+
+/* ======================
+   MATERIALITY SKINS
+   ====================== */
+.grain:before{
+  content:""; position:absolute; inset:0; pointer-events:none;
+  /* tiny noise base64 allowed to remain as-is */
+  background-image:url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAAA...");
+  opacity:.05; mix-blend-mode:overlay;
+}
+.vignette:after{
+  content:""; position:absolute; inset:0; pointer-events:none;
+  background:radial-gradient(120% 80% at 50% 20%, transparent, rgba(0,0,0,.35));
+}
+.mask-radial{
+  --m: radial-gradient(800px 400px at 66% 50%, rgba(255,255,255,.22), transparent 60%);
+  -webkit-mask-image: var(--m); mask-image: var(--m);
+}
+
+/* ======================
+   CTA (Magnetic Shine)
+   ====================== */
+.cta{
+  position:relative; overflow:hidden; transition:transform .25s;
+  box-shadow:0 12px 40px rgba(0,0,0,.25);
+}
+.cta:before{
+  content:""; position:absolute; inset:-150% -20%; transform:rotate(12deg);
+  background:linear-gradient(90deg, transparent, rgba(255,255,255,.35), transparent);
+  transition:transform .7s cubic-bezier(.22,1,.36,1);
+}
+.cta:hover{ transform:translateY(-1px); }
+.cta:hover:before{ transform:translateX(120%); }
+
+/* ======================
+   CONIC BORDER (gborder)
+   ====================== */
+.gborder{ position:relative; border-radius:1rem; background:var(--ink-2); }
+.gborder:before{
+  content:""; position:absolute; inset:-1px; border-radius:inherit; padding:1px;
+  background:conic-gradient(from 180deg, rgba(24,175,171,.6), rgba(199,167,106,.4), rgba(24,175,171,.6));
+  -webkit-mask:linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite:xor; mask-composite:exclude;
+  animation:spin 10s linear infinite;
+}
+@keyframes spin{ to{ transform:rotate(1turn);} }
+
+/* ======================
+   PARALLAX TILT (no lib)
+   ====================== */
+.tilt{ transform-style:preserve-3d; perspective:800px; }
+.tilt > .tilt-inner{
+  transform:rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg)) translateZ(0);
+  transition:transform .15s ease;
+}
+
+/* ======================
+   SIGNATURE GRID (gallery)
+   ====================== */
+.sig-frame{ position:relative; border-radius:1.5rem; overflow:hidden; }
+.sig-frame:before{
+  content:""; position:absolute; inset:-1px; border-radius:inherit; padding:1px;
+  background:conic-gradient(from 220deg, rgba(24,175,171,.6), rgba(255,255,255,.14), rgba(24,175,171,.6));
+  -webkit-mask:linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite:xor; mask-composite:exclude;
+  opacity:0; transition:opacity .35s;
+}
+.sig-frame:hover:before{ opacity:.95; }
+.sig-media{ filter:saturate(1.05) contrast(1.02); transition:transform .6s cubic-bezier(.22,1,.36,1); }
+.group:hover .sig-media{ transform:scale(1.04); }
+
+/* Sliding caption */
+.cap-slide{
+  position:absolute; left:0; right:0; bottom:0;
+  transform:translateY(100%); transition:transform .45s cubic-bezier(.22,1,.36,1);
+  backdrop-filter:saturate(140%) blur(8px);
+  background:linear-gradient(to top, rgba(0,0,0,.55), rgba(0,0,0,.15));
+}
+.group:hover .cap-slide{ transform:translateY(0); }
+
+/* Badge */
+.sig-badge{
+  position:absolute; top:.75rem; left:.75rem;
+  background:rgba(255,255,255,.92); color:var(--ink);
+  padding:.35rem .55rem; font-weight:700; font-size:.7rem; border-radius:999px;
+  box-shadow:0 8px 18px rgba(0,0,0,.18);
+}
+
+/* Section progress (for horizontal reels) */
+#sigProgWrap{ height:6px; background:#eee; border-radius:999px; overflow:hidden; }
+#sigProg{ height:100%; width:0; background:var(--teal); transition:width .2s; }
+
+/* Desktop grid layout */
+@media (min-width: 768px){
+  .sig-grid{ display:grid; grid-template-columns:repeat(12, minmax(0,1fr)); gap:1rem; }
+  .sig-A{ grid-column:span 5 / span 5; grid-row:span 2 / span 2; }
+  .sig-B{ grid-column:span 7 / span 7; }
+  .sig-C,.sig-D,.sig-E{ grid-column:span 4 / span 4; min-height:220px; }
+}
+
+/* ======================
+   MILESTONE RAIL (dark)
+   ====================== */
+.step-dot{
+  position:relative; width:42px; height:42px; border-radius:9999px;
+  display:flex; align-items:center; justify-content:center;
+  color:#fff; background:var(--ink);
+  box-shadow:0 10px 24px rgba(0,0,0,.25), inset 0 0 0 1px rgba(255,255,255,.08);
+}
+.step-dot:after{
+  content:""; position:absolute; top:50%; left:100%; width:220px; height:2px;
+  background:linear-gradient(90deg, var(--teal), transparent);
+  opacity:.35; transform:translateY(-50%);
+}
+.step:last-child .step-dot:after{ display:none; }
+
+.step-card{
+  border-radius:1rem; border:1px solid rgba(255,255,255,.08);
+  background:#121722;
+  transition:transform .3s cubic-bezier(.22,1,.36,1), box-shadow .3s, border-color .3s;
+}
+.step-card:hover{
+  transform:translateY(-2px);
+  box-shadow:0 18px 36px rgba(0,0,0,.35), 0 0 0 1px rgba(24,175,171,.2) inset;
+  border-color:rgba(24,175,171,.35);
+}
+.step-num{
+  position:absolute; top:-14px; left:50%; transform:translateX(-50%);
+  width:42px; height:42px; border-radius:999px; display:flex; align-items:center; justify-content:center;
+  font-weight:700; font-size:.75rem; color:#fff;
+  background:linear-gradient(180deg,#0f1117,#0b0e14);
+  box-shadow:0 10px 24px rgba(0,0,0,.35), inset 0 0 0 1px rgba(255,255,255,.06);
+}
+.rail-line{
+  position:absolute; top:7px; left:0; right:0; height:2px;
+  background:linear-gradient(90deg, rgba(255,255,255,.16), rgba(24,175,171,.35), rgba(255,255,255,.16));
+}
+@media (max-width: 767px){ .rail-line{ display:none; } }
+
+.icon-pill{
+  width:44px; height:44px; border-radius:12px; background:rgba(255,255,255,.06); color:#fff;
+  display:flex; align-items:center; justify-content:center;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.08);
+}
+
+/* ======================
+   CHIP TOKENS (split)
+   ====================== */
+.chip{ font-size:.72rem; padding:.25rem .5rem; border-radius:999px; }
+.chip--light{ background:#f5f5f5; color:#333; }
+.chip--dark{ background:rgba(255,255,255,.08); color:#e6e6e6; }
+
+/* ======================
+   FAQ (editorial)
+   ====================== */
+.faq{ position:relative; border-radius:1rem; background:#fff; border:1px solid rgba(0,0,0,.08); }
+.faq::before{
+  content:""; position:absolute; inset:-1px; border-radius:inherit; padding:1px; opacity:0;
+  background:conic-gradient(from 220deg, rgba(24,175,171,.6), rgba(199,167,106,.35), rgba(24,175,171,.6));
+  -webkit-mask:linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite:xor; mask-composite:exclude; transition:opacity .35s ease;
+}
+.faq[open]::before{ opacity:.9; }
+
+.faq-summary{ list-style:none; cursor:pointer; }
+.faq-summary::-webkit-details-marker{ display:none; }
+.faq-chevron{ transition:transform .3s ease, opacity .3s ease; opacity:.7; }
+details[open] .faq-chevron{ transform:rotate(180deg); opacity:1; }
+
+.faq-num{
+  width:32px; height:32px; border-radius:999px; font-weight:700; font-size:.72rem;
+  background:var(--ink); color:#fff; display:flex; align-items:center; justify-content:center;
+  box-shadow:0 10px 18px rgba(0,0,0,.15), inset 0 0 0 1px rgba(255,255,255,.08);
+}
+
+.faq-content{ overflow:hidden; height:0; }      /* JS animates height */
+details[open] .faq-content{ height:auto; }      /* fallback if JS off */
+
+/* ======================
+   MOBILE REEL (signature)
+   ====================== */
+.reel{ scroll-snap-type:x mandatory; -webkit-overflow-scrolling:touch; }
+.reel-card{
+  scroll-snap-align:center; border-radius:1.25rem; overflow:hidden; position:relative;
+  box-shadow:0 18px 40px rgba(0,0,0,.18); background:#000;
+}
+.edge-fade:before, .edge-fade:after{
+  content:""; position:absolute; top:0; bottom:0; width:36px; pointer-events:none;
+}
+.edge-fade:before{ left:0; background:linear-gradient(to right, rgba(255,255,255,1), rgba(255,255,255,0)); }
+.edge-fade:after{ right:0; background:linear-gradient(to left, rgba(255,255,255,1), rgba(255,255,255,0)); }
+.dots button{ width:7px; height:7px; border-radius:999px; background:#d1d5db; opacity:.7; transition:all .2s; }
+.dots button[aria-current="true"]{ width:22px; background:var(--teal); opacity:1; }
+
+/* Reel captions */
+.cap{
+  position:absolute; left:0; right:0; bottom:0; color:#fff;
+  background:linear-gradient(to top, rgba(0,0,0,.6), rgba(0,0,0,.1)); padding:14px 16px;
+}
+.cap h4{ font-weight:700; font-size:1rem; }
+.cap p{ opacity:.85; font-size:.8rem; }
+
+/* Desktop-only grid replacement for reel */
+@media (min-width: 1024px){
+  .reel-wrap{ display:none; }
+  .sig-grid{ display:grid; grid-template-columns:repeat(12,minmax(0,1fr)); gap:1rem; } /* ensure once */
+  .sig-A{ grid-column:span 5 / span 5; grid-row:span 2 / span 2; }
+  .sig-B{ grid-column:span 7 / span 7; }
+  .sig-C,.sig-D,.sig-E{ grid-column:span 4 / span 4; min-height:220px; }
+  .sig-cap{
+    position:absolute; inset:0; background:linear-gradient(to top, rgba(0,0,0,.55), rgba(0,0,0,.15));
+    opacity:0; transition:opacity .35s;
+  }
+  .sig-frame:hover .sig-cap{ opacity:1; }
+  .sig-chip{
+    position:absolute; left:14px; bottom:14px; padding:.35rem .6rem; border-radius:999px;
+    font-size:.72rem; background:rgba(255,255,255,.92); color:#0f0f10; font-weight:600;
+  }
+}
+
+/* ======================
+   SEGMENTED SWITCHER
+   ====================== */
+.seg{
+  display:inline-grid; grid-auto-flow:column; gap:6px; padding:6px; border-radius:999px; background:#f2f2f2;
+}
+.seg button{
+  padding:.45rem .85rem; border-radius:999px; font-weight:600; font-size:.9rem; color:#444; border:none; cursor:pointer;
+}
+.seg button[aria-pressed="true"]{ background:var(--teal); color:#fff; box-shadow:0 6px 16px rgba(24,175,171,.25); }
+
+/* ======================
+   SERVICES (peek/expand)
+   ====================== */
+.svc-card{
+  border-radius:1rem; border:1px solid rgba(0,0,0,.06); background:#fff;
+  transition:transform .3s cubic-bezier(.22,1,.36,1), box-shadow .3s, border-color .3s;
+}
+.svc-card:hover{
+  transform:translateY(-2px);
+  box-shadow:0 18px 36px rgba(0,0,0,.18), 0 0 0 1px rgba(24,175,171,.16) inset;
+  border-color:rgba(24,175,171,.32);
+}
+.svc-icon{
+  width:44px; height:44px; border-radius:12px; display:flex; align-items:center; justify-content:center;
+  background:rgba(24,175,171,.10); color:var(--teal);
+}
+.svc-peek{ color:#555; }
+.svc-body{ overflow:hidden; height:0; }               /* JS animates height */
+.svc-card[aria-expanded="true"] .svc-body{ height:auto; } /* fallback */
+
+/* ======================
+   BEFORE / AFTER SLIDER
+   ====================== */
+.ba{ position:relative; border-radius:1rem; overflow:hidden; }
+.ba img{ display:block; width:100%; height:56vh; object-fit:cover; }
+.ba .after{ position:absolute; inset:0; width:50%; overflow:hidden; }
+.ba .handle{ position:absolute; top:0; bottom:0; left:50%; width:2px; background:#fff; box-shadow:0 0 0 1px rgba(0,0,0,.2) inset; }
+.ba .knob{
+  position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:36px; height:36px;
+  border-radius:999px; background:#fff; display:flex; align-items:center; justify-content:center;
+  box-shadow:0 8px 18px rgba(0,0,0,.2);
+}
+
+/* ======================
+   COUNTER (metrics)
+   ====================== */
+.countup{ font-variant-numeric: tabular-nums; }
+
+</style>
+<!-- ===== HERO (dynamic) ===== -->
+<!-- HERO (scoped transitions only) -->
+<section id="hero" class="relative overflow-hidden bg-black text-white">
+  <style>
+    /* --- scoped to #hero so nothing else is affected --- */
+    #hero .fx { opacity:0; transform: translateY(10px); transition: opacity .55s cubic-bezier(.22,1,.36,1), transform .55s cubic-bezier(.22,1,.36,1); }
+    #hero .fx.in { opacity:1; transform: none; }
+
+    /* image: fade + slight scale settle */
+    #hero .fx-img { opacity:0; transform: scale(1.06); transition: opacity .8s ease, transform 1.2s cubic-bezier(.22,1,.36,1); will-change: transform; }
+    #hero .fx-img.in { opacity:1; transform: scale(1.03); }
+
+    /* overlay: soften in */
+    #hero .fx-ov { opacity:0; transition: opacity .8s ease; }
+    #hero .fx-ov.in { opacity:1; }
+
+    /* chip: tiny delay to feel polished */
+    #hero .fx-chip { opacity:0; transform: translateY(8px); transition: opacity .5s ease, transform .5s ease; }
+    #hero .fx-chip.in { opacity:1; transform: none; }
+  </style>
+
+  <div class="relative h-[64vh] md:h-[82vh]">
+    <img
+      src="https://res.cloudinary.com/dstlxtvar/image/upload/f_auto,q_auto/v1761114435/uploads/img_0858-enhanced-nr.jpg"
+      alt="Landscape Design &amp; Build hero"
+      class="absolute inset-0 w-full h-full object-cover fx-img"
+      id="heroMedia"
+    >
+    <div class="absolute inset-0 bg-gradient-to-r from-black/80 via-black/40 to-transparent fx-ov"></div>
+  </div>
+
+  <div class="absolute inset-0">
+    <div class="max-w-7xl mx-auto h-full px-6 flex items-end pb-10">
+      <div class="max-w-3xl fx">
+        
+          <p class="text-[11px] tracking-[.4em] uppercase text-[#18AFAB]">Landscape</p>
+        
+        <h1 class="mt-3 text-4xl md:text-6xl font-extrabold leading-tight">
+          Quiet-Luxury Landscape Design &amp; Build in Dubai
+        </h1>
+        
+          <p class="mt-4 text-white/85 text-lg">Bringing seamless luxury to outdoor spaces with pools and pergolas. Lighting and features. Careful selection of native planting. With one integrated team from concept to handover.</p>
+        
+        <div class="mt-6 flex flex-wrap gap-3 fx">
+          <a href="#landscape-services" class="inline-flex items-center rounded-full bg-white text-[#0F0F10] px-6 py-3 font-semibold shadow hover:scale-[1.02] transition">
+            Explore Capabilities <i class="fa-solid fa-arrow-right-long ml-2"></i>
+          </a>
+          <a href="#case-gallery" class="inline-flex items-center gap-2 font-semibold text-white/90 hover:text-white">
+            View Case Studies <i class="fa-solid fa-arrow-right-long"></i>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- floating stat chip (first metric or projects) -->
+  <div class="absolute top-5 right-5 fx-chip" id="heroChip">
+    
+      
+        <span class="px-3 py-1.5 rounded-full bg-white/90 text-[#0F0F10] text-xs font-semibold shadow">
+          650+ Projects Delivered
+        </span>
+      
+    
+  </div>
+
+  <script>
+    (function(){
+      const root = document.getElementById('hero');
+      if(!root) return;
+
+      const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      const img    = root.querySelector('.fx-img');
+      const ov     = root.querySelector('.fx-ov');
+      const blocks = root.querySelectorAll('.fx');
+      const chip   = root.querySelector('#heroChip');
+      const media  = document.getElementById('heroMedia');
+
+      // Enter animations (stagger a touch)
+      if(reduce){
+        img && img.classList.add('in');
+        ov  && ov.classList.add('in');
+        blocks.forEach(el=>el.classList.add('in'));
+        chip && chip.classList.add('in');
+      } else {
+        setTimeout(()=>{ img && img.classList.add('in'); ov && ov.classList.add('in'); }, 60);
+        setTimeout(()=>{ blocks.forEach((el,i)=> setTimeout(()=> el.classList.add('in'), i*90)); }, 120);
+        setTimeout(()=>{ chip && chip.classList.add('in'); }, 420);
+      }
+
+      // Subtle parallax on the image (hero only)
+      if(media && !reduce){
+        const onScroll = ()=>{
+          const y = Math.min(60, window.scrollY * 0.06);
+          media.style.transform = `translateY(${y}px) scale(1.03)`;
+        };
+        window.addEventListener('scroll', onScroll, {passive:true});
+      }
+    })();
+  </script>
+</section>
+
+
+<!-- Stats / Track Record (with count-up) -->
+<section class="relative bg-[#1A1A1A] text-white py-20 overflow-hidden">
+  <div class="absolute inset-0 opacity-10"
+       style="background-image:url('https://www.transparenttextures.com/patterns/white-diamond.png')"></div>
+
+  <div class="relative max-w-7xl mx-auto px-6 grid md:grid-cols-4 gap-10 text-center">
+    <!-- Stat -->
+    <div class="px-4 md:border-r md:border-white/10">
+      <p class="stat-number"
+         data-target="450"
+         data-suffix="+">0</p>
+      <p class="mt-3 text-xs tracking-[.2em] uppercase text-white/80">Projects Completed</p>
+    </div>
+
+    <!-- Stat -->
+    <div class="px-4 md:border-r md:border-white/10">
+      <p class="stat-number"
+         data-target="20"
+         data-suffix="+">0</p>
+      <p class="mt-3 text-xs tracking-[.2em] uppercase text-white/80">Years of Experience</p>
+    </div>
+
+    <!-- Stat -->
+    <div class="px-4 md:border-r md:border-white/10">
+      <p class="stat-number"
+         data-target="250"
+         data-suffix="+">0</p>
+      <p class="mt-3 text-xs tracking-[.2em] uppercase text-white/80">Skilled Professionals</p>
+    </div>
+
+    <!-- Stat (compact "M+") -->
+    <div class="px-4">
+      <p class="stat-number"
+         data-target="3300000"
+         data-compact="true"
+         data-suffix="+">0</p>
+      <p class="mt-3 text-xs tracking-[.2em] uppercase text-white/80">Sq Ft Delivered</p>
+    </div>
+  </div>
+</section>
+
+<style>
+/* Typography + subtle glow */
+.stat-number{
+  font-size: clamp(2.5rem, 5vw, 3.5rem);
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: #18AFAB; /* Hammer teal */
+  text-shadow: 0 0 14px rgba(24,175,171,0.35);
+  opacity: 0;
+  transform: translateY(12px) scale(.98);
+  transition: opacity .6s ease, transform .6s ease;
+}
+.stat-number.is-visible{
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+</style>
+
+<script>
+(function(){
+  const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // Easing for a nicer count
+  function easeOutQuad(t){ return t * (2 - t); }
+
+  // Format compact (4,000,000 -> 4M, 1,500,000 -> 1.5M)
+  function compactNumber(n){
+    if (n >= 1_000_000_000) return (n/1_000_000_000).toFixed(n%1_000_000_000 ? 1 : 0) + 'B';
+    if (n >= 1_000_000)     return (n/1_000_000).toFixed(n%1_000_000 ? 1 : 0) + 'M';
+    if (n >= 1_000)         return (n/1_000).toFixed(n%1_000 ? 1 : 0) + 'K';
+    return String(n);
+  }
+
+  function animateCount(el, target, {duration=1200, compact=false, suffix='' } = {}){
+    if (prefersReduced){
+      el.textContent = (compact ? compactNumber(target) : target.toLocaleString()) + (suffix||'');
+      return;
+    }
+
+    const start = performance.now();
+    const startVal = 0;
+
+    function frame(now){
+      const t = Math.min(1, (now - start) / duration);
+      const eased = easeOutQuad(t);
+      const current = Math.floor(startVal + (target - startVal) * eased);
+      el.textContent = (compact ? compactNumber(current) : current.toLocaleString()) + (suffix||'');
+      if (t < 1) requestAnimationFrame(frame);
+    }
+    requestAnimationFrame(frame);
+  }
+
+  const stats = document.querySelectorAll('.stat-number');
+  if(!('IntersectionObserver' in window)){
+    // Fallback: animate immediately
+    stats.forEach(el=>{
+      const target = Number(el.getAttribute('data-target') || 0);
+      const suffix = el.getAttribute('data-suffix') || '';
+      const compact = el.getAttribute('data-compact') === 'true';
+      el.classList.add('is-visible');
+      animateCount(el, target, {compact, suffix});
+    });
+    return;
+  }
+
+  const io = new IntersectionObserver((entries, obs)=>{
+    entries.forEach(entry=>{
+      if(!entry.isIntersecting) return;
+      const el = entry.target;
+      const target = Number(el.getAttribute('data-target') || 0);
+      const suffix = el.getAttribute('data-suffix') || '';
+      const compact = el.getAttribute('data-compact') === 'true';
+
+      el.classList.add('is-visible');
+      animateCount(el, target, {compact, suffix});
+
+      obs.unobserve(el); // run once
+    });
+  }, { threshold: 0.3 });
+
+  stats.forEach(el => io.observe(el));
+})();
+</script>
+
+
+<section id="landscape-services" class="bg-white py-20">
+  <!-- scoped styles just for this section -->
+  <style>
+    /* ---- Motion tokens (scoped to #landscape-services) ---- */
+    #landscape-services .fx { opacity:0; transform: translateY(10px); transition: opacity .5s cubic-bezier(.22,1,.36,1), transform .5s cubic-bezier(.22,1,.36,1); }
+    #landscape-services .fx.in { opacity:1; transform: none; }
+    #landscape-services .fade { opacity:0; transition: opacity .35s ease; }
+    #landscape-services .fade.in { opacity:1; }
+
+    /* Staggers: apply data-stagger children order */
+    #landscape-services [data-stagger] > * { opacity:0; transform: translateY(8px); transition: opacity .45s cubic-bezier(.22,1,.36,1), transform .45s cubic-bezier(.22,1,.36,1); }
+    #landscape-services [data-stagger].in > * { opacity:1; transform:none; }
+    #landscape-services [data-stagger].in > *:nth-child(1) { transition-delay:.04s }
+    #landscape-services [data-stagger].in > *:nth-child(2) { transition-delay:.10s }
+    #landscape-services [data-stagger].in > *:nth-child(3) { transition-delay:.16s }
+    #landscape-services [data-stagger].in > *:nth-child(4) { transition-delay:.22s }
+    #landscape-services [data-stagger].in > *:nth-child(5) { transition-delay:.28s }
+    #landscape-services [data-stagger].in > *:nth-child(6) { transition-delay:.34s }
+
+    /* Panels: smooth fade on switch (no layout jump) */
+    #landscape-services [role="tabpanel"] { opacity:0; transform: translateY(6px); transition: opacity .35s ease, transform .35s ease; }
+    #landscape-services [role="tabpanel"].is-active { opacity:1; transform:none; }
+
+    /* Keep your existing look */
+    :root{ --ink:#0B0E14; --teal:#18AFAB; }
+    .seg{ display:inline-grid; grid-auto-flow:column; gap:6px; padding:6px; border-radius:999px; background:#f2f2f2; }
+    .seg-btn{ padding:.45rem .85rem; border-radius:999px; font-weight:600; font-size:.9rem; color:#444; border:none; cursor:pointer; }
+    .seg-btn[aria-pressed="true"]{ background:var(--teal); color:#fff; box-shadow:0 6px 16px rgba(24,175,171,.25); }
+
+    .svc-card{ border-radius:1rem; border:1px solid rgba(0,0,0,.06); background:#fff; transition:transform .3s cubic-bezier(.22,1,.36,1), box-shadow .3s, border-color .3s; }
+    .svc-card:hover{ transform:translateY(-2px); box-shadow:0 18px 36px rgba(0,0,0,.18), 0 0 0 1px rgba(24,175,171,.16) inset; border-color:rgba(24,175,171,.32); }
+    .svc-icon{ width:44px; height:44px; border-radius:12px; display:flex; align-items:center; justify-content:center; background:rgba(24,175,171,.10); color:var(--teal); }
+
+    .chip{ font-size:.72rem; padding:.25rem .5rem; border-radius:999px; }
+    .chip--light{ background:#f5f5f5; color:#333; }
+
+    /* Before/After (unchanged visuals) */
+    .ba{ position:relative; border-radius:1rem; overflow:hidden; }
+    .ba img{ display:block; width:100%; height:56vh; object-fit:cover; }
+    .ba .after{ position:absolute; inset:0; width:50%; overflow:hidden; }
+    .ba .handle{ position:absolute; top:0; bottom:0; left:50%; width:2px; background:#fff; box-shadow:0 0 0 1px rgba(0,0,0,.2) inset; }
+    .ba .knob{ position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:36px; height:36px; border-radius:999px; background:#fff; display:flex; align-items:center; justify-content:center; box-shadow:0 8px 18px rgba(0,0,0,.2); }
+  </style>
+
+  <div class="max-w-7xl mx-auto px-6">
+    <!-- Header + switcher -->
+    <div class="fx flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-8">
+      <div>
+        <p class="text-[10px] tracking-[.45em] uppercase text-[var(--teal)]">Landscape</p>
+        <h3 class="text-2xl md:text-3xl font-extrabold text-[var(--ink)]">
+          End-to-end landscape design &amp; build for modern living
+        </h3>
+        
+          <p class="mt-3 text-gray-700 leading-relaxed max-w-2xl">Hammer Landscape delivers premium outdoor architecture in Dubai—custom pools, pergolas, lighting, water features and native planting—driven by innovative design and meticulous execution.</p>
+        
+      </div>
+      <div class="seg self-start md:self-auto" role="tablist" aria-label="Landscape content switcher">
+        <button class="seg-btn" role="tab" aria-selected="true" aria-pressed="true" data-tab="overview">Overview</button>
+        
+        <button class="seg-btn" role="tab" aria-selected="false" aria-pressed="false" data-tab="beforeafter">Before/After</button>
+        
+      </div>
+
+    </div>
+
+    <!-- Overview -->
+    <div id="panel-overview" class="is-active" role="tabpanel">
+      <!-- Capabilities (moved from former #panel-services) -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6" data-stagger>
+        
+          
+            <article class="svc-card p-6" data-expand>
+              <div class="flex items-start gap-3">
+                <div class="svc-icon"><i class="fa-solid fa-compass-drafting"></i></div>
+                <div class="flex-1">
+                  <h5 class="font-semibold text-[var(--ink)]">Design Studio</h5>
+                  <p class="svc-peek text-sm mt-1">Concept, 2D/3D, planting palettes, lighting scenes.</p>
+                  <div class="svc-body"><!-- optional deep details field --></div>
+                </div>
+                
+              </div>
+            </article>
+          
+            <article class="svc-card p-6" data-expand>
+              <div class="flex items-start gap-3">
+                <div class="svc-icon"><i class="fa-solid fa-file-shield"></i></div>
+                <div class="flex-1">
+                  <h5 class="font-semibold text-[var(--ink)]">Technical &amp; Drawings</h5>
+                  <p class="svc-peek text-sm mt-1">Authority-ready packages with GA, details, BOQ, and full coordination.</p>
+                  <div class="svc-body"><!-- optional deep details field --></div>
+                </div>
+                
+              </div>
+            </article>
+          
+            <article class="svc-card p-6" data-expand>
+              <div class="flex items-start gap-3">
+                <div class="svc-icon"><i class="fa-solid fa-helmet-safety"></i></div>
+                <div class="flex-1">
+                  <h5 class="font-semibold text-[var(--ink)]">Build &amp; Delivery</h5>
+                  <p class="svc-peek text-sm mt-1">One crew. Clear milestones. Clean sites.</p>
+                  <div class="svc-body"><!-- optional deep details field --></div>
+                </div>
+                
+              </div>
+            </article>
+          
+            <article class="svc-card p-6" data-expand>
+              <div class="flex items-start gap-3">
+                <div class="svc-icon"><i class="fa-solid fa-water-ladder"></i></div>
+                <div class="flex-1">
+                  <h5 class="font-semibold text-[var(--ink)]">Pools</h5>
+                  <p class="svc-peek text-sm mt-1">Custom shells, resurfacing, filtration &amp; automation, LED scenes &amp; safety.</p>
+                  <div class="svc-body"><!-- optional deep details field --></div>
+                </div>
+                
+              </div>
+            </article>
+          
+            <article class="svc-card p-6" data-expand>
+              <div class="flex items-start gap-3">
+                <div class="svc-icon"><i class="fa-solid fa-water"></i></div>
+                <div class="flex-1">
+                  <h5 class="font-semibold text-[var(--ink)]">Water Features</h5>
+                  <p class="svc-peek text-sm mt-1">Rills, scuppers, sheet falls—engineered to whisper with low upkeep.</p>
+                  <div class="svc-body"><!-- optional deep details field --></div>
+                </div>
+                
+              </div>
+            </article>
+          
+            <article class="svc-card p-6" data-expand>
+              <div class="flex items-start gap-3">
+                <div class="svc-icon"><i class="fa-solid fa-lightbulb"></i></div>
+                <div class="flex-1">
+                  <h5 class="font-semibold text-[var(--ink)]">Architectural Lighting</h5>
+                  <p class="svc-peek text-sm mt-1">Layers that celebrate form—paths, trees, and water—glare controlled.</p>
+                  <div class="svc-body"><!-- optional deep details field --></div>
+                </div>
+                
+              </div>
+            </article>
+          
+        
+      </div>
+
+    </div>
+
+    <!-- Services -->
+    <div id="panel-services" class="" role="tabpanel" aria-hidden="true">
+      
+    </div>
+
+    <!-- Before/After -->
+    
+    <div id="panel-beforeafter" class="" role="tabpanel" aria-hidden="true">
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6" data-stagger>
+        
+          
+            <figure class="ba">
+              <img src="https://res.cloudinary.com/dstlxtvar/image/upload/f_auto,q_auto/v1759966598/uploads/sqyiicburcyoviboplj6.jpg" alt="Lighting: Before">
+              <div class="after">
+                <img src="https://res.cloudinary.com/dstlxtvar/image/upload/f_auto,q_auto/v1759966586/uploads/mzcngguenffosiuspt7f.jpg" alt="Lighting: After">
+              </div>
+              <div class="handle"></div>
+              <div class="knob"><i class="fa-solid fa-arrows-left-right"></i></div>
+              
+                <figcaption class="absolute left-3 bottom-3 px-3 py-1.5 text-xs font-semibold rounded-full bg-white/90 text-[var(--ink)]">
+                  
+                    Lighting: Before → Lighting: After
+                  
+                </figcaption>
+              
+            </figure>
+          
+            <figure class="ba">
+              <img src="https://res.cloudinary.com/dstlxtvar/image/upload/f_auto,q_auto/v1759966591/uploads/gmurj8gtk9wcbk22b6fg.jpg" alt="Pool: Before">
+              <div class="after">
+                <img src="https://res.cloudinary.com/dstlxtvar/image/upload/f_auto,q_auto/v1759966579/uploads/xgrugibxpq6v6ujddky0.jpg" alt="Pool: After">
+              </div>
+              <div class="handle"></div>
+              <div class="knob"><i class="fa-solid fa-arrows-left-right"></i></div>
+              
+                <figcaption class="absolute left-3 bottom-3 px-3 py-1.5 text-xs font-semibold rounded-full bg-white/90 text-[var(--ink)]">
+                  
+                    Pool: Before → Pool: After
+                  
+                </figcaption>
+              
+            </figure>
+          
+        
+      </div>
+      <p class="text-xs text-gray-500 mt-3">Tip: drag the handle to compare.</p>
+    </div>
+    
+  </div>
+
+  <!-- scoped JS for reveals + tabs + BA -->
+  <script>
+    (function(){
+      const root = document.getElementById('landscape-services');
+      if(!root) return;
+      const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+      // Reveal on enter
+      const reveal = (els)=> els.forEach(el=> el.classList.add('in'));
+      if(reduce){
+        reveal(root.querySelectorAll('.fx, .fade'));
+        root.querySelectorAll('[data-stagger]').forEach(n=> n.classList.add('in'));
+      } else if ('IntersectionObserver' in window){
+        const io = new IntersectionObserver((entries, obs)=>{
+          entries.forEach(e=>{
+            if(e.isIntersecting){
+              const n = e.target;
+              if(n.matches('[data-stagger]')) n.classList.add('in');
+              else n.classList.add('in');
+              obs.unobserve(n);
+            }
+          });
+        }, {threshold:.16});
+        root.querySelectorAll('.fx, .fade, [data-stagger]').forEach(n=> io.observe(n));
+      } else {
+        reveal(root.querySelectorAll('.fx, .fade'));
+        root.querySelectorAll('[data-stagger]').forEach(n=> n.classList.add('in'));
+      }
+
+      // Tabs
+      const tabs = root.querySelectorAll('.seg-btn');
+      const panels = {
+        overview: document.getElementById('panel-overview'),
+        services: document.getElementById('panel-services'),
+        beforeafter: document.getElementById('panel-beforeafter'),
+      };
+      function show(which){
+        tabs.forEach(b=>{
+          const on = b.dataset.tab === which;
+          b.setAttribute('aria-pressed', on);
+          b.setAttribute('aria-selected', on);
+        });
+        Object.entries(panels).forEach(([k,el])=>{
+          const on = (k === which);
+          el.classList.toggle('is-active', on);
+          el.toggleAttribute('aria-hidden', !on);
+        });
+      }
+      tabs.forEach(b=> b.addEventListener('click', ()=> show(b.dataset.tab)));
+      show('overview');
+
+      // Services expand (height animation)
+      root.querySelectorAll('[data-expand]').forEach(card=>{
+        const btn = card.querySelector('[data-toggle]');
+        const body= card.querySelector('.svc-body');
+        if(!btn || !body) return;
+        let open=false;
+        const animate = (toOpen)=>{
+          const start = body.offsetHeight;
+          body.style.height='auto';
+          const end = toOpen ? body.offsetHeight : 0;
+          body.style.height = start+'px'; body.offsetHeight;
+          body.style.transition='height .35s cubic-bezier(.22,1,.36,1)';
+          body.style.height = end+'px';
+          body.addEventListener('transitionend', function te(){
+            body.style.transition=''; body.style.height = toOpen ? 'auto' : '0px'; body.removeEventListener('transitionend', te);
+          });
+        };
+        btn.addEventListener('click', ()=>{
+          open = !open; card.setAttribute('aria-expanded', open);
+          btn.textContent = open ? 'Less' : 'More';
+          animate(open);
+        });
+      });
+
+      // Before/After slider
+      root.querySelectorAll('.ba').forEach(ba=>{
+        const after = ba.querySelector('.after');
+        const handle= ba.querySelector('.handle');
+        const knob  = ba.querySelector('.knob');
+        const setX = (x)=>{
+          const r = ba.getBoundingClientRect();
+          let pct = (x - r.left)/r.width; pct = Math.max(0, Math.min(1, pct));
+          after.style.width = (pct*100)+'%';
+          handle.style.left = (pct*100)+'%';
+          knob.style.left   = handle.style.left;
+        };
+        const start = e => { ba.dataset.drag = '1'; setX((e.touches? e.touches[0].clientX : e.clientX)); };
+        const move  = e => { if(ba.dataset.drag==='1') setX((e.touches? e.touches[0].clientX : e.clientX)); };
+        const end   = () => { ba.dataset.drag = '0'; };
+        ['mousedown','touchstart'].forEach(ev=> ba.addEventListener(ev, start, {passive:false}));
+        ['mousemove','touchmove'].forEach(ev=> window.addEventListener(ev, move,  {passive:false}));
+        ['mouseup','mouseleave','touchend','touchcancel'].forEach(ev=> window.addEventListener(ev, end));
+        // center initially
+        requestAnimationFrame(()=> {
+          const r = ba.getBoundingClientRect();
+          setX(r.left + r.width/2);
+        });
+      });
+    })();
+  </script>
+</section>
+
+
+<section id="case-gallery" class="bg-white py-16">
+  <style>
+    :root { --ink:#0B0E14; --teal:#18AFAB; --muted:#6B7280; --ring: #99f6e4; }
+
+    #case-gallery .wrap{max-width:80rem;margin:0 auto;padding:0 1.25rem}
+    #case-gallery .eyebrow{ text-transform:uppercase; letter-spacing:.35em; color:var(--teal); font-size:10px }
+    #case-gallery h2{ color:var(--ink); margin:.25rem 0 .5rem }
+    #case-gallery .sub{ color:var(--muted) }
+
+    /* cards */
+    #case-gallery .grid{ display:grid; gap:1rem; grid-template-columns:repeat(1,minmax(0,1fr)) }
+    @media (min-width:640px){ #case-gallery .grid{ grid-template-columns:repeat(2,minmax(0,1fr)) } }
+    @media (min-width:1024px){ #case-gallery .grid{ grid-template-columns:repeat(3,minmax(0,1fr)) } }
+
+    #case-gallery .card{
+      position:relative; border:1px solid #e5e7eb; border-radius:14px; overflow:hidden; background:#fff;
+      transition:transform .2s ease, box-shadow .2s ease, border-color .2s ease; outline:0;
+      display:flex; flex-direction:column;
+    }
+    #case-gallery .card:hover{ transform:translateY(-2px); box-shadow:0 14px 34px -18px rgba(2,6,23,.35); border-color:#e2e8f0 }
+    #case-gallery .thumb{ position:relative; aspect-ratio: 4/3; overflow:hidden; background:#f3f4f6 }
+    #case-gallery .thumb img{ width:100%; height:100%; object-fit:cover; display:block; transition:transform .5s ease }
+    #case-gallery .card:hover .thumb img{ transform:scale(1.03) }
+
+    #case-gallery .body{ padding:0.9rem 1rem 1rem; display:flex; flex-direction:column; flex:1 }
+    #case-gallery .title{ color:var(--ink); font-weight:800; font-size:1.05rem; line-height:1.25 }
+    #case-gallery .sum{ color:#6b7280; font-size:.9rem; margin-top:.25rem }
+    #case-gallery .row{ display:flex; align-items:center; gap:.5rem; margin-top:auto; padding-top:.75rem }
+    #case-gallery .btn{
+      appearance:none; border:1px solid #e5e7eb; background:#fff; color:#111827; font-weight:700;
+      padding:.55rem .8rem; border-radius:.6rem; cursor:pointer;
+      transition:background .15s ease, border-color .15s ease, transform .05s ease;
+    }
+    #case-gallery .btn:hover{ background:#f9fafb; border-color:#e2e8f0 }
+    #case-gallery .btn.primary{ background:var(--teal); border-color:var(--teal); color:#fff; }
+    #case-gallery .btn.primary:hover{ filter:brightness(0.98) }
+    #case-gallery .btn:active{ transform:translateY(1px) }
+    #case-gallery .card:focus-visible{ outline:3px solid var(--ring); outline-offset:3px }
+
+    /* modal/lightbox */
+    #case-gallery .modal{
+      position:fixed; inset:0; display:none; place-items:center; background:rgba(0,0,0,.65);
+      z-index:50; padding:1rem;
+    }
+    #case-gallery .modal[aria-hidden="false"]{ display:grid }
+    #case-gallery .dialog{
+      background:#fff; width:min(100%, 62rem); border-radius:16px; overflow:hidden; box-shadow:0 25px 80px rgba(0,0,0,.35);
+      display:grid; grid-template-rows:auto auto 1fr auto;
+    }
+    #case-gallery .hero{ position:relative; background:#000 }
+    #case-gallery .hero img{ width:100%; height:420px; object-fit:cover; display:block }
+    #case-gallery .chip{
+      position:absolute; left:.75rem; bottom:.75rem; background:rgba(0,0,0,.55); color:#fff;
+      padding:.4rem .7rem; border-radius:.45rem; font-weight:700; font-size:.8rem; backdrop-filter:blur(3px)
+    }
+    #case-gallery .dialog .head{ padding:1rem 1.25rem .5rem }
+    #case-gallery .dialog .head .t{ font-weight:800; font-size:1.25rem; color:var(--ink) }
+    #case-gallery .dialog .head .s{ color:#6b7280; margin-top:.2rem }
+    #case-gallery .dialog .controls{
+      position:absolute; inset:0; pointer-events:none;
+    }
+    #case-gallery .ctrl{
+      position:absolute; top:50%; translate:0 -50%; pointer-events:auto;
+      background:rgba(255,255,255,.95); border:1px solid #e5e7eb; width:44px; height:44px; border-radius:999px;
+      display:grid; place-items:center;
+    }
+    #case-gallery .ctrl.prev{ left:.5rem } .ctrl.next{ right:.5rem }
+    #case-gallery .ctrl:hover{ background:#fff }
+    #case-gallery .close{
+      position:absolute; top:.6rem; right:.6rem; background:rgba(255,255,255,.95); border:1px solid #e5e7eb;
+      width:38px; height:38px; border-radius:999px; display:grid; place-items:center;
+    }
+    #case-gallery .dialog .foot{ padding:1rem 1.25rem; display:flex; justify-content:space-between; align-items:center; gap:1rem; border-top:1px solid #f1f5f9 }
+    #case-gallery .dialog .mini{ color:#6b7280; font-size:.9rem }
+
+    /* mobile tweaks */
+    @media (max-width:640px){
+      #case-gallery .dialog{ width:100%; height:90vh; grid-template-rows:auto auto 1fr auto }
+      #case-gallery .hero img{ height:260px }
+      #case-gallery .ctrl{ display:none }
+    }
+
+    @media (prefers-reduced-motion:reduce){
+      #case-gallery *{ transition:none !important; scroll-behavior:auto !important }
+    }
+  </style>
+
+  <div class="wrap mb-8 text-center">
+    <p class="eyebrow">Signature Projects</p>
+    <h2 class="text-3xl md:text-4xl font-extrabold">Explore Our Work</h2>
+    <p class="sub">Tap a card to preview. Open the project when you’re ready.</p>
+  </div>
+
+  
+  
+  <div class="wrap">
+    <div class="grid" id="case-grid" role="list">
+      
+        
+        <article class="card" role="listitem" tabindex="0" data-index="0">
+          <a class="thumb" href="/case-studies/tilal-al-ghaf/" title="Open Tilal Al Ghaf">
+            <img src="https://res.cloudinary.com/dstlxtvar/image/upload/f_auto,q_auto/v1761125130/uploads/dsc00299.jpg" alt="Tilal Al Ghaf" loading="lazy" width="1200" height="900">
+          </a>
+          <div class="body">
+            <div class="title">Tilal Al Ghaf</div>
+            <p class="sum">A modern oasis in the heart of the city, featuring a private courtyard pool framed by elegant cactus …</p>
+            <div class="row">
+              <!--    
+              <button class="btn primary" data-action="preview" data-url="https://res.cloudinary.com/dstlxtvar/image/upload/f_auto,q_auto/v1761125130/uploads/dsc00299.jpg" data-href="/case-studies/tilal-al-ghaf/" data-title="Tilal Al Ghaf" data-summary="A modern oasis in the heart of the city, featuring a private courtyard pool framed by elegant cactus arrangements and olive trees.">Quick preview</button>
+              -->
+              <a class="btn" href="/case-studies/tilal-al-ghaf/">View project</a>
+            </div>
+          </div>
+        </article>
+        
+      
+        
+        <article class="card" role="listitem" tabindex="0" data-index="1">
+          <a class="thumb" href="/case-studies/modern-oasis-dubai-hills/" title="Open Modern Oasis – Dubai Hills">
+            <img src="https://res.cloudinary.com/dstlxtvar/image/upload/f_auto,q_auto/v1760597364/uploads/yhlc9x95pqzennopuzak.jpg" alt="Modern Oasis – Dubai Hills" loading="lazy" width="1200" height="900">
+          </a>
+          <div class="body">
+            <div class="title">Modern Oasis – Dubai Hills</div>
+            <p class="sum">A Mediterranean-inspired retreat where sun-washed neutrals and structured greenery evoke tranquil sophistication.</p>
+            <div class="row">
+              <!--    
+              <button class="btn primary" data-action="preview" data-url="https://res.cloudinary.com/dstlxtvar/image/upload/f_auto,q_auto/v1760597364/uploads/yhlc9x95pqzennopuzak.jpg" data-href="/case-studies/modern-oasis-dubai-hills/" data-title="Modern Oasis – Dubai Hills" data-summary="A Mediterranean\u002Dinspired retreat where sun\u002Dwashed neutrals and structured greenery evoke tranquil sophistication.">Quick preview</button>
+              -->
+              <a class="btn" href="/case-studies/modern-oasis-dubai-hills/">View project</a>
+            </div>
+          </div>
+        </article>
+        
+      
+        
+        <article class="card" role="listitem" tabindex="0" data-index="2">
+          <a class="thumb" href="/case-studies/coastal-clarity-dubai-hills/" title="Open Coastal Clarity – Dubai Hills">
+            <img src="https://res.cloudinary.com/dstlxtvar/image/upload/f_auto,q_auto/v1760597857/uploads/dshb6jgdbd8v0e4lhrgn.jpg" alt="Coastal Clarity – Dubai Hills" loading="lazy" width="1200" height="900">
+          </a>
+          <div class="body">
+            <div class="title">Coastal Clarity – Dubai Hills</div>
+            <p class="sum">Desert minimalism meets coastal clarity — a study in light, reflection, and seamless indoor–outdoor flow.</p>
+            <div class="row">
+              <!--    
+              <button class="btn primary" data-action="preview" data-url="https://res.cloudinary.com/dstlxtvar/image/upload/f_auto,q_auto/v1760597857/uploads/dshb6jgdbd8v0e4lhrgn.jpg" data-href="/case-studies/coastal-clarity-dubai-hills/" data-title="Coastal Clarity – Dubai Hills" data-summary="Desert minimalism meets coastal clarity — a study in light, reflection, and seamless indoor–outdoor flow.">Quick preview</button>
+              -->
+              <a class="btn" href="/case-studies/coastal-clarity-dubai-hills/">View project</a>
+            </div>
+          </div>
+        </article>
+        
+      
+        
+        <article class="card" role="listitem" tabindex="0" data-index="3">
+          <a class="thumb" href="/case-studies/andalusian-sanctuary-jumeirah-park/" title="Open Andalusian Sanctuary – Jumeirah Park">
+            <img src="https://res.cloudinary.com/dstlxtvar/image/upload/f_auto,q_auto/v1760598040/uploads/vjgprfkvbxgj987crqqf.jpg" alt="Andalusian Sanctuary – Jumeirah Park" loading="lazy" width="1200" height="900">
+          </a>
+          <div class="body">
+            <div class="title">Andalusian Sanctuary – Jumeirah Park</div>
+            <p class="sum">Terracotta tones, lush palms, and tranquil water features bring Andalusian warmth to tropical Dubai living.</p>
+            <div class="row">
+              <!--    
+              <button class="btn primary" data-action="preview" data-url="https://res.cloudinary.com/dstlxtvar/image/upload/f_auto,q_auto/v1760598040/uploads/vjgprfkvbxgj987crqqf.jpg" data-href="/case-studies/andalusian-sanctuary-jumeirah-park/" data-title="Andalusian Sanctuary – Jumeirah Park" data-summary="Terracotta tones, lush palms, and tranquil water features bring Andalusian warmth to tropical Dubai living.">Quick preview</button>
+              -->
+              <a class="btn" href="/case-studies/andalusian-sanctuary-jumeirah-park/">View project</a>
+            </div>
+          </div>
+        </article>
+        
+      
+        
+        <article class="card" role="listitem" tabindex="0" data-index="4">
+          <a class="thumb" href="/case-studies/lush-geometry-murooj/" title="Open Lush Geometry – Murooj">
+            <img src="https://res.cloudinary.com/dstlxtvar/image/upload/f_auto,q_auto/v1/media/editor/DSC08319_vpgvsd" alt="Lush Geometry – Murooj" loading="lazy" width="1200" height="900">
+          </a>
+          <div class="body">
+            <div class="title">Lush Geometry – Murooj</div>
+            <p class="sum">A serene escape where clean lines meet greenery, balancing structure and softness in modern harmony.</p>
+            <div class="row">
+              <!--    
+              <button class="btn primary" data-action="preview" data-url="https://res.cloudinary.com/dstlxtvar/image/upload/f_auto,q_auto/v1/media/editor/DSC08319_vpgvsd" data-href="/case-studies/lush-geometry-murooj/" data-title="Lush Geometry – Murooj" data-summary="A serene escape where clean lines meet greenery, balancing structure and softness in modern harmony.">Quick preview</button>
+              -->
+              <a class="btn" href="/case-studies/lush-geometry-murooj/">View project</a>
+            </div>
+          </div>
+        </article>
+        
+      
+        
+        <article class="card" role="listitem" tabindex="0" data-index="5">
+          <a class="thumb" href="/case-studies/sunlit-haven-tilal-al-ghaf/" title="Open Sunlit Haven – Tilal Al Ghaf">
+            <img src="https://res.cloudinary.com/dstlxtvar/image/upload/f_auto,q_auto/v1760598557/uploads/jmwn4frgxwaeoxx00vjs.jpg" alt="Sunlit Haven – Tilal Al Ghaf" loading="lazy" width="1200" height="900">
+          </a>
+          <div class="body">
+            <div class="title">Sunlit Haven – Tilal Al Ghaf</div>
+            <p class="sum">Mediterranean charm meets desert minimalism through sculptural cacti, neutral tones, and serene water.</p>
+            <div class="row">
+              <!--    
+              <button class="btn primary" data-action="preview" data-url="https://res.cloudinary.com/dstlxtvar/image/upload/f_auto,q_auto/v1760598557/uploads/jmwn4frgxwaeoxx00vjs.jpg" data-href="/case-studies/sunlit-haven-tilal-al-ghaf/" data-title="Sunlit Haven – Tilal Al Ghaf" data-summary="Mediterranean charm meets desert minimalism through sculptural cacti, neutral tones, and serene water.">Quick preview</button>
+              -->
+              <a class="btn" href="/case-studies/sunlit-haven-tilal-al-ghaf/">View project</a>
+            </div>
+          </div>
+        </article>
+        
+      
+        
+        <article class="card" role="listitem" tabindex="0" data-index="6">
+          <a class="thumb" href="/case-studies/desert-balance-tilal-al-ghaf/" title="Open Desert Balance – Tilal Al Ghaf">
+            <img src="https://res.cloudinary.com/dstlxtvar/image/upload/f_auto,q_auto/v1760598708/uploads/jpkw9yqya9tvnpl65xtr.jpg" alt="Desert Balance – Tilal Al Ghaf" loading="lazy" width="1200" height="900">
+          </a>
+          <div class="body">
+            <div class="title">Desert Balance – Tilal Al Ghaf</div>
+            <p class="sum">Desert textures and olive tones meet modern geometry, creating a timeless landscape of quiet sophistication.</p>
+            <div class="row">
+              <!--    
+              <button class="btn primary" data-action="preview" data-url="https://res.cloudinary.com/dstlxtvar/image/upload/f_auto,q_auto/v1760598708/uploads/jpkw9yqya9tvnpl65xtr.jpg" data-href="/case-studies/desert-balance-tilal-al-ghaf/" data-title="Desert Balance – Tilal Al Ghaf" data-summary="Desert textures and olive tones meet modern geometry, creating a timeless landscape of quiet sophistication.">Quick preview</button>
+              -->
+              <a class="btn" href="/case-studies/desert-balance-tilal-al-ghaf/">View project</a>
+            </div>
+          </div>
+        </article>
+        
+      
+        
+        <article class="card" role="listitem" tabindex="0" data-index="7">
+          <a class="thumb" href="/case-studies/verdant-minimalism-tilal-al-ghaf/" title="Open Verdant Minimalism – Tilal Al Ghaf">
+            <img src="https://res.cloudinary.com/dstlxtvar/image/upload/f_auto,q_auto/v1760598930/uploads/qyngaytmkxq7aqiek4jj.jpg" alt="Verdant Minimalism – Tilal Al Ghaf" loading="lazy" width="1200" height="900">
+          </a>
+          <div class="body">
+            <div class="title">Verdant Minimalism – Tilal Al Ghaf</div>
+            <p class="sum">An understated sanctuary where architecture and nature align for effortless outdoor living.</p>
+            <div class="row">
+              <!--    
+              <button class="btn primary" data-action="preview" data-url="https://res.cloudinary.com/dstlxtvar/image/upload/f_auto,q_auto/v1760598930/uploads/qyngaytmkxq7aqiek4jj.jpg" data-href="/case-studies/verdant-minimalism-tilal-al-ghaf/" data-title="Verdant Minimalism – Tilal Al Ghaf" data-summary="An understated sanctuary where architecture and nature align for effortless outdoor living.">Quick preview</button>
+              -->
+              <a class="btn" href="/case-studies/verdant-minimalism-tilal-al-ghaf/">View project</a>
+            </div>
+          </div>
+        </article>
+        
+      
+        
+        <article class="card" role="listitem" tabindex="0" data-index="8">
+          <a class="thumb" href="/case-studies/jumeirah-bay/" title="Open Jumeirah Bay">
+            <img src="https://res.cloudinary.com/dstlxtvar/image/upload/f_auto,q_auto/v1/media/editor/untitled0001_1_eu9fii" alt="Jumeirah Bay" loading="lazy" width="1200" height="900">
+          </a>
+          <div class="body">
+            <div class="title">Jumeirah Bay</div>
+            <p class="sum">Luxury villa landscape in Dubai featuring a glowing jacuzzi, modern outdoor seating, and elegant lighting — designed by …</p>
+            <div class="row">
+              <!--    
+              <button class="btn primary" data-action="preview" data-url="https://res.cloudinary.com/dstlxtvar/image/upload/f_auto,q_auto/v1/media/editor/untitled0001_1_eu9fii" data-href="/case-studies/jumeirah-bay/" data-title="Jumeirah Bay" data-summary="Luxury villa landscape in Dubai featuring a glowing jacuzzi, modern outdoor seating, and elegant lighting — designed by Hammer Landscape \u0026 Pools for refined outdoor living.">Quick preview</button>
+              -->
+              <a class="btn" href="/case-studies/jumeirah-bay/">View project</a>
+            </div>
+          </div>
+        </article>
+        
+      
+        
+        <article class="card" role="listitem" tabindex="0" data-index="9">
+          <a class="thumb" href="/case-studies/modern-minimal-luxury/" title="Open Modern Minimal Luxury">
+            <img src="https://res.cloudinary.com/dstlxtvar/image/upload/f_auto,q_auto/v1/media/editor/6-HDR-Edit_xvmknv" alt="Modern Minimal Luxury" loading="lazy" width="1200" height="900">
+          </a>
+          <div class="body">
+            <div class="title">Modern Minimal Luxury</div>
+            <p class="sum">Modern luxury villa landscape in Dubai featuring a sleek infinity-edge pool, minimalist architecture, and lush greenery — designed …</p>
+            <div class="row">
+              <!--    
+              <button class="btn primary" data-action="preview" data-url="https://res.cloudinary.com/dstlxtvar/image/upload/f_auto,q_auto/v1/media/editor/6-HDR-Edit_xvmknv" data-href="/case-studies/modern-minimal-luxury/" data-title="Modern Minimal Luxury" data-summary="Modern luxury villa landscape in Dubai featuring a sleek infinity\u002Dedge pool, minimalist architecture, and lush greenery — designed by Hammer Landscape \u0026 Pools for elegant outdoor living.">Quick preview</button>
+              -->
+              <a class="btn" href="/case-studies/modern-minimal-luxury/">View project</a>
+            </div>
+          </div>
+        </article>
+        
+      
+    </div>
+  </div>
+  
+  
+
+  <!-- Modal -->
+  <div class="modal" id="case-modal" aria-hidden="true" aria-labelledby="case-modal-title" role="dialog">
+    <div class="dialog">
+      <div class="hero">
+        <img id="case-modal-img" src="" alt="">
+        <span class="chip" id="case-modal-chip">Preview</span>
+        <div class="controls" aria-hidden="true">
+          <button class="ctrl prev" type="button" title="Previous" aria-label="Previous">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M15 19l-7-7 7-7" stroke="#0B0E14" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <button class="ctrl next" type="button" title="Next" aria-label="Next">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M9 5l7 7-7 7" stroke="#0B0E14" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+        </div>
+        <button class="close" type="button" title="Close (Esc)" aria-label="Close">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M6 18L18 6" stroke="#0B0E14" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+      </div>
+      <div class="head">
+        <div class="t" id="case-modal-title">Project</div>
+        <div class="s" id="case-modal-sum"></div>
+      </div>
+      <div class="foot">
+        <span class="mini">Use ← → to switch. Press Enter to open the project.</span>
+        <a id="case-modal-link" class="btn primary" href="#" rel="nofollow">Open project →</a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+  (() => {
+    const grid = document.getElementById('case-grid');
+    const modal = document.getElementById('case-modal');
+    if (!grid || !modal) return;
+
+    const imgEl   = modal.querySelector('#case-modal-img');
+    const titleEl = modal.querySelector('#case-modal-title');
+    const sumEl   = modal.querySelector('#case-modal-sum');
+    const linkEl  = modal.querySelector('#case-modal-link');
+    const btnPrev = modal.querySelector('.ctrl.prev');
+    const btnNext = modal.querySelector('.ctrl.next');
+    const btnClose= modal.querySelector('.close');
+
+    const cards = Array.from(grid.querySelectorAll('.card'));
+    if (!cards.length) { modal.remove(); return; }
+
+    let active = -1;
+
+    function openAt(index){
+      active = Math.max(0, Math.min(cards.length - 1, index));
+      const card = cards[active];
+      const btn  = card.querySelector('[data-action="preview"]');
+      imgEl.src  = btn.dataset.url;
+      imgEl.alt  = btn.dataset.title;
+      titleEl.textContent = btn.dataset.title || 'Project';
+      sumEl.textContent   = btn.dataset.summary || '';
+      linkEl.href = btn.dataset.href;
+      modal.setAttribute('aria-hidden','false');
+      document.documentElement.style.overflow = 'hidden'; // lock scroll
+      linkEl.focus({preventScroll:true});
+    }
+    function closeModal(){
+      modal.setAttribute('aria-hidden','true');
+      document.documentElement.style.overflow = '';
+      // return focus to originating card
+      if (active >= 0) cards[active].focus({preventScroll:true});
+    }
+    function next(n=1){ openAt(active + n); }
+
+    // Card interactions
+    cards.forEach((card, i) => {
+      card.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          const href = card.querySelector('a[href]')?.href;
+          if (href) window.location.assign(href);
+        } else if (e.key === ' ') {
+          e.preventDefault(); openAt(i);
+        }
+      });
+      const previewBtn = card.querySelector('[data-action="preview"]');
+      previewBtn?.addEventListener('click', () => openAt(i));
+    });
+
+    // Modal controls
+    btnClose.addEventListener('click', closeModal);
+    btnPrev.addEventListener('click', () => next(-1));
+    btnNext.addEventListener('click', () => next(1));
+
+    // Keyboard in modal
+    document.addEventListener('keydown', (e) => {
+      if (modal.getAttribute('aria-hidden') === 'true') return;
+      if (e.key === 'Escape') closeModal();
+      if (e.key === 'ArrowLeft') next(-1);
+      if (e.key === 'ArrowRight') next(1);
+      if (e.key === 'Enter') window.location.assign(linkEl.href);
+    });
+
+    // Click outside dialog closes
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) closeModal();
+    });
+
+    // If only one item, hide prev/next
+    if (cards.length < 2) { btnPrev.remove(); btnNext.remove(); }
+  })();
+  </script>
+</section>
+
+
+
+
+
+<section id="process" class="relative bg-[var(--ink)] text-white py-20 overflow-hidden">
+  <style>
+    /* ---- scoped styling for #process only ---- */
+    #process .eyebrow{letter-spacing:.45em}
+    #process .rail-line{
+      position:absolute; inset-inline:0; top:42px; height:2px;
+      background:linear-gradient(90deg, rgba(255,255,255,.14), rgba(24,175,171,.35), rgba(255,255,255,.14));
+      opacity:.65;
+    }
+
+    /* equal-height system (no clamping, no fixed min-height) */
+    #process .grid-steps{ align-items:stretch; }
+    #process article.step{ display:flex; height:100%; }
+    #process .step-card{
+      display:flex; flex-direction:column; height:100%;
+      border-radius:1rem; border:1px solid rgba(255,255,255,.10);
+      background:#121722;
+      transition:transform .35s cubic-bezier(.22,1,.36,1), box-shadow .35s, border-color .35s, opacity .35s;
+    }
+    #process article:hover .step-card{
+      transform:translateY(-2px);
+      box-shadow:0 18px 36px rgba(0,0,0,.35), 0 0 0 1px rgba(24,175,171,.2) inset;
+      border-color:rgba(24,175,171,.35);
+    }
+    #process .step-card h4{ color:#fff; font-weight:600; }
+    #process .step-card p{ margin-top:.5rem; color:rgba(255,255,255,.75); line-height:1.6; }
+
+    /* reveal fx */
+    #process .fx{opacity:0; transform:translateY(10px);}
+    #process .fx.in{opacity:1; transform:none; transition:opacity .6s cubic-bezier(.22,1,.36,1), transform .6s cubic-bezier(.22,1,.36,1);}
+
+    /* small screens hide rail */
+    @media (max-width:1535px){ #process .rail-line{ display:none } }
+  </style>
+
+  <div class="max-w-7xl mx-auto px-6">
+    <div class="mb-8 fx">
+      <p class="eyebrow text-[10px] uppercase text-[var(--teal)]">Delivery</p>
+      <h3 class="text-2xl md:text-3xl font-extrabold">Fixed milestones. Transparent weekly cadence.</h3>
+    </div>
+
+    <div class="relative">
+      <div class="rail-line hidden 2xl:block"></div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6 grid-steps">
+        
+          
+            <article class="step group relative fx h-full" style="transition-delay: 000ms">
+              <div class="step-card p-6">
+                <h4>Site study &amp; concept</h4>
+                
+                  <p>Survey, measurements, calculations, technical evaluation
+Concept and designs: layout, 2d, mood boards, material selection, 3d</p>
+                
+                <div class="mt-auto"></div>
+              </div>
+            </article>
+          
+            <article class="step group relative fx h-full" style="transition-delay: 100ms">
+              <div class="step-card p-6">
+                <h4>Concept and designs</h4>
+                
+                  <p>Layout, 2d, mood boards, material selection, 3d</p>
+                
+                <div class="mt-auto"></div>
+              </div>
+            </article>
+          
+            <article class="step group relative fx h-full" style="transition-delay: 200ms">
+              <div class="step-card p-6">
+                <h4>Permits &amp; technical</h4>
+                
+                  <p>MEP, structural, authority approvals, tender-ready drawings.</p>
+                
+                <div class="mt-auto"></div>
+              </div>
+            </article>
+          
+            <article class="step group relative fx h-full" style="transition-delay: 300ms">
+              <div class="step-card p-6">
+                <h4>Build &amp; logistics</h4>
+                
+                  <p>technical team, structure, decking, flooring, pool, water features, lighting, plantation</p>
+                
+                <div class="mt-auto"></div>
+              </div>
+            </article>
+          
+            <article class="step group relative fx h-full" style="transition-delay: 400ms">
+              <div class="step-card p-6">
+                <h4>Phased reporting</h4>
+                
+                  <p>Transparent reporting, program of work compliance, milestone communications, authority completion certificates.</p>
+                
+                <div class="mt-auto"></div>
+              </div>
+            </article>
+          
+            <article class="step group relative fx h-full" style="transition-delay: 500ms">
+              <div class="step-card p-6">
+                <h4>Handover &amp; aftercare</h4>
+                
+                  <p>Snag-free delivery, irrigation tuning, seasonal lighting scenes.</p>
+                
+                <div class="mt-auto"></div>
+              </div>
+            </article>
+          
+        
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function(){
+      const root = document.getElementById('process');
+      if(!root) return;
+
+      // ---- reveal on view (unchanged) ----
+      const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      const fx = root.querySelectorAll('.fx');
+      if(prefersReduced || !('IntersectionObserver' in window)){
+        fx.forEach(n=> n.classList.add('in'));
+      }else{
+        const io = new IntersectionObserver((entries, obs)=>{
+          entries.forEach(e=>{
+            if(e.isIntersecting){
+              e.target.classList.add('in');
+              obs.unobserve(e.target);
+            }
+          });
+        }, {threshold:.12});
+        fx.forEach(n=> io.observe(n));
+      }
+
+      // ---- equalize heights to the tallest card across ALL rows ----
+      const getCards = () => Array.from(root.querySelectorAll('.step-card'));
+      let rafId = null;
+
+      function equalize(){
+        const list = getCards();
+        if(!list.length) return;
+        // reset then measure
+        list.forEach(c => c.style.height = '');
+        let max = 0;
+        list.forEach(c => { max = Math.max(max, c.getBoundingClientRect().height); });
+        list.forEach(c => c.style.height = max + 'px');
+      }
+      function schedule(){
+        if(rafId) cancelAnimationFrame(rafId);
+        rafId = requestAnimationFrame(equalize);
+      }
+
+      window.addEventListener('load', schedule);
+      window.addEventListener('resize', schedule);
+
+      const grid = root.querySelector('.grid-steps');
+      if (grid && 'ResizeObserver' in window){
+        new ResizeObserver(schedule).observe(grid);
+      }
+      if ('MutationObserver' in window){
+        new MutationObserver(schedule).observe(root, {childList:true, subtree:true, characterData:true});
+      }
+    })();
+  </script>
+</section>
+
+
+
+<section id="faqs" class="relative bg-white py-20 overflow-hidden">
+  <style>
+    /* ---- Scoped styles for #faqs ---- */
+    #faqs .eyebrow{ letter-spacing:.45em }
+    #faqs .faq-card{ max-width:56rem; margin-inline:auto; padding-inline:1.5rem }
+
+    /* Item chrome */
+    #faqs details.faq{
+      border:1px solid rgba(0,0,0,.08);
+      border-radius:1rem;
+      background:#fff;
+      transition:border-color .25s, box-shadow .25s, transform .25s;
+      will-change:transform;
+    }
+    #faqs details.faq:hover{
+      border-color:rgba(24,175,171,.22);
+      box-shadow:0 14px 30px rgba(0,0,0,.08), 0 0 0 1px rgba(24,175,171,.10) inset;
+      transform:translateY(-1px);
+    }
+
+    /* Number chip + chevron */
+    #faqs .faq-num{
+      width:32px; height:32px; border-radius:999px;
+      background:var(--ink); color:#fff; font-weight:700; font-size:.72rem;
+      display:flex; align-items:center; justify-content:center;
+      box-shadow:0 10px 18px rgba(0,0,0,.12), inset 0 0 0 1px rgba(255,255,255,.08);
+      flex:0 0 auto;
+    }
+    #faqs .faq-summary{ list-style:none; cursor:pointer; }
+    #faqs .faq-summary::-webkit-details-marker{ display:none; }
+    #faqs .faq-chevron{ transition:transform .3s ease, opacity .3s ease; opacity:.8; }
+    #faqs details[open] .faq-chevron{ transform:rotate(180deg); opacity:1; }
+
+    /* Content collapse (JS will animate height; these are fallbacks) */
+    #faqs .faq-content{ overflow:hidden; height:0 }
+    #faqs details[open] .faq-content{ height:auto }
+
+    /* Reveal-on-scroll */
+    #faqs .fx{ opacity:0; transform:translateY(10px) }
+    #faqs .fx.in{ opacity:1; transform:none; transition:opacity .6s cubic-bezier(.22,1,.36,1), transform .6s cubic-bezier(.22,1,.36,1) }
+
+    /* Sub text */
+    #faqs .sub{ color:#6b7280 }
+  </style>
+
+  <div class="faq-card">
+    <div class="mb-8 text-center fx">
+      <p class="eyebrow text-[10px] uppercase text-[var(--teal)]">FAQs</p>
+      <h3 class="text-2xl md:text-3xl font-extrabold text-[var(--ink)]">Practical questions we get a lot</h3>
+    </div>
+
+    <div class="grid gap-4">
+      
+        
+          <details class="faq group fx" style="transition-delay: 000ms">
+            <summary class="faq-summary flex items-center gap-4 p-5">
+              
+                
+                  <span class="faq-num">01</span>
+                
+              
+              <div class="flex-1">
+                <div class="flex items-center justify-between gap-4">
+                  <span class="font-semibold text-[var(--ink)]">How soon can you start?</span>
+                  <i class="fa-solid fa-chevron-down faq-chevron"></i>
+                </div>
+              </div>
+            </summary>
+            <div class="faq-content">
+              <div class="px-5 pb-5 pt-0 sub">Typically 2–4 weeks from concept sign-off. Authority approvals can extend timelines; we’ll surface that early and keep a transparent weekly cadence.</div>
+            </div>
+          </details>
+        
+          <details class="faq group fx" style="transition-delay: 100ms">
+            <summary class="faq-summary flex items-center gap-4 p-5">
+              
+                
+                  <span class="faq-num">02</span>
+                
+              
+              <div class="flex-1">
+                <div class="flex items-center justify-between gap-4">
+                  <span class="font-semibold text-[var(--ink)]">Do you work with existing pools?</span>
+                  <i class="fa-solid fa-chevron-down faq-chevron"></i>
+                </div>
+              </div>
+            </summary>
+            <div class="faq-content">
+              <div class="px-5 pb-5 pt-0 sub">Yes. We refresh surfaces and coping, add discreet architectural lighting, upgrade filtration/automation, and integrate planting without disrupting structure.</div>
+            </div>
+          </details>
+        
+          <details class="faq group fx" style="transition-delay: 200ms">
+            <summary class="faq-summary flex items-center gap-4 p-5">
+              
+                
+                  <span class="faq-num">03</span>
+                
+              
+              <div class="flex-1">
+                <div class="flex items-center justify-between gap-4">
+                  <span class="font-semibold text-[var(--ink)]">What maintenance do you offer?</span>
+                  <i class="fa-solid fa-chevron-down faq-chevron"></i>
+                </div>
+              </div>
+            </summary>
+            <div class="faq-content">
+              <div class="px-5 pb-5 pt-0 sub">Our aftercare team handles plant health, irrigation balancing, and seasonal lighting presets. We can also schedule deep cleans and re-mulching annually.</div>
+            </div>
+          </details>
+        
+          <details class="faq group fx" style="transition-delay: 300ms">
+            <summary class="faq-summary flex items-center gap-4 p-5">
+              
+                
+                  <span class="faq-num">04</span>
+                
+              
+              <div class="flex-1">
+                <div class="flex items-center justify-between gap-4">
+                  <span class="font-semibold text-[var(--ink)]">Do you handle permits and authority approvals?</span>
+                  <i class="fa-solid fa-chevron-down faq-chevron"></i>
+                </div>
+              </div>
+            </summary>
+            <div class="faq-content">
+              <div class="px-5 pb-5 pt-0 sub">Yes. Our engineering team prepares drawings and manages submissions end-to-end.</div>
+            </div>
+          </details>
+        
+      
+    </div>
+  </div>
+
+  
+<section class="py-20 bg-gray-50" id="insights">
+  <div class="max-w-7xl mx-auto px-6">
+    <div class="text-center mb-12">
+      <p class="eyebrow text-[#18AFAB]">Insights</p>
+      <h2 class="text-3xl md:text-4xl font-extrabold">
+        Insights
+      </h2>
+      <p class="text-gray-600 max-w-3xl mx-auto">
+        Ideas, guides, and updates from our landscape team.
+      </p>
+    </div>
+
+    
+      <div class="grid md:grid-cols-4 gap-6">
+        
+        <a href="/insights/bring-nature-indoors-biophilic-design-ideas-for-dubai-homes/" class="ins-card group reveal-stagger" aria-label="Bring Nature Indoors: Biophilic Design Ideas for Dubai Homes in 2025">
+          <div class="ins-media" style="background-image:url('https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?w=1600&amp;q=80&amp;auto=format&amp;fit=crop')"></div>
+          <div class="ins-body">
+            <div class="ins-meta">
+              <span class="ins-chip">Nature</span>
+              <span class="ins-time">7 min read</span>
+            </div>
+            <h3 class="ins-title">Bring Nature Indoors: Biophilic Design Ideas for Dubai Homes in 2025</h3>
+            <p class="ins-text">How to transform your villa into a lush oasis with living walls, indoor gardens, and natural materials — a guide to biophilic design for Dubai’s climate.</p>
+            <span class="ins-cta">Read article <i class="fa-solid fa-arrow-right-long"></i></span>
+          </div>
+        </a>
+        
+        <a href="/insights/desert-oasis-redefined-eco-smart-landscaping-trends-taking-o/" class="ins-card group reveal-stagger" aria-label="Desert Oasis Redefined: Eco-Smart Landscaping Trends Taking Over Dubai in 2025">
+          <div class="ins-media" style="background-image:url('https://images.unsplash.com/photo-1501785888041-af3ef285b470?w=1600&amp;q=80&amp;auto=format&amp;fit=crop')"></div>
+          <div class="ins-body">
+            <div class="ins-meta">
+              <span class="ins-chip">Sustainability</span>
+              <span class="ins-time">7 min read</span>
+            </div>
+            <h3 class="ins-title">Desert Oasis Redefined: Eco-Smart Landscaping Trends Taking Over Dubai in 2025</h3>
+            <p class="ins-text">Discover the 2025 landscaping strategies transforming Dubai villas—xeriscaping, hydrozoning, smart irrigation and shade trees that slash water use while keeping gardens lush.</p>
+            <span class="ins-cta">Read article <i class="fa-solid fa-arrow-right-long"></i></span>
+          </div>
+        </a>
+        
+        <a href="/insights/from-sand-to-sanctuary-how-professional-landscaping-increase/" class="ins-card group reveal-stagger" aria-label="From Sand to Sanctuary: How Professional Landscaping Increases Your Property’s Value">
+          <div class="ins-media" style="background-image:url('https://res.cloudinary.com/dstlxtvar/image/upload/f_auto,q_auto/v1759920487/uploads/jtmhbjnb60fdqxruxbqr.webp')"></div>
+          <div class="ins-body">
+            <div class="ins-meta">
+              <span class="ins-chip">Strategy</span>
+              <span class="ins-time">6 min read</span>
+            </div>
+            <h3 class="ins-title">From Sand to Sanctuary: How Professional Landscaping Increases Your Property’s Value</h3>
+            <p class="ins-text">How professional landscaping in Dubai boosts property value, beauty, and livability — the smart upgrade for homeowners and developers.</p>
+            <span class="ins-cta">Read article <i class="fa-solid fa-arrow-right-long"></i></span>
+          </div>
+        </a>
+        
+        <a href="/insights/outdoor-living-elevated-why-pergolas-and-pools-are-the-new-m/" class="ins-card group reveal-stagger" aria-label="Outdoor Living Elevated: Why Pergolas and Pools Are the New Must-Haves for Dubai Homes">
+          <div class="ins-media" style="background-image:url('https://res.cloudinary.com/dstlxtvar/image/upload/f_auto,q_auto/v1760597854/uploads/mmcicolaewgbp0nm2aic.jpg')"></div>
+          <div class="ins-body">
+            <div class="ins-meta">
+              <span class="ins-chip">Outdoor Living</span>
+              <span class="ins-time">6 min read</span>
+            </div>
+            <h3 class="ins-title">Outdoor Living Elevated: Why Pergolas and Pools Are the New Must-Haves for Dubai Homes</h3>
+            <p class="ins-text">Why pergolas and pools are transforming outdoor living in Dubai — comfort, style, and property value in one integrated design.</p>
+            <span class="ins-cta">Read article <i class="fa-solid fa-arrow-right-long"></i></span>
+          </div>
+        </a>
+        
+      </div>
+    
+  </div>
+</section>
+
+<!-- Insights styles -->
+<style>
+/* container card */
+.ins-card{
+  display:flex; flex-direction:column; background:#fff;
+  border:1px solid rgba(0,0,0,.06); border-radius:1rem; overflow:hidden;
+  box-shadow: 0 10px 25px -12px rgba(0,0,0,.15);
+  transition: transform .35s cubic-bezier(.22,1,.36,1), box-shadow .35s ease, border-color .25s ease;
+}
+.ins-card:hover{
+  transform: translateY(-4px);
+  box-shadow: 0 18px 35px -12px rgba(24,175,171,.25);
+  border-color: rgba(24,175,171,.25);
+}
+
+/* media with zoom + sheen */
+.ins-media{
+  position:relative; background-size:cover; background-position:center; aspect-ratio: 4/3;
+  transition: transform .6s cubic-bezier(.22,1,.36,1), filter .4s ease;
+}
+.ins-card:hover .ins-media{ transform: scale(1.04); filter: saturate(1.05); }
+/* subtle sheen on hover */
+.ins-media::after{
+  content:""; position:absolute; inset:0;
+  background: linear-gradient(120deg, transparent 0%, rgba(255,255,255,.18) 40%, transparent 70%);
+  transform: translateX(-120%); transition: transform .9s cubic-bezier(.22,1,.36,1);
+}
+.ins-card:hover .ins-media::after{ transform: translateX(120%); }
+
+/* body */
+.ins-body{ padding:1rem 1.1rem 1.25rem 1.1rem; display:flex; flex-direction:column; gap:.35rem; }
+
+/* meta row */
+.ins-meta{ display:flex; align-items:center; justify-content:space-between; }
+.ins-chip{
+  padding:.25rem .6rem; border-radius:9999px; font-size:.7rem; font-weight:700;
+  color:#0f1210; background:#E8F8F7; border:1px solid rgba(24,175,171,.25);
+}
+.ins-time{ font-size:.7rem; color:#6b7280; }
+
+/* content */
+.ins-title{ font-weight:700; line-height:1.25; }
+.ins-text{ font-size:.9rem; color:#6b7280; }
+
+/* CTA line with slide arrow */
+.ins-cta{
+  display:inline-flex; align-items:center; gap:.5rem; font-weight:600; margin-top:.25rem;
+  color:#18AFAB;
+}
+.ins-cta i{ transform: translateX(-4px); opacity:.0; transition: all .25s ease; }
+.ins-card:hover .ins-cta i{ transform: translateX(0); opacity:1; }
+
+/* reveal */
+.reveal-stagger{ opacity:0; transform: translateY(18px); }
+.reveal-in{ opacity:1; transform: translateY(0); transition: all .7s cubic-bezier(.22,1,.36,1); }
+</style>
+
+<script>
+(function(){
+  const items = document.querySelectorAll('#insights .reveal-stagger');
+  if(!items.length) return;
+  if(!('IntersectionObserver' in window)){
+    items.forEach(el=>el.classList.add('reveal-in')); return;
+  }
+  const io = new IntersectionObserver((entries, obs)=>{
+    entries.forEach((e)=>{
+      if(e.isIntersecting){
+        const idx = [...items].indexOf(e.target);
+        e.target.style.transitionDelay = (idx * 90) + 'ms';
+        e.target.classList.add('reveal-in');
+        obs.unobserve(e.target);
+      }
+    });
+  }, { threshold: .15 });
+  items.forEach(it=>io.observe(it));
+})();
+</script>
+
+
+  <script>
+    (function(){
+      const root = document.getElementById('faqs');
+      if(!root) return;
+
+      const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+      // Reveal on scroll (header + each details)
+      const reveal = root.querySelectorAll('.fx');
+      if(prefersReduced || !('IntersectionObserver' in window)){
+        reveal.forEach(el=> el.classList.add('in'));
+      } else {
+        const io = new IntersectionObserver((entries, obs)=>{
+          entries.forEach(e=>{
+            if(e.isIntersecting){ e.target.classList.add('in'); obs.unobserve(e.target); }
+          });
+        }, {threshold:.12});
+        reveal.forEach(el=> io.observe(el));
+      }
+
+      // Smooth open/close height animation
+      root.querySelectorAll('details.faq').forEach(d=>{
+        const content = d.querySelector('.faq-content');
+        if(!content) return;
+
+        d.addEventListener('toggle', ()=>{
+          if(prefersReduced) return;
+          const start = content.offsetHeight;
+
+          if(d.open){
+            // expanding
+            content.style.height = 'auto';
+            const end = content.offsetHeight;
+            content.style.height = start + 'px';
+            content.offsetHeight; // reflow
+            content.style.transition = 'height .35s cubic-bezier(.22,1,.36,1)';
+            content.style.height = end + 'px';
+            content.addEventListener('transitionend', function te(){
+              content.style.height = 'auto';
+              content.style.transition = '';
+              content.removeEventListener('transitionend', te);
+            });
+          } else {
+            // collapsing
+            const end = 0;
+            content.style.height = content.offsetHeight + 'px';
+            content.offsetHeight; // reflow
+            content.style.transition = 'height .28s ease';
+            content.style.height = end + 'px';
+          }
+        });
+      });
+    })();
+  </script>
+</section>
+
+<section class="relative overflow-hidden">
+  <style>
+    /* ---- Scoped only to #cta-band ---- */
+    #cta-band .wrap{
+      max-width:72rem; margin:0 auto; padding:0 1.5rem 4rem;
+    }
+    #cta-band .card{
+      position:relative;
+      border-radius:1.25rem;
+      background:var(--ink-2);
+      color:#fff;
+      border:1px solid rgba(0,0,0,.06);
+      padding:2rem;
+      display:flex; flex-direction:column; gap:1rem;
+      transition:transform .35s cubic-bezier(.22,1,.36,1), box-shadow .35s, border-color .35s;
+      will-change:transform;
+      isolation:isolate;
+    }
+    @media (min-width:768px){
+      #cta-band .card{ padding:3rem; flex-direction:row; align-items:center; justify-content:space-between; gap:1.5rem; }
+    }
+
+    /* teal aura + soft grain */
+    #cta-band .card:before{
+      content:""; position:absolute; inset:-2px; border-radius:inherit; z-index:-1;
+      background:radial-gradient(50% 50% at 90% 15%, rgba(24,175,171,.22), transparent 60%);
+      filter:blur(20px);
+    }
+    #cta-band .card:after{
+      content:""; position:absolute; inset:0; border-radius:inherit; pointer-events:none; opacity:.05;
+      background-image:url('https://www.transparenttextures.com/patterns/white-diamond.png');
+      mix-blend-mode:overlay;
+    }
+    #cta-band .card:hover{
+      transform:translateY(-2px);
+      box-shadow:0 24px 60px rgba(0,0,0,.22), 0 0 0 1px rgba(24,175,171,.18) inset;
+      border-color:rgba(24,175,171,.28);
+    }
+
+    /* headline + copy */
+    #cta-band h3{ font-weight:800; font-size:1.5rem; }
+    @media (min-width:1024px){ #cta-band h3{ font-size:1.75rem } }
+    #cta-band p{ color:rgba(255,255,255,.75) }
+
+    /* button with shine + arrow slide */
+    #cta-band .cta-btn{
+      position:relative; overflow:hidden;
+      display:inline-flex; align-items:center; justify-content:center; gap:.5rem;
+      padding:.9rem 1.25rem; border-radius:999px; font-weight:700;
+      background:var(--teal); color:#fff;
+      box-shadow:0 14px 30px rgba(24,175,171,.28);
+      transition:transform .25s, box-shadow .25s, filter .25s;
+      will-change:transform;
+    }
+    #cta-band .cta-btn:before{
+      /* shine sweep */
+      content:""; position:absolute; inset:-150% -20%; transform:rotate(12deg);
+      background:linear-gradient(90deg, transparent, rgba(255,255,255,.45), transparent);
+      transition:transform .7s cubic-bezier(.22,1,.36,1);
+      pointer-events:none;
+    }
+    #cta-band .cta-btn:hover{ transform:translateY(-1px); filter:saturate(1.03); box-shadow:0 20px 44px rgba(24,175,171,.34) }
+    #cta-band .cta-btn:hover:before{ transform:translateX(120%) }
+    #cta-band .cta-btn i{ transition:transform .35s cubic-bezier(.22,1,.36,1) }
+    #cta-band .cta-btn:hover i{ transform:translateX(4px) }
+
+    /* entrance animation (respect reduced motion) */
+    @media (prefers-reduced-motion:no-preference){
+      #cta-band .card{ opacity:0; transform:translateY(10px); }
+      #cta-band .card.in{ opacity:1; transform:none; transition:opacity .7s cubic-bezier(.22,1,.36,1), transform .7s cubic-bezier(.22,1,.36,1); }
+    }
+  </style>
+
+  <!-- subtle background vignette -->
+  <div class="pointer-events-none absolute inset-x-0 -top-24 h-56"
+       style="background:radial-gradient(52% 60% at 80% 0%, rgba(24,175,171,.12), transparent 70%);"></div>
+
+  <div id="cta-band" class="relative">
+    <div class="wrap">
+      <div class="card">
+        <div>
+          <h3>Ready to plan your landscape?</h3>
+          <p class="mt-1">We’ll map scope, timeline and budget—then craft something enduring.</p>
+        </div>
+
+        <a href="/contact/" class="cta-btn">
+          Book a Consultation <i class="fa-solid fa-arrow-right-long"></i>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Reveal the card once it scrolls into view (graceful if no IO / reduced motion)
+    (function(){
+      const host = document.getElementById('cta-band');
+      if(!host) return;
+      const card = host.querySelector('.card');
+      if(!card) return;
+
+      const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if(prefersReduced || !('IntersectionObserver' in window)){
+        card.classList.add('in');
+        return;
+      }
+      const io = new IntersectionObserver((entries, obs)=>{
+        entries.forEach(e=>{ if(e.isIntersecting){ card.classList.add('in'); obs.unobserve(e.target); }});
+      }, {threshold:.18});
+      io.observe(card);
+    })();
+  </script>
+</section>
+
+
+<script>
+
+  (function(){
+  // Parallax (unchanged)
+  const media=document.getElementById('heroMedia');
+  if(media){
+    window.addEventListener('scroll', ()=> {
+      const y=Math.min(60, window.scrollY*0.06);
+      media.style.transform=`translateY(${y}px) scale(1.03)`;
+    }, {passive:true});
+  }
+
+  const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  function splitNumber(raw){
+    // Extract numeric part + suffix (anything after the last digit)
+    const m = String(raw).trim().match(/^([\d,\.]+)\s*(.*)$/);
+    if(!m) return {num:0, suffix:""};
+    const num = parseFloat(m[1].replace(/,/g,'')) || 0;
+    const rest = m[2] || "";
+    // Keep trailing symbols like +, %, yrs, m², etc.
+    return {num, suffix: rest};
+  }
+
+  function animateCount(el){
+    const raw = el.dataset.raw || el.textContent;
+    const {num, suffix} = splitNumber(raw);
+
+    if(prefersReduced || num === 0){
+      el.textContent = num.toLocaleString() + (suffix ? (" " + suffix) : "");
+      return;
+    }
+    const duration = 1200;
+    const start = performance.now();
+    const startVal = 0;
+
+    function frame(now){
+      const t = Math.min(1, (now - start)/duration);
+      const eased = 1 - Math.pow(1 - t, 3);
+      const value = Math.round(startVal + (num - startVal) * eased);
+      el.textContent = value.toLocaleString() + (suffix ? (" " + suffix) : "");
+      if(t < 1) requestAnimationFrame(frame);
+    }
+    requestAnimationFrame(frame);
+  }
+
+  const counters = document.querySelectorAll('.countup');
+  if('IntersectionObserver' in window){
+    const io = new IntersectionObserver((entries, obs)=>{
+      entries.forEach(e=>{
+        if(e.isIntersecting){
+          animateCount(e.target);
+          obs.unobserve(e.target);
+        }
+      });
+    }, {threshold: 0.4});
+    counters.forEach(c=> io.observe(c));
+  } else {
+    counters.forEach(animateCount);
+  }
+
+  // Tabs / Services toggles / BA sliders
+  // (reuse what you already pasted — it works with the dynamic DOM)
+})();
+
+  (function(){
+  // Tabs
+  const tabs = document.querySelectorAll('#landscape-services .seg-btn');
+  const panels = {
+    overview: document.getElementById('panel-overview'),
+    services: document.getElementById('panel-services'),
+    beforeafter: document.getElementById('panel-beforeafter'),
+  };
+  function show(which){
+    tabs.forEach(b=>{ const on=b.dataset.tab===which; b.setAttribute('aria-pressed', on); b.setAttribute('aria-selected', on); });
+    Object.entries(panels).forEach(([k,el])=>{
+      const on = (k===which); el.classList.toggle('hidden', !on); el.setAttribute('aria-hidden', (!on).toString());
+    });
+  }
+  tabs.forEach(b=> b.addEventListener('click', ()=> show(b.dataset.tab)));
+  show('overview');
+
+  // Expand cards (smooth height)
+  document.querySelectorAll('[data-expand]').forEach(card=>{
+    const btn = card.querySelector('[data-toggle]');
+    const body = card.querySelector('.svc-body');
+    let open=false;
+    const animate = (toOpen)=>{
+      const start = body.offsetHeight;
+      body.style.height = 'auto';
+      const end = toOpen ? body.offsetHeight : 0;
+      body.style.height = start+'px'; body.offsetHeight;
+      body.style.transition = 'height .35s cubic-bezier(.22,1,.36,1)';
+      body.style.height = end+'px';
+      body.addEventListener('transitionend', function te(){
+        body.style.transition=''; body.style.height = toOpen ? 'auto' : '0px'; body.removeEventListener('transitionend', te);
+      });
+    };
+    btn.addEventListener('click', ()=>{
+      open = !open;
+      card.setAttribute('aria-expanded', open);
+      btn.textContent = open ? 'Less' : 'More';
+      animate(open);
+    });
+  });
+
+  // Before/After sliders
+  document.querySelectorAll('.ba').forEach(ba=>{
+    const after = ba.querySelector('.after');
+    const handle= ba.querySelector('.handle');
+    const knob  = ba.querySelector('.knob');
+    const setX = (x)=>{
+      const r = ba.getBoundingClientRect();
+      let pct = (x - r.left)/r.width; pct = Math.max(0, Math.min(1, pct));
+      after.style.width = (pct*100)+'%';
+      handle.style.left = (pct*100)+'%';
+      knob.style.left   = handle.style.left;
+    };
+    const start = e => { ba.dataset.drag = '1'; setX((e.touches? e.touches[0].clientX : e.clientX)); };
+    const move  = e => { if(ba.dataset.drag==='1') setX((e.touches? e.touches[0].clientX : e.clientX)); };
+    const end   = () => { ba.dataset.drag = '0'; };
+    ['mousedown','touchstart'].forEach(ev=> ba.addEventListener(ev, start, {passive:false}));
+    ['mousemove','touchmove'].forEach(ev=> window.addEventListener(ev, move, {passive:false}));
+    ['mouseup','mouseleave','touchend','touchcancel'].forEach(ev=> window.addEventListener(ev, end));
+    // initial center
+    setX(ba.getBoundingClientRect().left + ba.getBoundingClientRect().width/2);
+  });
+})();
+
+  (function(){
+  const reel = document.getElementById('sigReel');
+  if(!reel) return;
+  
+  const dots = document.querySelectorAll('.dots button');
+  const slides = [...reel.querySelectorAll('.reel-card')];
+  
+  if(!dots.length || !slides.length) return;
+
+  // wheel → horizontal (nice on mobile trackpads too)
+  reel.addEventListener('wheel', (e)=>{
+    if(Math.abs(e.deltaY)>Math.abs(e.deltaX)){
+      reel.scrollLeft += e.deltaY*0.8;
+      e.preventDefault();
+    }
+  }, {passive:false});
+
+  const setActive = ()=>{
+    const center = reel.scrollLeft + reel.clientWidth/2;
+    let idx=0, best=Infinity;
+    slides.forEach((s,i)=>{
+      const r = s.getBoundingClientRect();
+      const left = r.left + reel.scrollLeft - reel.getBoundingClientRect().left;
+      const mid = left + r.width/2;
+      const d = Math.abs(center - mid);
+      if(d<best){ best=d; idx=i; }
+    });
+    dots.forEach((d,i)=> d.setAttribute('aria-current', i===idx ? 'true' : 'false'));
+  };
+  setActive();
+  reel.addEventListener('scroll', ()=>requestAnimationFrame(setActive), {passive:true});
+  window.addEventListener('resize', setActive);
+
+  // dot clicks
+  dots.forEach((d,i)=> d.addEventListener('click', ()=> {
+    const target = slides[i];
+    if(target) target.scrollIntoView({behavior:'smooth', inline:'center', block:'nearest'});
+  }));
+})();
+// Hero parallax (subtle)
+(function(){
+  const m=document.getElementById('heroMedia'); if(!m) return;
+  window.addEventListener('scroll', ()=> {
+    const y=Math.min(60, window.scrollY*0.06);
+    m.style.transform=`translateY(${y}px) scale(1.03)`;
+  }, {passive:true});
+})();
+
+// Tilt (masonry cards)
+(function(){
+  const host=document.querySelector('.tilt'); if(!host) return;
+  host.addEventListener('pointermove', e=>{
+    const r=host.getBoundingClientRect();
+    const midX=r.left+r.width/2, midY=r.top+r.height/2;
+    const dx=(e.clientX-midX)/r.width, dy=(e.clientY-midY)/r.height;
+    const rx=(dy*6).toFixed(2)+'deg', ry=(-dx*8).toFixed(2)+'deg';
+    host.style.setProperty('--rx', rx);
+    host.style.setProperty('--ry', ry);
+  });
+  host.addEventListener('pointerleave', ()=>{ host.style.setProperty('--rx','0deg'); host.style.setProperty('--ry','0deg'); });
+})();
+
+// Rail progress
+(function(){
+  const rail = document.getElementById('rail');
+  const bar  = document.getElementById('railProgress');
+  if(!rail || !bar) return;
+  
+  const steps= [...rail.querySelectorAll('.step')];
+  const idxEl= document.getElementById('railIndex');
+  const statusEl = document.getElementById('railStatus');
+
+  if(!steps.length) return;
+
+  // mark first active
+  steps[0].classList.add('is-active');
+
+  // Make vertical wheel scroll translate to horizontal
+  rail.addEventListener('wheel', (e)=>{
+    if(Math.abs(e.deltaY) > Math.abs(e.deltaX)){
+      rail.scrollLeft += e.deltaY * 0.8;
+      e.preventDefault();
+    }
+  }, {passive:false});
+
+  // Keyboard nudge
+  rail.addEventListener('keydown', (e)=>{
+    if(e.key==='ArrowRight') rail.scrollBy({left: rail.clientWidth*0.9, behavior:'smooth'});
+    if(e.key==='ArrowLeft')  rail.scrollBy({left:-rail.clientWidth*0.9, behavior:'smooth'});
+  });
+
+  const setActive = ()=>{
+    // progress width
+    const max = rail.scrollWidth - rail.clientWidth;
+    const pct = max>0 ? (rail.scrollLeft / max) * 100 : 0;
+    bar.style.width = pct + '%';
+
+    // which card is centered?
+    const center = rail.scrollLeft + rail.clientWidth/2;
+    let active = 0, best = Infinity;
+    steps.forEach((s,i)=>{
+      const r = s.getBoundingClientRect();
+      const left = r.left + rail.scrollLeft - rail.getBoundingClientRect().left;
+      const mid = left + r.width/2;
+      const dist = Math.abs(center - mid);
+      if(dist < best){ best = dist; active = i; }
+    });
+    steps.forEach((s,i)=>{
+      s.classList.toggle('is-active', i===active);
+      s.setAttribute('aria-selected', i===active ? 'true' : 'false');
+    });
+    if(idxEl) idxEl.textContent = String(active+1);
+    if(statusEl) statusEl.style.opacity = 1;
+  };
+
+  setActive();
+  rail.addEventListener('scroll', ()=>requestAnimationFrame(setActive), {passive:true});
+  window.addEventListener('resize', setActive);
+})();
+
+(function(){
+  const els = document.querySelectorAll('.faq');
+  els.forEach(d=>{
+    const content = d.querySelector('.faq-content');
+    if(!content) return;
+
+    d.addEventListener('toggle', ()=>{
+      const start = content.offsetHeight;
+      if(d.open){
+        content.style.height = 'auto';
+        const end = content.offsetHeight;
+        content.style.height = start+'px';
+        content.offsetHeight; // reflow
+        content.style.transition = 'height .35s cubic-bezier(.22,1,.36,1)';
+        content.style.height = end+'px';
+        content.addEventListener('transitionend', function te(){
+          content.style.height = 'auto'; content.style.transition=''; content.removeEventListener('transitionend', te);
+        });
+      } else {
+        const end = 0;
+        content.style.height = content.offsetHeight+'px';
+        content.offsetHeight;
+        content.style.transition = 'height .3s ease';
+        content.style.height = end+'px';
+      }
+    });
+  });
+})();
+</script>
+
+
+
+</head>
+<body class="font-sans text-hammer-ink bg-white antialiased">
+  <!-- Enhanced Brand Preloader -->
+  <div id="preloader" role="status" aria-live="polite" aria-label="Loading site">
+    <div class="hg-card">
+      <div class="hg-row">
+        <div class="hg-mark"></div>
+        <div>
+          <div class="hg-word">HAMMER</div>
+          <div class="hg-sub">GROUP</div>
+        </div>
+        <div class="hg-div" aria-hidden="true"></div>
+      </div>
+      <div class="hg-tag">Transforming Spaces, Redefining Living</div>
+      <div class="hg-sec">VILLAS&nbsp;|&nbsp;INTERIOR&nbsp;|&nbsp;LANDSCAPE&nbsp;|&nbsp;FACILITY</div>
+      <div class="hg-bar" aria-hidden="true"></div>
+    </div>
+  </div>
+
+  
+<style>
+/* Desktop-only visibility guard (keeps it gone on mobile/tablet) */
+@media (max-width: 1023px){
+  header .desktop-cta{ display:none !important; }
+}
+
+/* Quiet-luxury CTA */
+.cta-pill{
+  height:44px; padding:0 18px; border-radius:9999px;
+  background: linear-gradient(180deg,#19BDB8 0%, #119E9A 100%);
+  color:#fff; font-weight:600; letter-spacing:.2px;
+  border:1px solid rgba(255,255,255,.35);
+  box-shadow:
+    0 10px 28px -14px rgba(17,158,154,.65),
+    inset 0 1px 0 rgba(255,255,255,.35);
+  -webkit-font-smoothing:antialiased;
+  transition: transform .18s ease, box-shadow .28s ease, filter .2s ease, background .2s ease;
+}
+
+.cta-pill:hover{
+  transform: translateY(-1px);
+  box-shadow:
+    0 16px 36px -14px rgba(17,158,154,.70),
+    inset 0 1px 0 rgba(255,255,255,.45);
+  filter: saturate(1.05);
+}
+
+.cta-pill:active{
+  transform: translateY(0);
+  box-shadow: 0 8px 20px -12px rgba(17,158,154,.55);
+}
+
+.cta-pill:focus-visible{
+  outline: none;
+  box-shadow:
+    0 0 0 3px rgba(24,175,171,.22),
+    0 12px 32px -14px rgba(17,158,154,.65),
+    inset 0 1px 0 rgba(255,255,255,.45);
+}
+
+/* Icon chip: subtle glass + border for a premium feel */
+.cta-icon{
+  display:grid; place-items:center;
+  width:28px; height:28px; border-radius:9999px;
+  background: rgba(255,255,255,.12);
+  border:1px solid rgba(255,255,255,.35);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.45);
+}
+
+/* Dark-mode polish (optional) */
+@media (prefers-color-scheme: dark){
+  .cta-pill{
+    border-color: rgba(255,255,255,.25);
+    box-shadow:
+      0 10px 28px -14px rgba(0,0,0,.55),
+      inset 0 1px 0 rgba(255,255,255,.25);
+  }
+  .cta-icon{
+    background: rgba(255,255,255,.10);
+    border-color: rgba(255,255,255,.25);
+  }
+}
+
+/* Respect users who dislike motion */
+@media (prefers-reduced-motion: reduce){
+  .cta-pill{ transition: none; }
+}
+</style>
+
+<header class="fixed top-0 inset-x-0 z-50 bg-white/80 backdrop-blur-md border-b border-black/5">
+  <div class="max-w-7xl mx-auto px-6 py-2 flex items-center justify-between" style="min-height: 72px;">
+    <a href="/" class="flex items-center">
+      <img src="https://res.cloudinary.com/dstlxtvar/image/upload/v1759923995/Hammer_Logo13_drxh0j.png" 
+           alt="Hammer Group" 
+           class="h-16 w-auto">
+    </a>
+
+    <!-- Desktop nav -->
+    <nav class="hidden md:flex items-center gap-6 font-medium">
+      <a href="/" class="hover:text-hammer-gold">
+        Home
+      </a>
+
+      <!-- Services dropdown -->
+      <div class="relative">
+        <button
+          id="servicesToggle"
+          type="button"
+          class="inline-flex items-center gap-1 hover:text-hammer-gold"
+          aria-haspopup="true"
+          aria-expanded="false"
+          aria-controls="servicesMenu">
+          <span>Services</span>
+          <i class="fa-solid fa-chevron-down text-[11px] mt-[1px]"></i>
+        </button>
+
+        <!-- Panel -->
+        <div
+          id="servicesMenu"
+          class="hidden absolute left-0 mt-3 w-80 rounded-xl border border-black/10 bg-white shadow-xl z-50"
+          role="menu"
+          aria-labelledby="servicesToggle">
+          <ul class="py-2" role="none">
+            
+              <li role="none">
+                <span class="block px-4 py-2.5 text-sm text-gray-500">No services yet</span>
+              </li>
+            
+          </ul>
+
+          <div class="border-t border-gray-100 px-4 py-2.5">
+            <a href="/services/"
+               class="text-sm font-semibold text-[#18AFAB] hover:opacity-80"
+               role="menuitem" tabindex="-1">
+              View all services <i class="fa-solid fa-arrow-right-long ml-1"></i>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <a href="/projects" class="hover:text-hammer-gold">Projects</a>
+      <a href="/about/" class="hover:text-hammer-gold">About</a>
+      <a href="/contact/" class="hover:text-hammer-gold">Contact</a>
+    </nav>
+
+    <!-- Desktop CTA (desktop only, hidden on mobile & tablet) -->
+    <a href="/contact/"
+   class="desktop-cta hidden lg:inline-flex items-center gap-3 cta-pill"
+   aria-label="Request Consultation">
+  <span class="cta-icon" aria-hidden="true">
+    <i class="fa-regular fa-envelope text-[14px]"></i>
+  </span>
+  <span>Request Consultation</span>
+</a>
+
+
+    <!-- Mobile menu toggle -->
+    <button class="md:hidden text-2xl" aria-label="Menu" id="navToggle">
+      <i class="fa-solid fa-bars"></i>
+    </button>
+  </div>
+
+  <!-- Mobile drawer -->
+  <div id="mobileNav"
+       class="md:hidden max-h-0 overflow-hidden transition-[max-height] duration-300 bg-white border-t border-black/5">
+    <nav class="px-6 py-3 space-y-2">
+      <a href="/" class="block py-2">Home</a>
+
+      <!-- Services accordion -->
+      <details class="group">
+        <summary class="flex items-center justify-between py-2 cursor-pointer">
+          <span>Services</span>
+          <i class="fa-solid fa-chevron-down text-[12px] transition group-open:rotate-180"></i>
+        </summary>
+        <ul class="pl-3 border-l border-gray-100">
+          
+            <li class="py-2 text-sm text-gray-500">No services yet</li>
+          
+          <li class="py-2">
+            <a href="/services/" class="text-sm font-semibold text-[#18AFAB]">
+              View all services
+            </a>
+          </li>
+        </ul>
+      </details>
+
+      <a href="/projects" class="block py-2">Projects</a>
+      <a href="/about/" class="block py-2">About</a>
+      <a href="/contact/" class="block py-2">Contact</a>
+
+      
+    </nav>
+  </div>
+</header>
+
+<style>
+/* Force hide header CTA in mobile & tablet */
+@media (max-width: 1023px){
+  header .desktop-cta {
+    display: none !important;
+  }
+}
+</style>
+
+<script>
+  // mobile drawer toggle
+  (function () {
+    const btn = document.getElementById('navToggle');
+    const panel = document.getElementById('mobileNav');
+    if (!btn || !panel) return;
+    let open = false;
+    btn.addEventListener('click', () => {
+      open = !open;
+      panel.style.maxHeight = open ? panel.scrollHeight + 'px' : '0px';
+    });
+    panel.querySelectorAll('a').forEach(a => {
+      a.addEventListener('click', () => { open = false; panel.style.maxHeight = '0px'; });
+    });
+  })();
+
+  // services dropdown (desktop)
+  (function () {
+    const toggle = document.getElementById('servicesToggle');
+    const menu   = document.getElementById('servicesMenu');
+    if (!toggle || !menu) return;
+
+    const open = () => { menu.classList.remove('hidden'); toggle.setAttribute('aria-expanded','true'); };
+    const close = () => { menu.classList.add('hidden'); toggle.setAttribute('aria-expanded','false'); };
+    const isOpen = () => !menu.classList.contains('hidden');
+
+    toggle.addEventListener('click', (e) => {
+      e.stopPropagation();
+      isOpen() ? close() : open();
+    });
+
+    document.addEventListener('click', (e) => {
+      if (isOpen() && !menu.contains(e.target) && !toggle.contains(e.target)) close();
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && isOpen()) close();
+    });
+  })();
+</script>
+
+  <style>
+    /* Professional WhatsApp FAB */
+.wapp-fab{
+  position: fixed;
+  right: max(1rem, env(safe-area-inset-right));
+  bottom: calc(1rem + env(safe-area-inset-bottom));
+  z-index: 60;
+  width: 56px; height: 56px;
+  display: grid; place-items: center;
+  color: #fff;
+  background: radial-gradient(120% 120% at 30% 20%, #32e676 0%, #25D366 50%, #1ebe57 100%);
+  border-radius: 50%;
+  box-shadow:
+    0 10px 24px -8px rgba(37, 211, 102, .45),
+    inset 0 1px 0 rgba(255,255,255,.25);
+  backdrop-filter: saturate(120%) blur(6px);
+  -webkit-backdrop-filter: saturate(120%) blur(6px);
+  border: 1px solid rgba(255,255,255,.18);
+  transition: transform .2s ease, box-shadow .3s ease, filter .3s ease;
+}
+
+.wapp-icon{
+  width: 22px; height: 22px;
+  display: block;
+  filter: drop-shadow(0 1px 1px rgba(0,0,0,.25));
+}
+
+/* Subtle breathing halo (premium, not bouncy) */
+.wapp-fab::after{
+  content:"";
+  position:absolute; inset:0;
+  border-radius: inherit;
+  box-shadow: 0 0 0 0 rgba(37,211,102,.35);
+  animation: wapp-breathe 2.6s ease-out infinite;
+  pointer-events: none;
+}
+@keyframes wapp-breathe{
+  0%   { box-shadow: 0 0 0 0 rgba(37,211,102,.35); transform: scale(1);   opacity: .9; }
+  70%  { box-shadow: 0 0 0 14px rgba(37,211,102,0); transform: scale(1.025); opacity: .25; }
+  100% { box-shadow: 0 0 0 0 rgba(37,211,102,0); transform: scale(1);   opacity: 0; }
+}
+
+/* Hover/focus: crisp lift and subtle glow */
+.wapp-fab:hover,
+.wapp-fab:focus-visible{
+  transform: translateY(-2px);
+  box-shadow:
+    0 14px 30px -8px rgba(37,211,102,.55),
+    inset 0 1px 0 rgba(255,255,255,.35);
+  outline: none;
+}
+
+/* Tooltip (no JS) */
+.wapp-fab::before{
+  content: attr(data-tip);
+  position: absolute;
+  right: 74px; /* offset from button */
+  bottom: 50%;
+  transform: translateY(50%) translateX(8px);
+  white-space: nowrap;
+  font: 500 12px/1.1 system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+  color: #0b0f1a;
+  background: rgba(255,255,255,.95);
+  border: 1px solid rgba(15,18,16,.08);
+  border-radius: 10px;
+  padding: 8px 10px;
+  box-shadow: 0 10px 24px -12px rgba(0,0,0,.2);
+  opacity: 0; pointer-events: none;
+  transition: opacity .2s ease, transform .2s ease;
+}
+.wapp-fab:hover::before,
+.wapp-fab:focus-visible::before{
+  opacity: 1; transform: translateY(50%) translateX(0);
+}
+
+/* Respect reduced motion */
+@media (prefers-reduced-motion: reduce){
+  .wapp-fab,
+  .wapp-fab::after,
+  .wapp-fab::before { animation: none !important; transition: none !important; }
+}
+
+</style>
+
+
+<!-- WhatsApp FAB (Premium) -->
+<a href="https://wa.me/971564145045"
+   class="wapp-fab"
+   aria-label="Chat on WhatsApp"
+   rel="noopener"
+   target="_blank"
+   data-tip="Chat on WhatsApp">
+  <!-- Prefer SVG for crispness; keep FA fallback if you like -->
+  <svg class="wapp-icon" viewBox="0 0 24 24" aria-hidden="true">
+    <path fill="currentColor" d="M20.52 3.48A11.94 11.94 0 0 0 12 .5C5.73.5.94 5.29.94 11.56c0 2.03.53 4.01 1.55 5.77L.5 23.5l6.35-1.96a11.05 11.05 0 0 0 5.08 1.28h.01c6.27 0 11.06-4.79 11.06-11.06 0-2.95-1.15-5.72-3.48-7.98ZM12 21.06h-.01a9.56 9.56 0 0 1-4.86-1.33l-.35-.2-3.77 1.16 1.14-3.69-.23-.38A9.55 9.55 0 0 1 2.44 11.56C2.44 6.12 6.56 2 12 2c2.55 0 4.95.99 6.76 2.8a9.53 9.53 0 0 1 2.8 6.76c0 5.44-4.42 9.5-9.56 9.5Zm5.4-7.17c-.3-.15-1.78-.88-2.05-.98-.27-.1-.47-.15-.67.15-.2.3-.77.98-.95 1.18-.17.2-.35.22-.64.07-.3-.15-1.26-.46-2.4-1.48-.89-.79-1.49-1.77-1.66-2.07-.17-.3-.02-.46.13-.61.14-.14.3-.35.45-.52.15-.17.2-.3.3-.5.1-.2.05-.38-.02-.53-.07-.15-.67-1.6-.91-2.2-.24-.58-.49-.49-.67-.49h-.57c-.2 0-.52.07-.8.38-.27.3-1.05 1.02-1.05 2.48 0 1.46 1.08 2.87 1.23 3.07.15.2 2.13 3.25 5.16 4.55.72.31 1.28.5 1.72.64.72.23 1.37.2 1.88.12.58-.09 1.78-.72 2.03-1.43.25-.71.25-1.32.17-1.45-.07-.13-.27-.2-.57-.35Z"/>
+  </svg>
+</a>
+
+  <main class="pt-20">
+    
+  </main>
+  <footer class="bg-[#282D27] text-gray-300 relative overflow-hidden">
+
+  <!-- Subtle texture -->
+  <div class="absolute inset-0 opacity-[.04] bg-[url('https://www.transparenttextures.com/patterns/white-diamond.png')]"></div>
+  
+  <div class="relative max-w-7xl mx-auto px-6 py-8 md:py-16 grid md:grid-cols-4 gap-12">
+    <!-- Brand / About -->
+    <div>
+      <a href="/" class="inline-block mb-4">
+        <img src="https://res.cloudinary.com/dstlxtvar/image/upload/v1759923995/Hammer_Logo13_drxh0j.png" 
+             alt="Hammer Group" 
+             class="h-12 w-auto brightness-0 invert">
+      </a>
+      
+      <p class="text-sm leading-relaxed text-gray-400">
+        End-to-end luxury: landscaping, interiors, villa construction, and facility management.
+        Based in Dubai, trusted for over 20 years.
+      </p>
+    </div>
+
+    <!-- Quick Links -->
+    <div>
+      <h4 class="text-white font-semibold text-sm uppercase tracking-[.2em] mb-4">Quick Links</h4>
+      <ul class="space-y-2 text-sm">
+        <li><a href="/services/" class="hover:text-[#18AFAB] transition">Services</a></li>
+        <li><a href="/projects" class="hover:text-[#18AFAB] transition">Projects</a></li>
+        <li><a href="/about/" class="hover:text-[#18AFAB] transition">About</a></li>
+        <li><a href="/insights/" class="hover:text-[#18AFAB] transition">Insights</a></li>
+        <li><a href="/contact/" class="hover:text-[#18AFAB] transition">Contact</a></li>
+      </ul>
+    </div>
+
+    <!-- Expertise (adds credibility) -->
+    <div>
+      <h4 class="text-white font-semibold text-sm uppercase tracking-[.2em] mb-4">Expertise</h4>
+      <ul class="space-y-2 text-sm">
+        
+      </ul>
+    </div>
+
+    <!-- Contact -->
+    <div>
+      <h4 class="text-white font-semibold text-sm uppercase tracking-[.2em] mb-4">Contact</h4>
+      <p class="text-sm">Dubai, UAE</p>
+      <p class="text-sm"><a href="mailto:info@hammer-services.com" class="hover:text-[#18AFAB] transition">info@hammer-services.com</a></p>
+      <div class="flex gap-3 mt-5">
+        <a href="https://www.instagram.com/hammer.landscape/?hl=en" target="_blank" rel="noopener noreferrer" aria-label="Instagram Landscape" class="w-9 h-9 bg-gray-800 text-teal-400 rounded-full flex items-center justify-center hover:bg-teal-500 hover:text-white transition">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="20" x="2" y="2" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" x2="17.51" y1="6.5" y2="6.5"></line></svg>
+        </a>
+        <a href="https://www.instagram.com/hammer.interiors/?hl=en" target="_blank" rel="noopener noreferrer" aria-label="Instagram Landscape" class="w-9 h-9 bg-gray-800 text-teal-400 rounded-full flex items-center justify-center hover:bg-teal-500 hover:text-white transition">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="20" x="2" y="2" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" x2="17.51" y1="6.5" y2="6.5"></line></svg>
+        </a>
+        <a href="https://www.linkedin.com/company/hammerservices/" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn" class="w-9 h-9 bg-gray-800 text-teal-400 rounded-full flex items-center justify-center hover:bg-teal-500 hover:text-white transition">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path><rect width="4" height="12" x="2" y="9"></rect><circle cx="4" cy="4" r="2"></circle></svg>
+        </a>
+        <a href="https://www.facebook.com/hammer.groupUAE/" target="_blank" rel="noopener noreferrer" aria-label="Facebook" class="w-9 h-9 bg-gray-800 text-teal-400 rounded-full flex items-center justify-center hover:bg-teal-500 hover:text-white transition">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path></svg>
+        </a>
+        <a href="https://www.pinterest.com/hammergroup_/" target="_blank" rel="noopener noreferrer" aria-label="Pinterest" class="w-9 h-9 bg-gray-800 text-teal-400 rounded-full flex items-center justify-center hover:bg-teal-500 hover:text-white transition">
+          <svg role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor"><title>Pinterest</title><path d="M12.017 0C5.396 0 .029 5.367.029 11.987c0 5.079 3.158 9.417 7.618 11.162-.105-.949-.199-2.403.041-3.439.219-.937 1.406-5.957 1.406-5.957s-.359-.72-.359-1.781c0-1.663.967-2.911 2.168-2.911 1.024 0 1.518.769 1.518 1.688 0 1.029-.653 2.567-.992 3.992-.285 1.193.6 2.165 1.775 2.165 2.128 0 3.768-2.245 3.768-5.487 0-2.861-2.063-4.869-5.008-4.869-3.41 0-5.409 2.562-5.409 5.199 0 1.033.394 2.143.889 2.741.099.12.112.225.085.345-.09.375-.293 1.199-.334 1.363-.053.225-.172.271-.401.165-1.495-.69-2.433-2.878-2.433-4.646 0-3.776 2.748-7.252 7.92-7.252 4.158 0 7.392 2.967 7.392 6.923 0 4.135-2.607 7.462-6.233 7.462-1.214 0-2.354-.629-2.758-1.379l-.749 2.848c-.269 1.045-1.004 2.352-1.498 3.146 1.123.345 2.306.535 3.55.535 6.607 0 11.985-5.365 11.985-11.987C23.97 5.39 18.592.026 11.985.026L12.017 0z"/></svg>
+        </a>
+        <a href="https://www.youtube.com/@HAMMERGROUP_" target="_blank" rel="noopener noreferrer" aria-label="YouTube" class="w-9 h-9 bg-gray-800 text-teal-400 rounded-full flex items-center justify-center hover:bg-teal-500 hover:text-white transition">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 17a24.12 24.12 0 0 1 0-10 2 2 0 0 1 1.4-1.4 49.56 49.56 0 0 1 16.2 0A2 2 0 0 1 21.5 7a24.12 24.12 0 0 1 0 10 2 2 0 0 1-1.4 1.4 49.55 49.55 0 0 1-16.2 0A2 2 0 0 1 2.5 17"></path><path d="m10 15 5-3-5-3z"></path></svg>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bottom bar -->
+  <div class="relative border-t border-white/10 text-center text-xs py-5 text-gray-400">
+    © 2025 Hammer Group. All rights reserved.
+  </div>
+</footer>
+
+
+  <!-- Fade-out logic with a safety cap (never lingers) -->
+  <script>
+    (function () {
+      const pre = document.getElementById('preloader');
+      if (!pre) return;
+
+      // Show only once per session (optional). Comment out to show every page load.
+      if (sessionStorage.getItem('hgPreloaded') === '1') {
+        pre.setAttribute('hidden','');
+        return;
+      }
+
+      let done = false;
+      const hide = () => {
+        if (done) return; done = true;
+        pre.style.opacity = '0';
+        setTimeout(() => pre.setAttribute('hidden',''), 600);
+        sessionStorage.setItem('hgPreloaded','1');
+      };
+
+      // Hard cap so the loader never exceeds ~2.2s
+      const cap = setTimeout(hide, 2200);
+
+      // Preferred: when the whole page (images, CSS, fonts) has loaded
+      window.addEventListener('load', () => { clearTimeout(cap); hide(); }, { once:true });
+
+      // Faster path: if you have a hero image as LCP, give it id="heroImage"
+      const hero = document.getElementById('heroImage');
+      if (hero) {
+        if (hero.complete) { clearTimeout(cap); hide(); }
+        else hero.addEventListener('load', () => { clearTimeout(cap); hide(); }, { once:true });
+      }
+
+      // Also check for hero section background image
+      const heroSection = document.getElementById('heroSection');
+      if (heroSection) {
+        const bgUrl = heroSection.dataset.bg;
+        if (bgUrl) {
+          const img = new Image();
+          img.onload = () => { clearTimeout(cap); hide(); };
+          img.src = bgUrl;
+        }
+      }
+    })();
+  </script>
+
+  <noscript>
+    <!-- If JS is disabled, ensure content shows -->
+    <style>#preloader{display:none!important}</style>
+  </noscript>
+</body>
+</html>
