@@ -1,9 +1,14 @@
 from pathlib import Path
 import os
 from dotenv import load_dotenv
-load_dotenv()
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+# Load environment variables from .env file
+# Try both the project root and parent directory
+load_dotenv(BASE_DIR / '.env')
+load_dotenv(BASE_DIR.parent / '.env')  # Also check parent directory
 
 
 # Quick-start development settings - unsuitable for production
@@ -177,8 +182,6 @@ STORAGES = {
     }
 }
 
-
-DEFAULT_FILE_STORAGE = "cloudinary_storage.storage.MediaCloudinaryStorage"
 MEDIA_URL = "/media/"
 
 CLOUDINARY_STORAGE = {
@@ -203,6 +206,38 @@ DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', 'info@hammer-services.com')
 
 # Contact form recipient (for testing)
 CONTACT_TO_EMAIL = 'info@hammer-services.com'
+
+# Google reCAPTCHA settings (v3)
+# Get your keys from: https://www.google.com/recaptcha/admin
+# IMPORTANT: Make sure to register for reCAPTCHA v3, not v2
+# 
+# HARDCODED KEYS - Paste your reCAPTCHA v3 keys here:
+# 
+# From Google reCAPTCHA Admin Console:
+# - SITE KEY (also called "Key") goes in RECAPTCHA_SITE_KEY
+# - SECRET KEY goes in RECAPTCHA_SECRET_KEY
+#
+RECAPTCHA_SITE_KEY = '6LenShAsAAAAADoaC3f0y1xp4eQVJpc_G1NrNOxA'  # ← Your Site Key (Key ID from Google Console)
+RECAPTCHA_SECRET_KEY = '6LenShAsAAAAADXvezHZ96Wvd3q4fEZXBlKNsUt5'  # ← Your Secret Key
+
+# Fallback to environment variables ONLY if hardcoded keys above are empty
+# (Do NOT override if keys are already set above)
+if not RECAPTCHA_SITE_KEY:
+    RECAPTCHA_SITE_KEY = os.getenv('RECAPTCHA_SITE_KEY', '')
+if not RECAPTCHA_SECRET_KEY:
+    RECAPTCHA_SECRET_KEY = os.getenv('RECAPTCHA_SECRET_KEY', '')
+
+# Debug: Print if keys are loaded
+if not RECAPTCHA_SITE_KEY:
+    print("⚠️  WARNING: RECAPTCHA_SITE_KEY is not set. Check settings.py or environment variables.")
+else:
+    print(f"✅ RECAPTCHA_SITE_KEY loaded: {RECAPTCHA_SITE_KEY[:10]}...")
+if not RECAPTCHA_SECRET_KEY:
+    print("⚠️  WARNING: RECAPTCHA_SECRET_KEY is not set. Check settings.py or environment variables.")
+else:
+    print(f"✅ RECAPTCHA_SECRET_KEY loaded: {RECAPTCHA_SECRET_KEY[:10]}...")
+
+RECAPTCHA_VERIFY_URL = 'https://www.google.com/recaptcha/api/siteverify'
 
 # Server-side sanitize allowlists (optional; templatetag will fallback if bleach unavailable)
 BLEACH_ALLOWED_TAGS = [

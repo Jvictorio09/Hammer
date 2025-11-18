@@ -126,6 +126,22 @@
           <span class="float-label">Tell us about your project</span>
         </label>
 
+        <!-- reCAPTCHA v3 is invisible and runs in the background -->
+        {% comment %} Hardcoded fallback key - update if needed {% endcomment %}
+        {% with recaptcha_site_key|default:"6LenShAsAAAAADoaC3f0y1xp4eQVJpc_G1NrNOxA" as site_key %}
+        {% if site_key and site_key|length > 0 %}
+        <input type="hidden" name="g-recaptcha-response" id="g-recaptcha-response">
+        <script>
+          // Debug: Verify reCAPTCHA is configured
+          console.log('reCAPTCHA v3 configured with site key:', '{{ site_key|slice:":10" }}...');
+        </script>
+        {% else %}
+        <script>
+          console.warn('reCAPTCHA site key not found or empty.');
+        </script>
+        {% endif %}
+        {% endwith %}
+
         <div class="flex flex-col md:flex-row items-center justify-between gap-4 pt-2">
           <p class="text-xs text-gray-500">
             By submitting, you agree to our <a href="#" class="underline hover:text-[#18AFAB]">privacy policy</a>.
@@ -196,6 +212,8 @@
 
 /* Optional: soften the WhatsApp FAB hover */
 .whatsapp-fab{ box-shadow: 0 14px 30px -10px rgba(0,0,0,.35); }
+
+/* reCAPTCHA v3 is invisible - no styling needed */
 </style>
 
 <script>
@@ -229,51 +247,117 @@
   form.addEventListener('submit', function(e){
     e.preventDefault();
 
-    // lock button
+    // Get reCAPTCHA site key if configured (hardcoded fallback included)
+    const recaptchaSiteKey = {% if recaptcha_site_key %}'{{ recaptcha_site_key }}'{% else %}'6LenShAsAAAAADoaC3f0y1xp4eQVJpc_G1NrNOxA'{% endif %}; // Django template renders this or uses hardcoded fallback
+    const recaptchaResponseInput = form.querySelector('[name="g-recaptcha-response"]');
+
+    // Lock button immediately
     btn.classList.add('is-loading');
     btn.setAttribute('disabled','disabled');
 
-    // Get form data
-    const formData = new FormData(form);
-    
-    // Send to Django contact view
-    fetch(form.action, {
-      method: 'POST',
-      body: formData,
-      headers: {
-        'X-Requested-With': 'XMLHttpRequest',
-      },
-    })
-    .then(response => {
-      if (!response.ok && response.status === 400) {
-        return response.json().then(data => {
-          throw new Error(data.errors ? Object.values(data.errors).flat().join(' ') : 'Submission rejected');
-        });
+    // Submit function that sends form data
+    const submitForm = function(token) {
+      // Set reCAPTCHA token if provided
+      if (recaptchaResponseInput && token) {
+        recaptchaResponseInput.value = token;
       }
-      return response.json();
-    })
-    .then(data => {
-      btn.classList.remove('is-loading');
-      btn.removeAttribute('disabled');
+
+      // Get form data
+      const formData = new FormData(form);
       
-      if (data.ok) {
-        // Success
-        form.reset();
-        showToast('Thanks! We\'ve received your details—expect a reply within 24h.', 'success');
-      } else {
-        // Error
-        const errorMsg = data.errors ? Object.values(data.errors).flat().join(' ') : 'Sorry, we couldn\'t send your message. Please try again.';
+      // Send to Django contact view
+      fetch(form.action, {
+        method: 'POST',
+        body: formData,
+        headers: {
+          'X-Requested-With': 'XMLHttpRequest',
+        },
+      })
+      .then(response => {
+        if (!response.ok && response.status === 400) {
+          return response.json().then(data => {
+            throw new Error(data.errors ? Object.values(data.errors).flat().join(' ') : 'Submission rejected');
+          });
+        }
+        return response.json();
+      })
+      .then(data => {
+        btn.classList.remove('is-loading');
+        btn.removeAttribute('disabled');
+        
+        if (data.ok) {
+          form.reset();
+          // Clear reCAPTCHA token
+          if (recaptchaResponseInput) {
+            recaptchaResponseInput.value = '';
+          }
+          showToast('Thanks! We\'ve received your details—expect a reply within 24h.', 'success');
+        } else {
+          const errorMsg = data.errors ? Object.values(data.errors).flat().join(' ') : 'Sorry, we couldn\'t send your message. Please try again.';
+          showToast(errorMsg, 'error');
+          console.error('Form submission error:', data.errors);
+          // Clear reCAPTCHA token on error
+          if (recaptchaResponseInput) {
+            recaptchaResponseInput.value = '';
+          }
+        }
+      })
+      .catch(error => {
+        btn.classList.remove('is-loading');
+        btn.removeAttribute('disabled');
+        // Clear reCAPTCHA token on error
+        if (recaptchaResponseInput) {
+          recaptchaResponseInput.value = '';
+        }
+        const errorMsg = error.message || 'Sorry, we couldn\'t send your message. Please try again.';
         showToast(errorMsg, 'error');
-        console.error('Form submission error:', data.errors);
+        console.error('Form submission error:', error);
+      });
+    };
+
+    // If reCAPTCHA is configured, execute it first
+    if (recaptchaSiteKey) {
+      if (window.grecaptcha) {
+        grecaptcha.ready(function() {
+          console.log('reCAPTCHA v3 executing with site key:', recaptchaSiteKey.substring(0, 10) + '...');
+          grecaptcha.execute(recaptchaSiteKey, {action: 'submit'}).then(function(token) {
+            console.log('reCAPTCHA token received (length:', token.length + ')');
+            submitForm(token);
+          }).catch(function(error) {
+            console.error('reCAPTCHA execution error:', error);
+            btn.classList.remove('is-loading');
+            btn.removeAttribute('disabled');
+            showToast('reCAPTCHA verification error. Please try again.', 'error');
+          });
+        });
+      } else {
+        console.warn('reCAPTCHA site key configured but grecaptcha not loaded. Check if script is loading.');
+        // Wait a bit for script to load
+        setTimeout(function() {
+          if (window.grecaptcha) {
+            grecaptcha.ready(function() {
+              grecaptcha.execute(recaptchaSiteKey, {action: 'submit'}).then(function(token) {
+                submitForm(token);
+              }).catch(function(error) {
+                console.error('reCAPTCHA execution error:', error);
+                btn.classList.remove('is-loading');
+                btn.removeAttribute('disabled');
+                showToast('reCAPTCHA verification error. Please try again.', 'error');
+              });
+            });
+          } else {
+            console.error('reCAPTCHA script failed to load. Submitting without reCAPTCHA.');
+            btn.classList.remove('is-loading');
+            btn.removeAttribute('disabled');
+            showToast('reCAPTCHA script not loaded. Please refresh the page.', 'error');
+          }
+        }, 500);
       }
-    })
-    .catch(error => {
-      btn.classList.remove('is-loading');
-      btn.removeAttribute('disabled');
-      const errorMsg = error.message || 'Sorry, we couldn\'t send your message. Please try again.';
-      showToast(errorMsg, 'error');
-      console.error('Form submission error:', error);
-    });
+    } else {
+      console.log('reCAPTCHA not configured - submitting without verification');
+      // No reCAPTCHA configured, submit directly
+      submitForm(null);
+    }
   });
   
   function showToast(message, type = 'success') {

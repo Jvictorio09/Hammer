@@ -76,6 +76,63 @@ def get_client_ip(request):
     return ip
 
 
+def verify_recaptcha(request, recaptcha_token):
+    """
+    Verify Google reCAPTCHA token.
+    Returns (is_valid, error_message) tuple.
+    """
+    recaptcha_secret_key = getattr(settings, 'RECAPTCHA_SECRET_KEY', '')
+    recaptcha_site_key = getattr(settings, 'RECAPTCHA_SITE_KEY', '')
+    recaptcha_verify_url = getattr(settings, 'RECAPTCHA_VERIFY_URL', 'https://www.google.com/recaptcha/api/siteverify')
+    
+    # If reCAPTCHA is not fully configured (missing either key), skip validation (for development)
+    if not recaptcha_secret_key or not recaptcha_site_key:
+        logger.debug("reCAPTCHA not fully configured (missing site or secret key) - skipping validation")
+        return True, None
+    
+    if not recaptcha_token:
+        return False, "Please complete the reCAPTCHA verification."
+    
+    try:
+        client_ip = get_client_ip(request)
+        response = requests.post(
+            recaptcha_verify_url,
+            data={
+                'secret': recaptcha_secret_key,
+                'response': recaptcha_token,
+                'remoteip': client_ip,
+            },
+            timeout=5
+        )
+        response.raise_for_status()
+        result = response.json()
+        
+        if not result.get('success', False):
+            error_codes = result.get('error-codes', [])
+            logger.warning(f"reCAPTCHA verification failed: {error_codes}")
+            return False, "reCAPTCHA verification failed. Please try again."
+        
+        # Verify action name for v3 (important security check)
+        action = result.get('action')
+        if action and action != 'submit':
+            logger.warning(f"reCAPTCHA action mismatch: expected 'submit', got '{action}'")
+            return False, "reCAPTCHA verification failed. Please try again."
+        
+        # Check score for v3 (1.0 is very likely good, 0.0 is very likely bot)
+        # v2 always returns score of 1.0, so this check works for both
+        score = result.get('score', 1.0)
+        if score < 0.5:  # Default threshold as recommended by Google
+            logger.warning(f"reCAPTCHA score too low: {score} (threshold: 0.5)")
+            return False, "reCAPTCHA verification failed. Please try again."
+        
+        return True, None
+        
+    except requests.RequestException as e:
+        logger.error(f"reCAPTCHA verification error: {e}")
+        # On error, fail securely (don't allow submission)
+        return False, "reCAPTCHA verification error. Please try again later."
+
+
 def blog_author_required(view_func):
     """Decorator to ensure user is a blog author or admin"""
     @wraps(view_func)
@@ -890,17 +947,51 @@ def contact(request: HttpRequest) -> HttpResponse:
 
     if request.method == "GET":
         form = ContactForm(initial=initial)
-        return render(request, "contact.html", {"form": form})
+        recaptcha_site_key = getattr(settings, 'RECAPTCHA_SITE_KEY', '')
+        # Debug: Check if key is loaded
+        if not recaptcha_site_key:
+            logger.warning("RECAPTCHA_SITE_KEY is empty. Check environment variables or .env file.")
+            # Try direct import to debug
+            import os
+            env_key = os.getenv('RECAPTCHA_SITE_KEY', '')
+            if env_key:
+                logger.warning(f"RECAPTCHA_SITE_KEY found in os.getenv but not in settings. Value: {env_key[:10]}...")
+            else:
+                logger.warning("RECAPTCHA_SITE_KEY not found in environment variables.")
+        else:
+            logger.debug(f"reCAPTCHA site key loaded: {recaptcha_site_key[:10]}...")
+        return render(request, "contact.html", {
+            "form": form,
+            "recaptcha_site_key": recaptcha_site_key or '',  # Ensure it's always a string
+        })
 
     # POST
+    recaptcha_site_key = getattr(settings, 'RECAPTCHA_SITE_KEY', '')
     form = ContactForm(request.POST)
     if not form.is_valid():
         if _is_ajax(request):
             return JsonResponse({"ok": False, "errors": form.errors}, status=400)
         messages.error(request, "Please correct the errors and try again.")
-        return render(request, "contact.html", {"form": form})
+        return render(request, "contact.html", {
+            "form": form,
+            "recaptcha_site_key": recaptcha_site_key,
+        })
 
     data = form.cleaned_data
+    
+    # reCAPTCHA verification - Check before processing
+    recaptcha_token = request.POST.get('g-recaptcha-response', '')
+    recaptcha_valid, recaptcha_error = verify_recaptcha(request, recaptcha_token)
+    
+    if not recaptcha_valid:
+        logger.warning(f"reCAPTCHA failed for submission: {data.get('email', 'unknown')}")
+        if _is_ajax(request):
+            return JsonResponse({"ok": False, "errors": {"__all__": [recaptcha_error]}}, status=400)
+        messages.error(request, recaptcha_error)
+        return render(request, "contact.html", {
+            "form": form,
+            "recaptcha_site_key": recaptcha_site_key,
+        })
     
     # SPAM DETECTION - Check before processing
     is_valid, error_message, should_block = validate_contact_submission(request, data)
@@ -930,7 +1021,11 @@ def contact(request: HttpRequest) -> HttpResponse:
         if _is_ajax(request):
             return JsonResponse({"ok": False, "errors": {"__all__": [error_message]}}, status=400)
         messages.error(request, error_message)
-        return render(request, "contact.html", {"form": form})
+        recaptcha_site_key = getattr(settings, 'RECAPTCHA_SITE_KEY', '')
+        return render(request, "contact.html", {
+            "form": form,
+            "recaptcha_site_key": recaptcha_site_key,
+        })
     
     # Record submission for rate limiting (before sending email)
     ip_address = get_client_ip(request)
@@ -1099,7 +1194,11 @@ def contact(request: HttpRequest) -> HttpResponse:
         return redirect(f"{reverse('contact')}?sent=1")
     else:
         messages.error(request, "Sorry, we couldn't send your message. Please try again in a moment.")
-        return render(request, "contact.html", {"form": form})
+        recaptcha_site_key = getattr(settings, 'RECAPTCHA_SITE_KEY', '')
+        return render(request, "contact.html", {
+            "form": form,
+            "recaptcha_site_key": recaptcha_site_key or '',
+        })
 
 
 # myApp/views.py
