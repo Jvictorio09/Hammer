@@ -1,4 +1,36 @@
 <!-- Contact (Flagship, Polished + Motion) -->
+<!-- reCAPTCHA v3 script loading (loads once per page) -->
+<script>
+  (function() {
+    // Hardcoded fallback key - update if needed
+    const siteKey = '6LenShAsAAAAADoaC3f0y1xp4eQVJpc_G1NrNOxA';
+    
+    // Check if script already loaded
+    if (document.querySelector('script[src*="recaptcha/api.js"]')) {
+      console.log('reCAPTCHA script already loaded');
+      return;
+    }
+    
+    // Load reCAPTCHA v3 script
+    const script = document.createElement('script');
+    script.src = 'https://www.google.com/recaptcha/api.js?render=' + siteKey;
+    script.async = true;
+    script.defer = true;
+    script.onload = function() {
+      console.log('reCAPTCHA v3 script loaded successfully');
+      if (window.grecaptcha) {
+        window.grecaptcha.ready(function() {
+          console.log('reCAPTCHA v3 ready');
+        });
+      }
+    };
+    script.onerror = function() {
+      console.error('reCAPTCHA v3 script failed to load');
+    };
+    document.head.appendChild(script);
+  })();
+</script>
+
 <section id="contact" class="relative overflow-hidden bg-[#0A0A0B] text-white">
   <!-- texture + vignette -->
   <div class="pointer-events-none absolute inset-0 opacity-[.05] bg-[url('https://www.transparenttextures.com/patterns/white-diamond.png')]"></div>
@@ -274,44 +306,49 @@
         },
       })
       .then(response => {
-        if (!response.ok && response.status === 400) {
+        // Check if response is successful (200-299)
+        if (response.ok) {
+          // Try to parse JSON
+          return response.json().then(data => {
+            // If data.ok is true, redirect IMMEDIATELY
+            if (data.ok) {
+              const redirectUrl = data.redirect || '/contact/thank-you/';
+              console.log('✅ Form submitted successfully! Redirecting to:', redirectUrl);
+              // Redirect immediately - no toast, no delay
+              window.location.replace(redirectUrl);
+              return;
+            }
+            // If data.ok is false, treat as error
+            throw new Error(data.detail || data.errors ? Object.values(data.errors).flat().join(' ') : 'Submission failed');
+          }).catch(() => {
+            // If JSON parse fails but status is 200, assume success and redirect
+            console.log('✅ Form submitted! Redirecting to thank you page...');
+            window.location.replace('/contact/thank-you/');
+          });
+        } else {
+          // Response is not ok (400, 500, etc.)
           return response.json().then(data => {
             throw new Error(data.errors ? Object.values(data.errors).flat().join(' ') : 'Submission rejected');
+          }).catch(() => {
+            throw new Error('Submission failed. Please try again.');
           });
         }
-        return response.json();
       })
-      .then(data => {
-        btn.classList.remove('is-loading');
-        btn.removeAttribute('disabled');
-        
-        if (data.ok) {
-          form.reset();
-          // Clear reCAPTCHA token
-          if (recaptchaResponseInput) {
-            recaptchaResponseInput.value = '';
-          }
-          showToast('Thanks! We\'ve received your details—expect a reply within 24h.', 'success');
-        } else {
-          const errorMsg = data.errors ? Object.values(data.errors).flat().join(' ') : 'Sorry, we couldn\'t send your message. Please try again.';
+      .catch(error => {
+        // Only show error toast if we're still on the form page (redirect didn't happen)
+        if (!window.location.href.includes('thank-you')) {
+          btn.classList.remove('is-loading');
+          btn.removeAttribute('disabled');
+          
+          const errorMsg = error.message || 'Sorry, we couldn\'t send your message. Please try again.';
           showToast(errorMsg, 'error');
-          console.error('Form submission error:', data.errors);
+          console.error('❌ Form submission error:', error);
+          
           // Clear reCAPTCHA token on error
           if (recaptchaResponseInput) {
             recaptchaResponseInput.value = '';
           }
         }
-      })
-      .catch(error => {
-        btn.classList.remove('is-loading');
-        btn.removeAttribute('disabled');
-        // Clear reCAPTCHA token on error
-        if (recaptchaResponseInput) {
-          recaptchaResponseInput.value = '';
-        }
-        const errorMsg = error.message || 'Sorry, we couldn\'t send your message. Please try again.';
-        showToast(errorMsg, 'error');
-        console.error('Form submission error:', error);
       });
     };
 

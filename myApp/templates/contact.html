@@ -4,27 +4,10 @@
 {% block title %}Contact | Hammer{% endblock %}
 
 {% block extra_head %}
-  {% comment %} Hardcoded reCAPTCHA site key - update if needed {% endcomment %}
-  {% with recaptcha_site_key|default:"6LenShAsAAAAADoaC3f0y1xp4eQVJpc_G1NrNOxA" as site_key %}
-  {% if site_key and site_key|length > 0 %}
-  <script src="https://www.google.com/recaptcha/api.js?render={{ site_key }}"></script>
-  <script>
-    // Debug: Verify reCAPTCHA script is loading
-    console.log('reCAPTCHA v3 script loading with site key:', '{{ site_key|slice:":10" }}...');
-    window.addEventListener('load', function() {
-      if (window.grecaptcha) {
-        console.log('reCAPTCHA v3 script loaded successfully');
-      } else {
-        console.error('reCAPTCHA v3 script failed to load');
-      }
-    });
-  </script>
-  {% else %}
-  <script>
-    console.warn('reCAPTCHA site key not found or empty.');
-  </script>
-  {% endif %}
-  {% endwith %}
+  {% comment %}
+    reCAPTCHA script is loaded automatically in partials/contact.html
+    This ensures it works everywhere the form is included (contact page, home, about, etc.)
+  {% endcomment %}
 {% endblock %}
 
 {% block content %}
@@ -136,129 +119,11 @@
   nodes.forEach(n=>io.observe(n));
 })();
 
-/* AJAX submit to Django contact endpoint (progressive enhancement) */
-(function(){
-  const form  = document.getElementById('contactForm');
-  const btn   = document.getElementById('submitBtn');
-  const toast = document.getElementById('contactToast');
-  if(!form) return;
-
-  const getCSRF = () => {
-    const el = form.querySelector('input[name=csrfmiddlewaretoken]');
-    return el ? el.value : '';
-  };
-
-  form.addEventListener('submit', async function(e){
-    e.preventDefault();
-
-    // Get reCAPTCHA site key if configured (hardcoded fallback included)
-    const recaptchaSiteKey = {% if recaptcha_site_key %}'{{ recaptcha_site_key }}'{% else %}'6LenShAsAAAAADoaC3f0y1xp4eQVJpc_G1NrNOxA'{% endif %};
-    const recaptchaResponseInput = form.querySelector('[name="g-recaptcha-response"]');
-
-    // Lock button immediately
-    btn.classList.add('is-loading');
-    btn.setAttribute('disabled','disabled');
-
-    // Submit function that sends form data
-    const submitForm = async function(token) {
-      // Set reCAPTCHA token if provided
-      if (recaptchaResponseInput && token) {
-        recaptchaResponseInput.value = token;
-      }
-
-      try{
-        const res = await fetch(form.action, {
-          method: 'POST',
-          headers: { 'X-CSRFToken': getCSRF() },
-          body: new FormData(form),
-        });
-
-        if(!res.ok) {
-          // Clear reCAPTCHA token on error
-          if (recaptchaResponseInput) {
-            recaptchaResponseInput.value = '';
-          }
-          throw new Error('Submit failed');
-        }
-
-        // Clear reCAPTCHA token on success
-        if (recaptchaResponseInput) {
-          recaptchaResponseInput.value = '';
-        }
-
-        form.reset();
-        btn.classList.remove('is-loading');
-        btn.removeAttribute('disabled');
-
-        toast.classList.remove('hidden');
-        toast.style.opacity = '0';
-        toast.style.transform = 'translate(-50%, 10px)';
-        requestAnimationFrame(()=>{
-          toast.style.transition = 'all .4s ease';
-          toast.style.opacity = '1';
-          toast.style.transform = 'translate(-50%, 0)';
-        });
-        setTimeout(()=>{
-          toast.style.opacity = '0';
-          toast.style.transform = 'translate(-50%, 10px)';
-          setTimeout(()=>toast.classList.add('hidden'), 350);
-        }, 2800);
-
-      } catch(err){
-        // Clear reCAPTCHA token on error
-        if (recaptchaResponseInput) {
-          recaptchaResponseInput.value = '';
-        }
-        btn.classList.remove('is-loading');
-        btn.removeAttribute('disabled');
-        form.submit();
-      }
-    };
-
-    // If reCAPTCHA is configured, execute it first
-    if (recaptchaSiteKey) {
-      if (window.grecaptcha) {
-        grecaptcha.ready(function() {
-          console.log('reCAPTCHA v3 executing with site key:', recaptchaSiteKey.substring(0, 10) + '...');
-          grecaptcha.execute(recaptchaSiteKey, {action: 'submit'}).then(function(token) {
-            console.log('reCAPTCHA token received (length:', token.length + ')');
-            submitForm(token);
-          }).catch(function(error) {
-            console.error('reCAPTCHA execution error:', error);
-            btn.classList.remove('is-loading');
-            btn.removeAttribute('disabled');
-            alert('reCAPTCHA verification error. Please try again.');
-          });
-        });
-      } else {
-        console.warn('reCAPTCHA site key configured but grecaptcha not loaded. Check if script is loading.');
-        // Wait a bit for script to load
-        setTimeout(function() {
-          if (window.grecaptcha) {
-            grecaptcha.ready(function() {
-              grecaptcha.execute(recaptchaSiteKey, {action: 'submit'}).then(function(token) {
-                submitForm(token);
-              }).catch(function(error) {
-                console.error('reCAPTCHA execution error:', error);
-                btn.classList.remove('is-loading');
-                btn.removeAttribute('disabled');
-                alert('reCAPTCHA verification error. Please try again.');
-              });
-            });
-          } else {
-            console.error('reCAPTCHA script failed to load. Check if the script URL is correct.');
-            btn.classList.remove('is-loading');
-            btn.removeAttribute('disabled');
-            alert('reCAPTCHA script not loaded. Please refresh the page.');
-          }
-        }, 500);
-      }
-    } else {
-      console.log('reCAPTCHA not configured - submitting without verification');
-      // No reCAPTCHA configured, submit directly
-      submitForm(null);
-    }
-  });
-})();
+/* 
+ * Note: Form submission is handled in partials/contact.html
+ * This script runs only for intersection observer animations
+ * The form handler with reCAPTCHA is in partials/contact.html
+ * to ensure it works everywhere the partial is included
+ */
 </script>
 {% endblock %}

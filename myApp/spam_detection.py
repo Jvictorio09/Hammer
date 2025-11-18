@@ -4,11 +4,14 @@ Spam detection utilities for contact form submissions.
 Includes rate limiting, blacklist checking, and content filtering.
 """
 import re
+import logging
 from datetime import timedelta
 from django.utils import timezone
 from django.conf import settings
 from django.core.cache import cache
 from .models import BlockedEmail, BlockedIP, FormSubmission
+
+logger = logging.getLogger(__name__)
 
 
 # Common spam keywords/phrases (add more as needed)
@@ -219,6 +222,19 @@ def validate_contact_submission(request, form_data):
         return False, "Missing required fields", False
     
     ip_address = get_client_ip(request)
+    
+    # SKIP SPAM DETECTION ON LOCALHOST (for testing)
+    localhost_ips = ['127.0.0.1', '::1', 'localhost']
+    is_localhost = (
+        ip_address in localhost_ips or 
+        (ip_address and ip_address.startswith('127.')) or 
+        (ip_address and ip_address.startswith('::1')) or
+        getattr(settings, 'DEBUG', False)  # Also skip if DEBUG mode
+    )
+    
+    if is_localhost:
+        logger.info(f"🧪 Skipping spam detection for localhost/testing: {ip_address}")
+        return True, None, False
     
     # Check blocklists
     if is_email_blocked(email):

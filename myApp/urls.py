@@ -69,6 +69,7 @@ urlpatterns = [
 
     path("about/", views.about, name="about"),
     path("contact/", views.contact, name="contact"),
+    path("contact/thank-you/", views.thank_you, name="thank_you"),
 
     path("about/", views.about, name="about"),
     path("team/<slug:slug>/", views.team_detail, name="team_detail"),

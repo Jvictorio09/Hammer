@@ -1186,12 +1186,19 @@ def contact(request: HttpRequest) -> HttpResponse:
 
     if _is_ajax(request):
         status = 200 if ok else 502
+        if ok:
+            # Return success with redirect URL for AJAX
+            return JsonResponse({
+                "ok": ok, 
+                "detail": detail,
+                "redirect": reverse('thank_you')
+            }, status=status)
         return JsonResponse({"ok": ok, "detail": detail}, status=status)
 
     if ok:
         messages.success(request, "Thanks — your message is on its way. We'll get back to you shortly.")
-        # Optional: redirect to a lightweight thank-you route if you have one
-        return redirect(f"{reverse('contact')}?sent=1")
+        # Redirect to beautiful thank you page
+        return redirect('thank_you')
     else:
         messages.error(request, "Sorry, we couldn't send your message. Please try again in a moment.")
         recaptcha_site_key = getattr(settings, 'RECAPTCHA_SITE_KEY', '')
@@ -1199,6 +1206,13 @@ def contact(request: HttpRequest) -> HttpResponse:
             "form": form,
             "recaptcha_site_key": recaptcha_site_key or '',
         })
+
+
+def thank_you(request: HttpRequest) -> HttpResponse:
+    """
+    Beautiful thank you page displayed after successful form submission.
+    """
+    return render(request, "thank_you.html", {})
 
 
 # myApp/views.py

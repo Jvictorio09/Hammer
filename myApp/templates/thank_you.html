@@ -1,0 +1,149 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Thank You | Hammer{% endblock %}
+
+{% block content %}
+<!-- Thank You Page (Elegant & Branded) -->
+<section class="relative min-h-screen overflow-hidden bg-gradient-to-b from-[#0A0A0B] via-[#0A0A0B] to-[#15151A] text-white flex items-center justify-center">
+  <!-- Background effects -->
+  <div class="pointer-events-none absolute inset-0 opacity-[.05] bg-[url('https://www.transparenttextures.com/patterns/white-diamond.png')]"></div>
+  <div class="pointer-events-none absolute inset-0 bg-[radial-gradient(80%_60%_at_50%_50%,rgba(24,175,171,.15),transparent_70%)]"></div>
+  
+  <div class="relative max-w-2xl mx-auto px-6 py-24 text-center">
+    <!-- Success Icon/Animation -->
+    <div class="mb-8 flex justify-center">
+      <div class="relative">
+        <!-- Animated circle background -->
+        <div class="absolute inset-0 rounded-full bg-[#18AFAB]/20 animate-ping"></div>
+        <div class="relative w-24 h-24 rounded-full bg-gradient-to-br from-[#18AFAB] to-[#14A59F] flex items-center justify-center shadow-[0_20px_60px_rgba(24,175,171,.4)]">
+          <svg class="w-12 h-12 text-white animate-checkmark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 6 9 17 4 12"></polyline>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Heading -->
+    <h1 class="text-4xl md:text-5xl lg:text-6xl font-extrabold mb-6 leading-tight">
+      Thank You<span class="text-[#18AFAB]">!</span>
+    </h1>
+
+    <!-- Subheading -->
+    <p class="text-xl md:text-2xl text-white/90 mb-4 font-semibold">
+      We've received your inquiry
+    </p>
+
+    <!-- Description -->
+    <div class="text-white/80 text-lg mb-8 space-y-4">
+      <p>
+        Your message has been successfully submitted and is now in our system.
+      </p>
+      <p>
+        Our team will review your request and get back to you within <strong class="text-[#18AFAB]">24 hours</strong> (Monday–Saturday).
+      </p>
+    </div>
+
+    <!-- Information Box -->
+    <div class="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-6 md:p-8 mb-8 text-left">
+      <h3 class="text-lg font-semibold text-[#18AFAB] mb-4 flex items-center gap-2">
+        <i class="fa-solid fa-clock"></i>
+        What happens next?
+      </h3>
+      <ul class="space-y-3 text-white/80">
+        <li class="flex items-start gap-3">
+          <span class="text-[#18AFAB] mt-1">✓</span>
+          <span>We'll review your project requirements and timeline</span>
+        </li>
+        <li class="flex items-start gap-3">
+          <span class="text-[#18AFAB] mt-1">✓</span>
+          <span>One of our specialists will contact you directly</span>
+        </li>
+        <li class="flex items-start gap-3">
+          <span class="text-[#18AFAB] mt-1">✓</span>
+          <span>We'll provide a detailed consultation and quote</span>
+        </li>
+        <li class="flex items-start gap-3">
+          <span class="text-[#18AFAB] mt-1">✓</span>
+          <span>You'll receive a confirmation email shortly</span>
+        </li>
+      </ul>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="flex flex-col sm:flex-row gap-4 justify-center items-center">
+      <a href="{% url 'home' %}" 
+         class="inline-flex items-center gap-2 rounded-full bg-[#18AFAB] hover:bg-[#14A59F] px-6 py-3 font-semibold text-white shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
+        <i class="fa-solid fa-home"></i>
+        Return to Home
+      </a>
+      <a href="https://wa.me/971564145045" target="_blank"
+         class="inline-flex items-center gap-2 rounded-full border border-white/20 hover:border-white/40 bg-white/5 hover:bg-white/10 px-6 py-3 font-semibold text-white transition-all duration-300">
+        <i class="fab fa-whatsapp text-[#25D366]"></i>
+        WhatsApp Us
+      </a>
+    </div>
+
+    <!-- Contact Info -->
+    <div class="mt-12 pt-8 border-t border-white/10">
+      <p class="text-white/60 text-sm mb-4">Need immediate assistance?</p>
+      <div class="flex flex-wrap justify-center gap-6 text-sm text-white/70">
+        <a href="tel:+971564145045" class="flex items-center gap-2 hover:text-[#18AFAB] transition">
+          <i class="fa-solid fa-phone text-[#18AFAB]"></i>
+          +971 56 414 5045
+        </a>
+        <a href="mailto:info@hammer-services.com" class="flex items-center gap-2 hover:text-[#18AFAB] transition">
+          <i class="fa-solid fa-envelope text-[#18AFAB]"></i>
+          info@hammer-services.com
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+/* Checkmark animation */
+@keyframes checkmark {
+  0% {
+    stroke-dashoffset: 50;
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    stroke-dashoffset: 0;
+  }
+}
+
+.animate-checkmark {
+  stroke-dasharray: 50;
+  stroke-dashoffset: 0;
+  animation: checkmark 0.6s ease-in-out forwards;
+}
+
+/* Fade in animation */
+section {
+  animation: fadeIn 0.8s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Responsive text sizing */
+@media (max-width: 640px) {
+  h1 {
+    font-size: 2.5rem;
+  }
+}
+</style>
+{% endblock %}
+
