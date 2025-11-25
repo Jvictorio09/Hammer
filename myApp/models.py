@@ -582,14 +582,14 @@ class PageMetadata(models.Model):
         help_text="Human-readable name for this page"
     )
     meta_title = models.CharField(
-        max_length=140,
+        max_length=160,
         blank=True,
-        help_text="Page title for SEO (max 140 characters recommended)"
+        help_text="Page title for SEO (recommended: 50-70 characters, max 160)"
     )
     meta_description = models.CharField(
-        max_length=200,
+        max_length=320,
         blank=True,
-        help_text="Meta description for SEO (max 200 characters)"
+        help_text="Meta description for SEO (recommended: 150-160 characters, max 320)"
     )
     meta_keywords = models.CharField(
         max_length=255,
@@ -597,14 +597,14 @@ class PageMetadata(models.Model):
         help_text="Optional keywords (comma-separated)"
     )
     og_title = models.CharField(
-        max_length=140,
+        max_length=160,
         blank=True,
-        help_text="Open Graph title for social sharing"
+        help_text="Open Graph title for social sharing (recommended: 50-70 characters, max 160)"
     )
     og_description = models.CharField(
-        max_length=200,
+        max_length=400,
         blank=True,
-        help_text="Open Graph description for social sharing"
+        help_text="Open Graph description for social sharing (recommended: 200-300 characters, max 400)"
     )
     og_image = models.URLField(
         blank=True,

@@ -3,11 +3,11 @@
 
 {% block title %}
   {% if service.slug == 'landscape-design-build' %}
-    Quiet-Luxury Landscape Design & Build in Dubai | Hammer Group
+    Landscaping Company in Dubai | Luxury Landscape Design & Build | Hammer
   {% elif service.slug == 'interior-design-build' %}
-    Bespoke Interior Design & Build in Dubai | Hammer Group
+    Luxury Interior Design & Build Dubai | Villa Interiors & Joinery | Hammer Group
   {% elif service.slug == 'facility-management' %}
-    24/7 Facility Management & Aftercare in Dubai | Hammer Group
+    Facility Management & Aftercare Services in Dubai | Hammer Group
   {% else %}
     {{ service.seo_meta_title|default:service.title }}
   {% endif %}
@@ -16,7 +16,7 @@
 {% block extra_head %}
   {% with default_title=service.seo_meta_title|default:service.title default_description=service.seo_meta_description|default:service.hero_subcopy|default:service.title %}
     {% if service.slug == 'landscape-design-build' %}
-      {% with meta_title="Quiet-Luxury Landscape Design & Build in Dubai | Hammer Group" meta_description="Fall in love with your outdoors again. Hammer Group delivers garden design Dubai villas crave—native planting, pool landscaping Dubai families enjoy, and sculptural lighting crafted by one accountable team." og_description="Quiet-luxury outdoor architecture for Dubai’s villas, blending garden design, pool landscaping and architectural lighting under one accountable team." %}
+      {% with meta_title="Landscaping Company in Dubai | Luxury Landscape Design & Build | Hammer" meta_description="Quiet-luxury landscaping company in Dubai for villas and estates. Hammer designs and builds complete outdoor spaces: pools, pergolas, gardens, lighting and desert-friendly landscaping." og_description="Quiet-luxury landscaping company in Dubai for villas and estates. Hammer designs and builds complete outdoor spaces: pools, pergolas, gardens, lighting and desert-friendly landscaping." %}
         <meta name="description" content="{{ meta_description }}">
         <link rel="canonical" href="{{ request.build_absolute_uri|cut:'?' }}">
         <meta property="og:title" content="{{ meta_title }}">
@@ -28,7 +28,7 @@
         <meta name="twitter:card" content="summary_large_image">
       {% endwith %}
     {% elif service.slug == 'interior-design-build' %}
-      {% with meta_title="Bespoke Interior Design & Build in Dubai | Hammer Group" meta_description="From moodboards to hand-finished custom joinery Dubai homeowners adore, Hammer Group weaves every layer of your villa interior with one accountable design-build partner." og_description="Turn-key interior architecture, custom joinery, lighting and styling—delivered by Hammer Group’s integrated design-build studio in Dubai." %}
+      {% with meta_title="Luxury Interior Design & Build Dubai | Villa Interiors & Joinery | Hammer Group" meta_description="Luxury interior design and build services in Dubai. Tailored villa interiors, kitchens, wardrobes and bespoke joinery for high-end properties, from concept to turnkey handover." og_description="Luxury interior design and build services in Dubai. Tailored villa interiors, kitchens, wardrobes and bespoke joinery for high-end properties, from concept to turnkey handover." %}
         <meta name="description" content="{{ meta_description }}">
         <link rel="canonical" href="{{ request.build_absolute_uri|cut:'?' }}">
         <meta property="og:title" content="{{ meta_title }}">
@@ -40,7 +40,7 @@
         <meta name="twitter:card" content="summary_large_image">
       {% endwith %}
     {% elif service.slug == 'facility-management' %}
-      {% with meta_title="24/7 Facility Management & Aftercare in Dubai | Hammer Group" meta_description="Protect every detail of your property with Hammer Group’s facility management team—hard & soft services, preventive maintenance and rapid response across Dubai." og_description="Dubai facility management specialists delivering 24/7 preventive maintenance, MEP care and white-glove aftercare for luxury properties." %}
+      {% with meta_title="Facility Management & Aftercare Services in Dubai | Hammer Group" meta_description="Proactive facility management and aftercare in Dubai. Building maintenance, MEP, HVAC, cleaning and long-term property care for villas, communities and commercial assets." og_description="Proactive facility management and aftercare in Dubai. Building maintenance, MEP, HVAC, cleaning and long-term property care for villas, communities and commercial assets." %}
         <meta name="description" content="{{ meta_description }}">
         <link rel="canonical" href="{{ request.build_absolute_uri|cut:'?' }}">
         <meta property="og:title" content="{{ meta_title }}">
@@ -1598,6 +1598,38 @@ details[open] .faq-content{ height:auto; }      /* fallback if JS off */
 }
 </script>
 {% endwith %}
+
+{% if service.testimonials.all %}
+<!-- Review Schema for Testimonials -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": "Hammer Group",
+  "aggregateRating": {
+    "@type": "AggregateRating",
+    "ratingValue": "5",
+    "reviewCount": "{{ service.testimonials.count }}"
+  },
+  "review": [
+    {% for t in service.testimonials.all %}
+    {
+      "@type": "Review",
+      "author": {
+        "@type": "Person",
+        "name": "{{ t.author|escapejs }}"
+      },
+      "reviewBody": "{{ t.quote|striptags|escapejs }}",
+      "reviewRating": {
+        "@type": "Rating",
+        "ratingValue": "5"
+      }
+    }{% if not forloop.last %},{% endif %}
+    {% endfor %}
+  ]
+}
+</script>
+{% endif %}
 
 {% if service.slug == 'landscape-design-build' %}
   {% with service_type="Landscape Design & Build" %}

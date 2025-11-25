@@ -5,6 +5,64 @@
 {% block title %}{{ case_study.title }} | {{ case_study.service.title }} | Hammer Group{% endblock %}
 {% block meta_description %}{{ case_study.summary|default:"Case study showcasing our work in "|add:case_study.service.title|truncatechars:160 }}{% endblock %}
 
+{% block extra_head %}
+<!-- Project Schema -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "CreativeWork",
+  "name": "{{ case_study.title|escapejs }}",
+  "description": "{{ case_study.summary|default:case_study.title|escapejs }}",
+  "image": [
+    {% if case_study.hero_image_url %}"{{ case_study.hero_image_url }}"{% endif %}
+    {% if case_study.thumb_url %}{% if case_study.hero_image_url %},{% endif %}"{{ case_study.thumb_url }}"{% endif %}
+  ],
+  "creator": {
+    "@type": "Organization",
+    "name": "Hammer Group",
+    "url": "https://www.hammer-services.com"
+  },
+  "locationCreated": {
+    "@type": "Place",
+    "name": "{{ case_study.location|default:'Dubai, UAE'|escapejs }}"
+  },
+  "dateCreated": "{{ case_study.created_at|date:'c' }}",
+  {% if case_study.completion_date %}"datePublished": "{{ case_study.completion_date|date:'c' }}",{% endif %}
+  "about": {
+    "@type": "Service",
+    "name": "{{ case_study.service.title|escapejs }}"
+  }
+}
+</script>
+<!-- BreadcrumbList Schema -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Home",
+      "item": "https://www.hammer-services.com/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "{{ case_study.service.title|escapejs }}",
+      "item": "{{ request.scheme }}://{{ request.get_host }}{{ case_study.service.get_absolute_url }}"
+    },
+    {
+      "@type": "ListItem",
+      "position": 3,
+      "name": "{{ case_study.title|escapejs }}",
+      "item": "{{ request.build_absolute_uri }}"
+    }
+  ]
+}
+</script>
+{% endblock %}
+
 <style>
 :root {
   --lux-gold: #c7a770;

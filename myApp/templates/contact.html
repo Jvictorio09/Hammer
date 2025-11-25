@@ -4,6 +4,69 @@
 {% block title %}Contact | Hammer{% endblock %}
 
 {% block extra_head %}
+  <!-- LocalBusiness Schema -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "LocalBusiness",
+    "name": "Hammer Group",
+    "image": "https://res.cloudinary.com/dstlxtvar/image/upload/v1759923995/Hammer_Logo13_drxh0j.png",
+    "url": "https://www.hammer-services.com",
+    "telephone": "+971564145045",
+    "priceRange": "$$$$",
+    "address": {
+      "@type": "PostalAddress",
+      "streetAddress": "Dubai",
+      "addressLocality": "Dubai",
+      "addressRegion": "Dubai",
+      "addressCountry": "AE"
+    },
+    "geo": {
+      "@type": "GeoCoordinates",
+      "latitude": 25.06353,
+      "longitude": 55.2485008
+    },
+    "openingHoursSpecification": [
+      {
+        "@type": "OpeningHoursSpecification",
+        "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+        "opens": "09:00",
+        "closes": "18:00"
+      }
+    ],
+    "areaServed": {
+      "@type": "City",
+      "name": "Dubai"
+    },
+    "hasOfferCatalog": {
+      "@type": "OfferCatalog",
+      "name": "Design & Build Services",
+      "itemListElement": [
+        {
+          "@type": "Offer",
+          "itemOffered": {
+            "@type": "Service",
+            "name": "Landscape Design & Build"
+          }
+        },
+        {
+          "@type": "Offer",
+          "itemOffered": {
+            "@type": "Service",
+            "name": "Interior Design & Build"
+          }
+        },
+        {
+          "@type": "Offer",
+          "itemOffered": {
+            "@type": "Service",
+            "name": "Facility Management"
+          }
+        }
+      ]
+    }
+  }
+  </script>
   {% comment %}
     reCAPTCHA script is loaded automatically in partials/contact.html
     This ensures it works everywhere the form is included (contact page, home, about, etc.)

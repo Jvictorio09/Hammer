@@ -2,6 +2,45 @@
 {% extends "base.html" %}
 {% load editorjs %}
 {% block title %}{{ insight.title }} | Insights | Hammer Group{% endblock %}
+
+{% block extra_head %}
+<!-- Article Schema -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Article",
+  "headline": "{{ insight.title|escapejs }}",
+  "description": "{{ insight.excerpt|default:insight.title|escapejs|truncatewords:30 }}",
+  "image": "{{ insight.cover_image_url|default:'' }}",
+  "datePublished": "{{ insight.published_at|date:'c'|default:insight.created_at|date:'c' }}",
+  "dateModified": "{{ insight.updated_at|date:'c' }}",
+  {% if insight.author %}
+  "author": {
+    "@type": "Person",
+    "name": "{{ insight.author.get_full_name|default:insight.author.username|escapejs }}"
+  },
+  {% else %}
+  "author": {
+    "@type": "Organization",
+    "name": "Hammer Group"
+  },
+  {% endif %}
+  "publisher": {
+    "@type": "Organization",
+    "name": "Hammer Group",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://res.cloudinary.com/dstlxtvar/image/upload/v1759923995/Hammer_Logo13_drxh0j.png"
+    }
+  },
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "{{ request.build_absolute_uri }}"
+  }
+}
+</script>
+{% endblock %}
+
 {% block content %}
 <section class="py-12 md:py-16 bg-white">
   <div class="max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-12 gap-10">
