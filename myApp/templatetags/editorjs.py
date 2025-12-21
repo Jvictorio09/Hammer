@@ -13,8 +13,95 @@ except Exception:  # pragma: no cover
 register = template.Library()
 
 
+def _render_inline_text(text_data):
+    """
+    Render Editor.js inline text data (can be string or array with inline formatting).
+    Editor.js stores text with inline formatting (bold, italic, links) as an array of fragments.
+    Also handles cases where HTML is stored directly in the text field.
+    """
+    if not text_data:
+        return ""
+    
+    # If it's a simple string
+    if isinstance(text_data, str):
+        # Check if it already contains HTML anchor tags (links saved as HTML)
+        if '<a ' in text_data.lower() or '</a>' in text_data.lower():
+            # Text contains HTML links - preserve and style them
+            # Don't escape - we want to preserve the HTML
+            import re
+            def add_link_styling(match):
+                full_tag = match.group(0)
+                # Check if class already exists
+                if 'class=' in full_tag:
+                    # Add our classes to existing class (avoid duplicates)
+                    if 'text-[#18AFAB]' not in full_tag:
+                        full_tag = re.sub(r'class="([^"]*)"', r'class="\1 text-[#18AFAB] underline decoration-[#18AFAB]/30 hover:decoration-[#18AFAB] hover:text-[#159d99] font-medium transition-all"', full_tag)
+                else:
+                    # Add class attribute
+                    full_tag = full_tag.replace('<a ', '<a class="text-[#18AFAB] underline decoration-[#18AFAB]/30 hover:decoration-[#18AFAB] hover:text-[#159d99] font-medium transition-all" ')
+                # Ensure target and rel attributes
+                if 'target=' not in full_tag:
+                    full_tag = full_tag.replace('<a ', '<a target="_blank" rel="noopener noreferrer" ')
+                elif 'target="_blank"' not in full_tag:
+                    # Has target but not _blank, update it
+                    full_tag = re.sub(r'target="[^"]*"', 'target="_blank"', full_tag)
+                if 'rel=' not in full_tag:
+                    full_tag = full_tag.replace('target="_blank"', 'target="_blank" rel="noopener noreferrer"')
+                return full_tag
+            # Apply styling to all anchor tags
+            styled_text = re.sub(r'<a\s+[^>]*>', add_link_styling, text_data)
+            return styled_text
+        else:
+            # Plain text - linkify URLs
+            return _linkify_text(text_data)
+    
+    # If it's an array (has inline formatting like links, bold, italic)
+    if isinstance(text_data, list):
+        html_parts = []
+        for fragment in text_data:
+            if isinstance(fragment, str):
+                html_parts.append(escape(fragment))
+            elif isinstance(fragment, dict):
+                # Fragment with formatting
+                text = fragment.get('text', '')
+                escaped_text = escape(text)
+                
+                # Check for link (Editor.js native format)
+                link_data = fragment.get('link')
+                if link_data:
+                    # Link can be a string (URL) or object with 'url' property
+                    url = link_data if isinstance(link_data, str) else link_data.get('url', '')
+                    if url:
+                        safe_url = url.replace('"', '&quot;').replace("'", '&#x27;')
+                        # Check for other formatting
+                        if fragment.get('bold'):
+                            escaped_text = f'<strong>{escaped_text}</strong>'
+                        if fragment.get('italic'):
+                            escaped_text = f'<em>{escaped_text}</em>'
+                        html_parts.append(f'<a href="{safe_url}" target="_blank" rel="noopener noreferrer" class="text-[#18AFAB] underline decoration-[#18AFAB]/30 hover:decoration-[#18AFAB] hover:text-[#159d99] font-medium transition-all">{escaped_text}</a>')
+                    else:
+                        # Link data but no URL - just format text
+                        if fragment.get('bold'):
+                            escaped_text = f'<strong>{escaped_text}</strong>'
+                        if fragment.get('italic'):
+                            escaped_text = f'<em>{escaped_text}</em>'
+                        html_parts.append(escaped_text)
+                else:
+                    # Just bold/italic, no link
+                    if fragment.get('bold'):
+                        escaped_text = f'<strong>{escaped_text}</strong>'
+                    if fragment.get('italic'):
+                        escaped_text = f'<em>{escaped_text}</em>'
+                    html_parts.append(escaped_text)
+            else:
+                html_parts.append(escape(str(fragment)))
+        return ''.join(html_parts)
+    
+    return escape(str(text_data))
+
+
 def _linkify_text(text):
-    """Convert plain URLs in text to clickable HTML links"""
+    """Convert plain URLs in text to clickable HTML links (fallback for plain text)"""
     if not text:
         return text
     
@@ -46,19 +133,22 @@ def _render_block(b):
     t = b.get("type")
     d = b.get("data", {})
     if t == "paragraph":
-        text = d.get("text", "")
-        linked_text = _linkify_text(text)
-        return f'<p class="mb-4">{linked_text}</p>'
+        text_data = d.get("text", "")
+        rendered_text = _render_inline_text(text_data)
+        # If rendered text contains HTML (like links), mark it as safe
+        if '<a ' in rendered_text.lower() or '<strong>' in rendered_text.lower() or '<em>' in rendered_text.lower():
+            return mark_safe(f'<p class="mb-4">{rendered_text}</p>')
+        return f'<p class="mb-4">{rendered_text}</p>'
     if t == "header":
         level = d.get("level", 2)
-        text = d.get("text", "")
-        linked_text = _linkify_text(text)
+        text_data = d.get("text", "")
+        rendered_text = _render_inline_text(text_data)
         if level == 3:
-            return f'<h3 class="text-xl font-semibold mt-6 mb-3">{linked_text}</h3>'
-        return f'<h2 class="text-2xl font-bold mt-8 mb-4">{linked_text}</h2>'
+            return f'<h3 class="text-xl font-semibold mt-6 mb-3">{rendered_text}</h3>'
+        return f'<h2 class="text-2xl font-bold mt-8 mb-4">{rendered_text}</h2>'
     if t == "list":
         style = d.get("style", "unordered")
-        items = "".join([f"<li>{_linkify_text(i)}</li>" for i in d.get("items", [])])
+        items = "".join([f"<li>{_render_inline_text(i)}</li>" for i in d.get("items", [])])
         cls = "list-disc pl-6 mb-4" if style == "unordered" else "list-decimal pl-6 mb-4"
         tag = "ul" if style == "unordered" else "ol"
         return f"<{tag} class='{cls}'>{items}</{tag}>"

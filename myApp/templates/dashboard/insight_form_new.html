@@ -370,6 +370,8 @@
 <script src="https://cdn.jsdelivr.net/npm/@editorjs/raw@2.4.0"></script>
 <script src="https://cdn.jsdelivr.net/npm/@editorjs/image@2.8.1"></script>
 <script src="https://cdn.jsdelivr.net/npm/@editorjs/embed@2.5.3"></script>
+<script src="https://cdn.jsdelivr.net/npm/@editorjs/inline-code@1.4.0"></script>
+<script src="https://cdn.jsdelivr.net/npm/@editorjs/marker@1.3.0"></script>
 
 <style>
 /* Editor Writing Zone - Premium Typography */
@@ -525,10 +527,21 @@ document.addEventListener('DOMContentLoaded', function() {
         config: {
           levels: [2, 3, 4],
           defaultLevel: 2
-        }
+        },
+        inlineToolbar: true  // Enable inline formatting (bold, italic, link) for headers
       },
-      list: List,
-      quote: Quote,
+      list: {
+        class: List,
+        inlineToolbar: true  // Enable inline formatting for lists
+      },
+      paragraph: {
+        inlineToolbar: ['bold', 'italic', 'link'],  // Explicitly enable link in inline toolbar
+        placeholder: 'Type or paste your text here...'
+      },
+      quote: {
+        class: Quote,
+        inlineToolbar: true  // Enable inline formatting for quotes
+      },
       code: CodeTool,
       table: Table,
       delimiter: Delimiter,
@@ -559,6 +572,28 @@ document.addEventListener('DOMContentLoaded', function() {
     onChange: async () => {
       hasUnsavedChanges = true;
       updateSaveStatus('unsaved');
+      
+      // Debug: Log what's in the editor when it changes
+      try {
+        const currentData = await editor.save();
+        console.log('Editor changed, current blocks:', currentData.blocks?.length);
+        // Check for links
+        currentData.blocks?.forEach((block, idx) => {
+          if (block.type === 'paragraph' || block.type === 'header') {
+            const text = block.data?.text;
+            if (Array.isArray(text)) {
+              const hasLink = text.some(f => f.link);
+              if (hasLink) {
+                console.log(`Block ${idx} has link in array format`);
+              }
+            } else if (typeof text === 'string' && text.includes('<a ')) {
+              console.log(`Block ${idx} has link as HTML string`);
+            }
+          }
+        });
+      } catch (e) {
+        console.error('Error checking editor state:', e);
+      }
       
       clearTimeout(saveTimeout);
       saveTimeout = setTimeout(async () => {
@@ -712,17 +747,73 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   });
 
-  // Form submission - ensure blocks are saved
-  document.getElementById('insightForm').addEventListener('submit', async (e) => {
+  // Form submission - ensure blocks are saved BEFORE form submits
+  let blocksSaved = false;
+  const form = document.getElementById('insightForm');
+  form.addEventListener('submit', async function(e) {
+    // If blocks are already saved, let form submit normally
+    if (blocksSaved || form.dataset.blocksSaved === 'true') {
+      blocksSaved = false; // Reset for next submission
+      form.dataset.blocksSaved = 'false';
+      return; // Let form submit normally
+    }
+    
+    // Prevent default submission
+    e.preventDefault();
+    e.stopPropagation();
+    
     try {
+      // Save editor content first - MUST await this
+      console.log('Saving editor content before form submission...');
       const output = await editor.save();
-      document.getElementById('blocksField').value = JSON.stringify(output);
+      
+      // Debug: Check for links in the output
+      console.log('Editor output:', JSON.stringify(output, null, 2));
+      const allBlocks = output.blocks || [];
+      allBlocks.forEach((block, idx) => {
+        if (block.type === 'paragraph' || block.type === 'header') {
+          const textData = block.data?.text;
+          console.log(`Block ${idx} (${block.type}):`, typeof textData, textData);
+          if (Array.isArray(textData)) {
+            console.log('  Has inline formatting array:', textData);
+            textData.forEach((frag, fragIdx) => {
+              if (frag.link) {
+                console.log(`  Fragment ${fragIdx} has link:`, frag.link);
+              }
+            });
+          } else if (typeof textData === 'string' && textData.includes('<a ')) {
+            console.log('  Contains HTML link string');
+          }
+        }
+      });
+      
+      const blocksJson = JSON.stringify(output);
+      
+      // Update the hidden field
+      const blocksField = document.getElementById('blocksField');
+      blocksField.value = blocksJson;
+      
+      console.log('Blocks saved to form field, length:', blocksJson.length);
+      console.log('Blocks sample:', blocksJson.substring(0, 500));
+      
       updateSaveStatus('saving');
+      
+      // Mark as saved and submit
+      blocksSaved = true;
+      form.dataset.blocksSaved = 'true';
+      
+      // Small delay to ensure DOM is updated
+      await new Promise(resolve => setTimeout(resolve, 50));
+      
+      // Submit the form - this will trigger the event again but blocksSaved flag will let it proceed
+      form.submit();
+      
     } catch (err) {
-      console.error('Error saving editor:', err);
-      e.preventDefault();
+      console.error('Error saving editor before form submission:', err);
       updateSaveStatus('error');
-      alert('Error preparing content. Please try again.');
+      alert('Error preparing content: ' + err.message + '. Please try again.');
+      blocksSaved = false;
+      form.dataset.blocksSaved = 'false';
     }
   });
 
