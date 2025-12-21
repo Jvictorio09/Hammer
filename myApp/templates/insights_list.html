@@ -73,16 +73,8 @@
                   </p>
                 {% endif %}
 
-                <!-- Author & Read More -->
-                <div class="flex items-center justify-between">
-                  {% if insight.author %}
-                    <div class="text-sm text-gray-500">
-                      by <span class="font-medium text-gray-700">{{ insight.author.username }}</span>
-                    </div>
-                  {% else %}
-                    <div></div>
-                  {% endif %}
-                  
+                <!-- Read More -->
+                <div class="flex items-center justify-end">
                   <a href="{% url 'insight_detail' insight.slug %}" 
                      class="inline-flex items-center text-sm font-medium text-[#18AFAB] hover:text-[#159d99] transition-colors">
                     Read More

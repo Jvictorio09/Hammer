@@ -1,7 +1,9 @@
 from django import template
 from django.utils.safestring import mark_safe
+from django.utils.html import escape
 from django.conf import settings
 import json
+import re
 
 try:
     import bleach  # type: ignore
@@ -11,20 +13,52 @@ except Exception:  # pragma: no cover
 register = template.Library()
 
 
+def _linkify_text(text):
+    """Convert plain URLs in text to clickable HTML links"""
+    if not text:
+        return text
+    
+    # Skip if text already contains HTML anchor tags (to avoid double-processing)
+    if '<a ' in text.lower() or '</a>' in text.lower():
+        return text
+    
+    # URL pattern - matches http:// and https:// URLs (more comprehensive)
+    # Matches URLs that start with http:// or https:// and continue until whitespace or common punctuation
+    url_pattern = r'(https?://[^\s<>&"\'`\[\](){}|\\^]+[^\s<>&"\'`\[\](){}|\\^.,;:!?])'
+    
+    def make_link(match):
+        url = match.group(1)
+        # Escape the URL for display in text (href doesn't need escaping, just quotes)
+        # Replace any quotes in URL to prevent breaking HTML attribute
+        safe_url = url.replace('"', '&quot;').replace("'", '&#x27;')
+        escaped_display = escape(url)  # Escape HTML for text content
+        return f'<a href="{safe_url}" target="_blank" rel="noopener noreferrer" class="text-[#18AFAB] underline decoration-[#18AFAB]/30 hover:decoration-[#18AFAB] hover:text-[#159d99] font-medium transition-all">{escaped_display}</a>'
+    
+    # Only linkify if text doesn't already contain HTML tags (to avoid double-processing)
+    if '<' in text and '>' in text:
+        # Text already contains HTML, don't linkify (might already have links)
+        return text
+    
+    return re.sub(url_pattern, make_link, text)
+
+
 def _render_block(b):
     t = b.get("type")
     d = b.get("data", {})
     if t == "paragraph":
-        return f'<p class="mb-4">{d.get("text","")}</p>'
+        text = d.get("text", "")
+        linked_text = _linkify_text(text)
+        return f'<p class="mb-4">{linked_text}</p>'
     if t == "header":
         level = d.get("level", 2)
         text = d.get("text", "")
+        linked_text = _linkify_text(text)
         if level == 3:
-            return f'<h3 class="text-xl font-semibold mt-6 mb-3">{text}</h3>'
-        return f'<h2 class="text-2xl font-bold mt-8 mb-4">{text}</h2>'
+            return f'<h3 class="text-xl font-semibold mt-6 mb-3">{linked_text}</h3>'
+        return f'<h2 class="text-2xl font-bold mt-8 mb-4">{linked_text}</h2>'
     if t == "list":
         style = d.get("style", "unordered")
-        items = "".join([f"<li>{i}</li>" for i in d.get("items", [])])
+        items = "".join([f"<li>{_linkify_text(i)}</li>" for i in d.get("items", [])])
         cls = "list-disc pl-6 mb-4" if style == "unordered" else "list-decimal pl-6 mb-4"
         tag = "ul" if style == "unordered" else "ol"
         return f"<{tag} class='{cls}'>{items}</{tag}>"

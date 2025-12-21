@@ -77,14 +77,20 @@
 
           <!-- Editor host -->
           <div class="rounded-2xl border border-gray-200 bg-white shadow-sm p-5">
-            <div id="editorHost" class="prose max-w-none"></div>
+            <div id="editorHost" class="prose max-w-none" style="min-height: 400px; padding-bottom: 100px;"></div>
           </div>
           
           <!-- Custom CSS for Editor.js block separation -->
           <style>
             /* Make Editor.js blocks more visually distinct */
             .codex-editor__redactor {
-              padding-bottom: 0 !important;
+              padding-bottom: 80px !important;
+              min-height: 200px;
+            }
+            
+            /* Ensure the editor container has enough space at bottom */
+            #editorHost {
+              min-height: 400px;
             }
             
             /* Add spacing between blocks */
@@ -127,20 +133,44 @@
               background: rgba(99, 102, 241, 0.05);
             }
             
+            /* Edit indicator - shows "Click to edit" on hover */
+            .ce-block::after {
+              content: '✎ Click to edit';
+              position: absolute;
+              top: 0.25rem;
+              right: 0.5rem;
+              font-size: 0.7rem;
+              color: #6366f1;
+              background: rgba(99, 102, 241, 0.1);
+              padding: 0.25rem 0.5rem;
+              border-radius: 0.25rem;
+              border: 1px solid rgba(99, 102, 241, 0.2);
+              opacity: 0;
+              transition: opacity 0.2s ease;
+              pointer-events: none;
+              font-weight: 500;
+              z-index: 20;
+            }
+            
+            .ce-block:hover::after {
+              opacity: 1;
+            }
+            
             /* Block type indicators */
             .ce-block::before {
               content: attr(data-type);
               position: absolute;
               top: -0.5rem;
-              right: 0.5rem;
-              font-size: 0.75rem;
+              left: 0.5rem;
+              font-size: 0.7rem;
               color: #6b7280;
               background: white;
-              padding: 0.25rem 0.5rem;
+              padding: 0.2rem 0.4rem;
               border-radius: 0.25rem;
               border: 1px solid #e5e7eb;
               opacity: 0;
               transition: opacity 0.2s ease;
+              text-transform: capitalize;
             }
             
             .ce-block:hover::before {
@@ -164,9 +194,81 @@
               border-left: 4px solid #f59e0b;
               padding-left: 1rem;
             }
+            
+            /* Ensure last block can be edited at bottom */
+            .ce-block:last-child {
+              margin-bottom: 2rem !important;
+              padding-bottom: 1rem;
+            }
+            
+            /* Make last block show edit indicator more prominently */
+            .ce-block:last-child::after {
+              content: '✎ Click here to edit or add content';
+              opacity: 0.6;
+              background: rgba(99, 102, 241, 0.15);
+              padding: 0.4rem 0.75rem;
+              font-size: 0.75rem;
+            }
+            
+            .ce-block:last-child:hover::after {
+              opacity: 1;
+              background: rgba(99, 102, 241, 0.2);
+            }
+            
+            /* Ensure the editor area is fully interactive */
+            #editorHost .codex-editor {
+              position: relative;
+            }
+            
+            /* Make sure there's clickable space after the last block */
+            .codex-editor__redactor::after {
+              content: '';
+              display: block;
+              height: 100px;
+              width: 100%;
+              pointer-events: none;
+            }
+            
+            /* Ensure blocks are fully interactive */
+            .ce-block {
+              position: relative;
+              z-index: 1;
+            }
+            
+            /* Make sure the last block content is editable */
+            .ce-block:last-child .ce-paragraph,
+            .ce-block:last-child .ce-header,
+            .ce-block:last-child [contenteditable] {
+              min-height: 1.5em;
+              position: relative;
+            }
+            
+            /* Add edit prompt inside empty editable areas */
+            [contenteditable="true"]:empty::before {
+              content: 'Click to start typing...';
+              color: #9ca3af;
+              font-style: italic;
+              pointer-events: none;
+            }
+            
+            [contenteditable="true"]:focus:empty::before {
+              content: '';
+            }
+            
+            /* Ensure Editor.js caret/selection works at bottom */
+            .codex-editor__redactor {
+              position: relative;
+              z-index: 1;
+            }
+            
+            /* Prevent any overlay from blocking clicks */
+            #editorHost > * {
+              pointer-events: auto;
+            }
           </style>
 
           <!-- Status -->
+          <div style="margin-top: 2rem;">
           <div class="grid md:grid-cols-2 gap-4">
             <div class="space-y-2">
               <label class="text-sm font-medium text-gray-800">Status</label>
@@ -342,6 +444,102 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   })();
 
+  // Function to ensure bottom blocks are editable
+  function ensureBottomEditable() {
+    const redactor = document.querySelector('.codex-editor__redactor');
+    if (!redactor || !editor) return;
+    
+    // Ensure the redactor has proper spacing
+    const lastBlock = redactor.querySelector('.ce-block:last-child');
+    if (lastBlock) {
+      // Make sure last block is interactive and has proper styling
+      const editable = lastBlock.querySelector('[contenteditable="true"]');
+      if (editable) {
+        editable.style.minHeight = '1.5em';
+        editable.style.paddingBottom = '30px';
+        editable.style.position = 'relative';
+        editable.style.zIndex = '2';
+        
+        // Ensure contenteditable works
+        editable.setAttribute('contenteditable', 'true');
+        editable.style.userSelect = 'text';
+        editable.style.webkitUserSelect = 'text';
+      }
+      
+      // Add extra space after last block with edit indicator
+      const spacer = document.createElement('div');
+      spacer.style.height = '120px';
+      spacer.style.width = '100%';
+      spacer.style.pointerEvents = 'auto';
+      spacer.style.cursor = 'text';
+      spacer.style.position = 'relative';
+      spacer.style.display = 'flex';
+      spacer.style.alignItems = 'center';
+      spacer.style.justifyContent = 'center';
+      spacer.style.color = '#9ca3af';
+      spacer.style.fontSize = '0.875rem';
+      spacer.style.fontStyle = 'italic';
+      spacer.style.border = '2px dashed #e5e7eb';
+      spacer.style.borderRadius = '0.5rem';
+      spacer.style.marginTop = '1rem';
+      spacer.style.transition = 'all 0.2s ease';
+      spacer.innerHTML = '<span style="pointer-events: none;">✎ Click here to add a new block</span>';
+      spacer.className = 'editor-bottom-spacer';
+      
+      // Hover effect for spacer
+      spacer.addEventListener('mouseenter', function() {
+        spacer.style.borderColor = '#6366f1';
+        spacer.style.backgroundColor = 'rgba(99, 102, 241, 0.05)';
+        spacer.style.color = '#6366f1';
+      });
+      spacer.addEventListener('mouseleave', function() {
+        spacer.style.borderColor = '#e5e7eb';
+        spacer.style.backgroundColor = 'transparent';
+        spacer.style.color = '#9ca3af';
+      });
+      
+      // Remove existing spacer if any
+      const existingSpacer = redactor.querySelector('.editor-bottom-spacer');
+      if (existingSpacer) existingSpacer.remove();
+      
+      // Add new spacer after last block
+      lastBlock.parentNode.appendChild(spacer);
+      
+      // When clicking the spacer, focus the last block
+      spacer.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        if (editable && editor) {
+          // Focus on last block
+          editable.focus();
+          
+          // Move cursor to end of text
+          try {
+            const range = document.createRange();
+            const selection = window.getSelection();
+            range.selectNodeContents(editable);
+            range.collapse(false);
+            selection.removeAllRanges();
+            selection.addRange(range);
+          } catch (err) {
+            console.log('Selection error:', err);
+          }
+        }
+      });
+    }
+    
+    // Also ensure all blocks in the editor are editable
+    const allBlocks = redactor.querySelectorAll('.ce-block');
+    allBlocks.forEach((block, index) => {
+      const blockEditable = block.querySelector('[contenteditable]');
+      if (blockEditable) {
+        blockEditable.style.pointerEvents = 'auto';
+        blockEditable.style.userSelect = 'text';
+        blockEditable.style.webkitUserSelect = 'text';
+      }
+    });
+  }
+
   let editor;
   try {
     editor = new EditorJS({
@@ -349,6 +547,8 @@ document.addEventListener('DOMContentLoaded', function() {
       placeholder: "Start typing or press '/' for blocks…",
       data: initial,
       autofocus: false,
+      minHeight: 400,
+      defaultBlock: 'paragraph',
       tools: {
         header: Header, list: List, quote: Quote, code: CodeTool, table: Table, delimiter: Delimiter, raw: RawTool,
         image: {
@@ -376,6 +576,8 @@ document.addEventListener('DOMContentLoaded', function() {
           const out = await editor.save();
           document.getElementById('blocksField').value = JSON.stringify(out);
           setSaved();
+          // Ensure bottom remains editable after changes
+          ensureBottomEditable();
         } catch (_) {}
       }, 600)
     });
@@ -395,6 +597,8 @@ document.addEventListener('DOMContentLoaded', function() {
         // Add visual enhancements after rendering
         setTimeout(() => {
           enhanceBlockVisualization();
+          // Ensure last block is editable
+          ensureBottomEditable();
         }, 100);
       } else {
         console.log('No existing blocks, rendering default content');
@@ -408,6 +612,9 @@ document.addEventListener('DOMContentLoaded', function() {
           }],
           version: '2.28.2'
         });
+        setTimeout(() => {
+          ensureBottomEditable();
+        }, 100);
       }
     });
 

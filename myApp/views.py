@@ -1598,7 +1598,7 @@ def dashboard_insight_edit(request, pk: int):
     # Prepare blocks data for template
     blocks_json = json.dumps(insight.blocks) if insight.blocks else "{}"
     
-    return render(request, "dashboard/insight_form.html", {
+    return render(request, "dashboard/insight_form_new.html", {
         "form": form, 
         "mode": "edit", 
         "insight": insight,

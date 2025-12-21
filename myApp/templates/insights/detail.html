@@ -14,17 +14,10 @@
   "image": "{{ insight.cover_image_url|default:'' }}",
   "datePublished": "{{ insight.published_at|date:'c'|default:insight.created_at|date:'c' }}",
   "dateModified": "{{ insight.updated_at|date:'c' }}",
-  {% if insight.author %}
-  "author": {
-    "@type": "Person",
-    "name": "{{ insight.author.get_full_name|default:insight.author.username|escapejs }}"
-  },
-  {% else %}
   "author": {
     "@type": "Organization",
     "name": "Hammer Group"
   },
-  {% endif %}
   "publisher": {
     "@type": "Organization",
     "name": "Hammer Group",
@@ -52,10 +45,6 @@
         <span>{{ insight.read_minutes }} min read</span>
         <span>•</span>
         <span>{{ insight.published_at|date:"M j, Y" }}</span>
-        {% if insight.author %}
-          <span>•</span>
-          <span>by {{ insight.author.username }}</span>
-        {% endif %}
       </div>
       {% if insight.cover_image_url %}
         <img src="{{ insight.cover_image_url }}" alt="{{ insight.title }}" class="w-full rounded-2xl shadow mt-6">
@@ -110,5 +99,179 @@
 
 <style>
 .line-clamp-2{ display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+
+/* Make links clearly clickable in article content */
+.prose a,
+article a {
+  color: #18AFAB !important;
+  text-decoration: underline;
+  text-decoration-color: rgba(24, 175, 171, 0.3);
+  text-underline-offset: 2px;
+  transition: all 0.2s ease;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.prose a:hover,
+article a:hover {
+  color: #159d99 !important;
+  text-decoration-color: #18AFAB;
+  text-decoration-thickness: 2px;
+}
+
+.prose a:visited,
+article a:visited {
+  color: #18AFAB !important;
+}
+
+/* Ensure links in paragraphs are styled */
+.prose p a,
+article p a {
+  color: #18AFAB !important;
+  text-decoration: underline;
+  text-decoration-color: rgba(24, 175, 171, 0.3);
+}
+
+.prose p a:hover,
+article p a:hover {
+  color: #159d99 !important;
+  text-decoration-color: #18AFAB;
+}
+
+/* Style links in lists */
+.prose ul a,
+.prose ol a,
+article ul a,
+article ol a {
+  color: #18AFAB !important;
+  text-decoration: underline;
+  text-decoration-color: rgba(24, 175, 171, 0.3);
+}
+
+.prose ul a:hover,
+.prose ol a:hover,
+article ul a:hover,
+article ol a:hover {
+  color: #159d99 !important;
+  text-decoration-color: #18AFAB;
+}
+
+/* Make plain URLs clickable - auto-convert URLs to links */
+.prose p,
+.prose li,
+article p,
+article li {
+  word-break: break-word;
+}
 </style>
+
+<script>
+// Convert plain text URLs to clickable links
+document.addEventListener('DOMContentLoaded', function() {
+  const article = document.querySelector('article.prose, article');
+  if (!article) return;
+
+  // Function to convert URLs to links
+  function linkifyText(element) {
+    const text = element.textContent;
+    if (!text) return;
+
+    // URL regex pattern
+    const urlPattern = /(https?:\/\/[^\s<>"{}|\\^`\[\]]+)/gi;
+    
+    // Check if element already contains links
+    if (element.querySelector('a')) return;
+
+    // Find all URLs
+    const matches = text.match(urlPattern);
+    if (!matches || matches.length === 0) return;
+
+    // Create HTML with links
+    let html = text;
+    matches.forEach(url => {
+      const escapedUrl = url.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const linkHtml = `<a href="${url}" target="_blank" rel="noopener noreferrer" class="text-[#18AFAB] underline decoration-[#18AFAB]/30 hover:decoration-[#18AFAB] hover:text-[#159d99] font-medium transition-all">${url}</a>`;
+      html = html.replace(new RegExp(escapedUrl, 'g'), linkHtml);
+    });
+
+    // Only update if we found URLs and they're not already linked
+    if (html !== text && html.includes('<a')) {
+      element.innerHTML = html;
+    }
+  }
+
+  // Process all paragraph and list item elements
+  const elementsToProcess = article.querySelectorAll('p, li, div');
+  elementsToProcess.forEach(element => {
+    // Skip if element already has links
+    if (element.querySelector('a')) return;
+    
+    // Only process if it looks like it might contain URLs
+    const text = element.textContent || '';
+    if (text.match(/https?:\/\//)) {
+      linkifyText(element);
+    }
+  });
+
+  // Also check for plain text URLs in the entire article
+  const walker = document.createTreeWalker(
+    article,
+    NodeFilter.SHOW_TEXT,
+    null,
+    false
+  );
+
+  const textNodes = [];
+  let node;
+  while (node = walker.nextNode()) {
+    if (node.textContent.match(/https?:\/\//)) {
+      textNodes.push(node);
+    }
+  }
+
+  textNodes.forEach(textNode => {
+    const parent = textNode.parentElement;
+    // Skip if parent already contains links
+    if (parent.querySelector('a')) return;
+    
+    const text = textNode.textContent;
+    const urlPattern = /(https?:\/\/[^\s<>"{}|\\^`\[\]]+)/gi;
+    
+    if (urlPattern.test(text)) {
+      const fragment = document.createDocumentFragment();
+      let lastIndex = 0;
+      let match;
+
+      // Reset regex
+      urlPattern.lastIndex = 0;
+      
+      while ((match = urlPattern.exec(text)) !== null) {
+        // Add text before URL
+        if (match.index > lastIndex) {
+          fragment.appendChild(document.createTextNode(text.substring(lastIndex, match.index)));
+        }
+        
+        // Create link element
+        const link = document.createElement('a');
+        link.href = match[0];
+        link.textContent = match[0];
+        link.target = '_blank';
+        link.rel = 'noopener noreferrer';
+        link.className = 'text-[#18AFAB] underline decoration-[#18AFAB]/30 hover:decoration-[#18AFAB] hover:text-[#159d99] font-medium transition-all';
+        fragment.appendChild(link);
+        
+        lastIndex = match.index + match[0].length;
+      }
+      
+      // Add remaining text
+      if (lastIndex < text.length) {
+        fragment.appendChild(document.createTextNode(text.substring(lastIndex)));
+      }
+      
+      // Replace text node with fragment
+      parent.replaceChild(fragment, textNode);
+    }
+  });
+});
+</script>
 {% endblock %}

@@ -193,12 +193,44 @@ class InsightForm(forms.ModelForm):
         fields = [
             "service",
             "title",
+            "excerpt",
+            "tag",
+            "slug",
             "cover_image_url", 
             "blocks",
             "published",
+            "published_at",
+            "read_minutes",
+            "is_active",
         ]
         widgets = {
             "blocks": forms.HiddenInput(),
+            "title": forms.TextInput(attrs={
+                "class": "text-3xl font-bold border-none focus:ring-0 p-0",
+                "placeholder": "Article title..."
+            }),
+            "excerpt": forms.Textarea(attrs={
+                "class": "text-lg border-none focus:ring-0 p-0 resize-none",
+                "rows": 2,
+                "placeholder": "Brief summary or subtitle (optional)..."
+            }),
+            "published_at": forms.DateTimeInput(attrs={
+                "type": "datetime-local",
+                "class": "w-full rounded-lg border border-gray-300 px-3 py-2"
+            }),
+            "slug": forms.TextInput(attrs={
+                "class": "font-mono text-sm",
+                "placeholder": "url-friendly-slug"
+            }),
+            "tag": forms.TextInput(attrs={
+                "placeholder": "e.g., Outdoor Living, Materials, Lighting",
+                "class": "w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-200 focus:border-indigo-400"
+            }),
+        }
+        help_texts = {
+            "excerpt": "Used for preview cards and meta descriptions",
+            "slug": "Auto-generated from title. Edit only if needed.",
+            "read_minutes": "Estimated reading time (auto-calculated)",
         }
 
 
