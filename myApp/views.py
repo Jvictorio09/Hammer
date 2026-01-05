@@ -58,6 +58,7 @@ from .models import (
 from .forms import ServiceForm, InsightForm, ServiceCapabilityFormSet, ServiceEditorialImageFormSet, ServiceProjectImageFormSet, CaseStudyFormSet, ServiceProcessStepFormSet
 from .utils.google_drive_utils import upload_from_google_drive_to_cloudinary, extract_file_id_from_url, bulk_upload_from_drive_folder
 from .utils.cloudinary_utils import smart_compress_to_bytes, upload_to_cloudinary, TARGET_BYTES
+from .utils.document_converter import convert_document_to_blocks
 from .utils.ai_metadata_generator import generate_metadata_with_ai
 from .spam_detection import validate_contact_submission, record_submission, get_client_ip
 from .models import BlockedEmail, BlockedIP, FormSubmission
@@ -1524,9 +1525,10 @@ def dashboard_insight_create(request):
     # Prepare empty blocks data for new insights
     blocks_json = "{}"
     
-    return render(request, "dashboard/insight_form.html", {
+    return render(request, "dashboard/insight_form_new.html", {
         "form": form, 
         "mode": "create",
+        "insight": None,  # No insight object for create mode
         "blocks_json": blocks_json
     })
 
@@ -1619,6 +1621,50 @@ def editor_image_upload(request):
     if "/upload/" in secure_url:
         web_url = secure_url.replace("/upload/", "/upload/f_auto,q_auto/")
     return JsonResponse({"url": secure_url, "web_url": web_url})
+
+
+@require_POST
+@blog_author_required
+def dashboard_insight_upload_document(request):
+    """
+    Upload a Word document or PDF and convert it to Editor.js blocks format.
+    Returns JSON with the blocks data that can be loaded into the editor.
+    """
+    file = request.FILES.get("file")
+    if not file:
+        return JsonResponse({"error": "No file provided"}, status=400)
+    
+    filename = file.name.lower()
+    if not (filename.endswith('.docx') or filename.endswith('.pdf')):
+        return JsonResponse({"error": "Unsupported file type. Please upload a .docx or .pdf file."}, status=400)
+    
+    try:
+        # Convert document to Editor.js blocks
+        blocks_data = convert_document_to_blocks(file)
+        
+        # Extract title from first heading or first paragraph
+        title = ""
+        if blocks_data.get("blocks"):
+            first_block = blocks_data["blocks"][0]
+            if first_block.get("type") == "header":
+                title = first_block.get("data", {}).get("text", "")
+            elif first_block.get("type") == "paragraph":
+                # Use first paragraph as title (truncated)
+                title = first_block.get("data", {}).get("text", "")[:100]
+        
+        return JsonResponse({
+            "success": True,
+            "blocks": blocks_data,
+            "title": title,
+            "message": f"Successfully converted {filename}"
+        })
+    except ImportError as e:
+        return JsonResponse({"error": str(e)}, status=500)
+    except ValueError as e:
+        return JsonResponse({"error": str(e)}, status=400)
+    except Exception as e:
+        logging.error(f"Error converting document: {str(e)}", exc_info=True)
+        return JsonResponse({"error": f"Error processing document: {str(e)}"}, status=500)
 
 
 @blog_author_required

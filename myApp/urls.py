@@ -90,6 +90,8 @@ urlpatterns = [
     path("dashboard/insights/import/", views.dashboard_insight_import_html, name="dashboard_insight_import"),
     # Editor.js uploader
     path("u/editor-image/", views.editor_image_upload, name="editor_image_upload"),
+    # Document converter for insights
+    path("dashboard/insights/upload-document/", views.dashboard_insight_upload_document, name="dashboard_insight_upload_document"),
     # Gallery API
     path("dashboard/gallery/api/images/", views.gallery_api_images, name="gallery_api_images"),
     path("dashboard/gallery/api/upload/", views.gallery_api_upload, name="gallery_api_upload"),
