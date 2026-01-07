@@ -239,3 +239,4 @@ def convert_document_to_blocks(file) -> Dict[str, Any]:
     # Convert text to Editor.js blocks
     return text_to_editorjs_blocks(text)
 
+

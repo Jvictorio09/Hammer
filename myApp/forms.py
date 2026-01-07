@@ -205,6 +205,7 @@ class InsightForm(forms.ModelForm):
         ]
         widgets = {
             "blocks": forms.HiddenInput(),
+            "slug": forms.HiddenInput(),  # Hide slug field - auto-generated from title
             "title": forms.TextInput(attrs={
                 "class": "text-3xl font-bold border-none focus:ring-0 p-0",
                 "placeholder": "Article title..."
@@ -218,10 +219,6 @@ class InsightForm(forms.ModelForm):
                 "type": "datetime-local",
                 "class": "w-full rounded-lg border border-gray-300 px-3 py-2"
             }),
-            "slug": forms.TextInput(attrs={
-                "class": "font-mono text-sm",
-                "placeholder": "url-friendly-slug"
-            }),
             "tag": forms.TextInput(attrs={
                 "placeholder": "e.g., Outdoor Living, Materials, Lighting",
                 "class": "w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-200 focus:border-indigo-400"
@@ -229,9 +226,43 @@ class InsightForm(forms.ModelForm):
         }
         help_texts = {
             "excerpt": "Used for preview cards and meta descriptions",
-            "slug": "Auto-generated from title. Edit only if needed.",
             "read_minutes": "Estimated reading time (auto-calculated)",
         }
+
+    def clean_slug(self):
+        """Auto-generate slug from title if not provided"""
+        slug = self.cleaned_data.get("slug", "").strip()
+        title = self.cleaned_data.get("title", "").strip()
+        
+        # If slug is empty, generate from title
+        if not slug and title:
+            slug = slugify(title)[:220]
+        
+        # Ensure slug is unique
+        if slug:
+            original_slug = slug
+            if self.instance and self.instance.pk:
+                # For existing insights, exclude current instance
+                existing = Insight.objects.filter(slug=slug).exclude(pk=self.instance.pk)
+            else:
+                # For new insights, check all
+                existing = Insight.objects.filter(slug=slug)
+            
+            counter = 2
+            while existing.exists():
+                slug = f"{original_slug[:217]}-{counter}"  # Keep under 220 chars
+                if self.instance and self.instance.pk:
+                    existing = Insight.objects.filter(slug=slug).exclude(pk=self.instance.pk)
+                else:
+                    existing = Insight.objects.filter(slug=slug)
+                counter += 1
+                if counter > 1000:  # Safety limit
+                    break
+        
+        if not slug:
+            raise forms.ValidationError("Slug cannot be empty. Please provide a title.")
+        
+        return slug
 
 
 # -----------------------------

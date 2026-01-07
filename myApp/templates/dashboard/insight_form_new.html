@@ -183,13 +183,8 @@
               {% endif %}
               <p class="text-xs text-gray-500 mt-1">Auto-calculated based on content</p>
             </div>
-            <div>
-              <label class="block text-xs text-gray-600 mb-1">Slug</label>
-              {{ form.slug }}
-              {% if form.slug.errors %}
-                <div class="text-xs text-red-600 mt-1">{{ form.slug.errors }}</div>
-              {% endif %}
-            </div>
+            <!-- Slug is auto-generated from title, hidden field -->
+            {{ form.slug }}
             <div>
               <label class="block text-xs text-gray-600 mb-1">Author</label>
               {% if insight and insight.author %}
@@ -873,13 +868,36 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   });
 
-  // Title tracking
+  // Title tracking and auto-slug generation
   const titleInput = document.querySelector('input[name="title"]');
+  const slugInput = document.querySelector('input[name="slug"]');
+  
+  // Function to generate slug from text
+  function generateSlug(text) {
+    return text
+      .toLowerCase()
+      .trim()
+      .replace(/[^\w\s-]/g, '') // Remove special characters
+      .replace(/[\s_-]+/g, '-')  // Replace spaces and underscores with hyphens
+      .replace(/^-+|-+$/g, '');  // Remove leading/trailing hyphens
+  }
+  
   if (titleInput) {
     titleInput.addEventListener('input', (e) => {
+      const title = e.target.value || '';
+      
+      // Update title display
       const titleEl = document.getElementById('currentTitle');
       if (titleEl) {
-        titleEl.textContent = e.target.value || 'Untitled';
+        titleEl.textContent = title || 'Untitled';
+      }
+      
+      // Auto-generate slug from title
+      if (slugInput && title) {
+        const generatedSlug = generateSlug(title).substring(0, 220);
+        slugInput.value = generatedSlug;
+      } else if (slugInput && !title) {
+        slugInput.value = '';
       }
     });
   }
