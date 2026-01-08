@@ -1,130 +1,377 @@
 {% extends "base.html" %}
-{% load static %}
-
-{% block title %}Login | Hammer Group{% endblock %}
-
-{% block content %}
-<div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 py-12 px-4 sm:px-6 lg:px-8">
-  <div class="max-w-md w-full space-y-8">
-    <!-- Logo and Branding -->
-    <div class="text-center">
-      <div class="flex items-center justify-center gap-3 mb-4">
-        <div class="w-12 h-12 rounded-lg bg-[#18AFAB] flex items-center justify-center shadow-lg">
-          <i class="fa-solid fa-hammer text-white text-xl"></i>
-        </div>
-        <div class="text-left">
-          <h1 class="text-2xl font-bold text-hammer-ink">HAMMER</h1>
-          <p class="text-xs font-semibold text-gray-500 tracking-wider">GROUP</p>
-        </div>
-      </div>
-      <p class="text-sm text-hammer-slate font-medium mb-2">Transforming Spaces, Redefining Living</p>
-      <p class="text-xs text-gray-500 uppercase tracking-widest">VILLAS | INTERIOR | LANDSCAPE | FACILITY</p>
-    </div>
-
-    <!-- Login Card -->
-    <div class="bg-white rounded-2xl shadow-xl p-8 border border-gray-100">
-      <h2 class="text-2xl font-bold text-hammer-ink mb-6 text-center">Sign in</h2>
-      
-      {% if form.non_field_errors %}
-        <div class="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
-          {% for error in form.non_field_errors %}
-            <p class="text-sm text-red-600">{{ error }}</p>
-          {% endfor %}
-        </div>
-      {% endif %}
-
-      <form method="post" class="space-y-6">
-        {% csrf_token %}
-        
-        <!-- Username Field -->
-        <div>
-          <label class="block text-sm font-semibold text-hammer-ink mb-2" for="id_username">
-            Username
-          </label>
-          <div class="relative">
-            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <i class="fa-solid fa-user text-gray-400"></i>
-            </div>
-            <input 
-              type="text" 
-              name="username" 
-              id="id_username" 
-              autofocus
-              required
-              class="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#18AFAB] focus:border-[#18AFAB] transition text-hammer-ink placeholder-gray-400"
-              placeholder="Enter your username"
-              value="{% if form.username.value %}{{ form.username.value }}{% endif %}"
-            >
-          </div>
-          {% if form.username.errors %}
-            {% for error in form.username.errors %}
-              <p class="mt-1 text-sm text-red-600">{{ error }}</p>
-            {% endfor %}
-          {% endif %}
-        </div>
-
-        <!-- Password Field -->
-        <div>
-          <label class="block text-sm font-semibold text-hammer-ink mb-2" for="id_password">
-            Password
-          </label>
-          <div class="relative">
-            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <i class="fa-solid fa-lock text-gray-400"></i>
-            </div>
-            <input 
-              type="password" 
-              name="password" 
-              id="id_password" 
-              required
-              class="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#18AFAB] focus:border-[#18AFAB] transition text-hammer-ink placeholder-gray-400"
-              placeholder="Enter your password"
-            >
-          </div>
-          {% if form.password.errors %}
-            {% for error in form.password.errors %}
-              <p class="mt-1 text-sm text-red-600">{{ error }}</p>
-            {% endfor %}
-          {% endif %}
-        </div>
-
-        <!-- Login Button -->
-        <button 
-          type="submit" 
-          class="w-full bg-[#18AFAB] hover:bg-[#159691] text-white font-semibold py-3 px-4 rounded-lg transition-all duration-200 shadow-md hover:shadow-lg transform hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-[#18AFAB] focus:ring-offset-2"
-        >
-          <span class="flex items-center justify-center gap-2">
-            <i class="fa-solid fa-sign-in-alt"></i>
-            <span>Login</span>
-          </span>
-        </button>
-      </form>
-
-      <!-- Additional Info -->
-      <div class="mt-6 pt-6 border-t border-gray-200">
-        <p class="text-xs text-center text-gray-500">
-          Access the Hammer Group dashboard to manage content, insights, and services.
-        </p>
-      </div>
-    </div>
-
-    <!-- Footer Note -->
-    <p class="text-center text-xs text-gray-400">
-      © 2025 Hammer Group. All rights reserved.
-    </p>
-  </div>
-</div>
-
+{% load form_extras %}
+{% block title %}Login | Hammer{% endblock %}
+{% block extra_head %}
 <style>
-  /* Smooth focus transitions */
-  input:focus {
+  /* Premium Login Page Styles */
+  /* Hide header and footer on login page */
+  body > header,
+  body > footer,
+  body > main > header,
+  body > main > footer {
+    display: none !important;
+  }
+
+  body > main {
+    padding-top: 0 !important;
+    min-height: 100vh;
+  }
+
+  .login-container {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(135deg, #0B0E14 0%, #1F231F 25%, #282D27 50%, #1F231F 75%, #0B0E14 100%);
+    padding: 2rem;
+    margin: 0;
+  }
+
+  /* Animated background gradient orbs */
+  .login-container::before,
+  .login-container::after {
+    content: '';
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(80px);
+    opacity: 0.15;
+    animation: float 20s ease-in-out infinite;
+  }
+
+  .login-container::before {
+    width: 500px;
+    height: 500px;
+    background: #18AFAB;
+    top: -250px;
+    left: -250px;
+    animation-delay: 0s;
+  }
+
+  .login-container::after {
+    width: 400px;
+    height: 400px;
+    background: #27647F;
+    bottom: -200px;
+    right: -200px;
+    animation-delay: 10s;
+  }
+
+  @keyframes float {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    33% { transform: translate(30px, -30px) scale(1.1); }
+    66% { transform: translate(-20px, 20px) scale(0.9); }
+  }
+
+  /* Glassmorphic card */
+  .login-card {
+    position: relative;
+    z-index: 10;
+    width: 100%;
+    max-width: 440px;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border-radius: 24px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    box-shadow: 
+      0 20px 60px rgba(0, 0, 0, 0.3),
+      0 0 0 1px rgba(255, 255, 255, 0.1) inset,
+      0 1px 0 rgba(255, 255, 255, 0.6) inset;
+    padding: 3rem 2.5rem;
+    animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+
+  .login-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 
+      0 24px 72px rgba(0, 0, 0, 0.35),
+      0 0 0 1px rgba(255, 255, 255, 0.2) inset,
+      0 1px 0 rgba(255, 255, 255, 0.7) inset;
+  }
+
+  @keyframes slideUp {
+    from {
+      opacity: 0;
+      transform: translateY(30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* Brand header */
+  .login-header {
+    text-align: center;
+    margin-bottom: 2.5rem;
+  }
+
+  .login-logo {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 64px;
+    height: 64px;
+    background: linear-gradient(135deg, #18AFAB 0%, #27647F 100%);
+    border-radius: 16px;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 8px 24px rgba(24, 175, 171, 0.3);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .login-logo::after {
+    content: '';
+    position: absolute;
+    inset: -50%;
+    background: linear-gradient(115deg, transparent 0%, rgba(255,255,255,0.4) 50%, transparent 100%);
+    transform: rotate(45deg);
+    animation: shimmer 3s ease-in-out infinite;
+  }
+
+  @keyframes shimmer {
+    0%, 100% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+    50% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+  }
+
+  .login-logo i {
+    font-size: 1.75rem;
+    color: white;
+    z-index: 1;
+    position: relative;
+  }
+
+  .login-title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #0B0E14;
+    margin-bottom: 0.5rem;
+    letter-spacing: -0.02em;
+  }
+
+  .login-subtitle {
+    font-size: 0.9375rem;
+    color: #64748B;
+    font-weight: 400;
+  }
+
+  /* Form styling */
+  .login-form {
+    /* Form spacing handled by form-group margins */
+  }
+
+  .form-group {
+    margin-bottom: 1.5rem;
+  }
+
+  .form-label {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #1E293B;
+    margin-bottom: 0.5rem;
+    letter-spacing: 0.01em;
+  }
+
+  .form-input {
+    width: 100%;
+    padding: 0.875rem 1rem;
+    font-size: 0.9375rem;
+    background: rgba(255, 255, 255, 0.8);
+    border: 1.5px solid #E2E8F0;
+    border-radius: 12px;
+    color: #0B0E14;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     outline: none;
   }
-  
-  /* Custom checkbox/input styling if needed */
-  input[type="text"]:focus,
-  input[type="password"]:focus {
-    box-shadow: 0 0 0 3px rgba(24, 175, 171, 0.1);
+
+  .form-input::placeholder {
+    color: #94A3B8;
+  }
+
+  .form-input:focus {
+    background: rgba(255, 255, 255, 1);
+    border-color: #18AFAB;
+    box-shadow: 
+      0 0 0 4px rgba(24, 175, 171, 0.1),
+      0 4px 12px rgba(24, 175, 171, 0.15);
+    transform: translateY(-1px);
+  }
+
+  .form-input:hover:not(:focus) {
+    border-color: #CBD5E1;
+  }
+
+  /* Error messages */
+  .form-error {
+    margin-top: 0.5rem;
+    font-size: 0.8125rem;
+    color: #EF4444;
+    font-weight: 500;
+  }
+
+  .form-non-field-error {
+    margin-bottom: 1.5rem;
+    padding: 0.875rem 1rem;
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.2);
+    border-radius: 12px;
+    color: #EF4444;
+    font-size: 0.875rem;
+    font-weight: 500;
+  }
+
+  /* Submit button */
+  .login-button {
+    width: 100%;
+    padding: 0.9375rem 1.5rem;
+    font-size: 0.9375rem;
+    font-weight: 700;
+    color: white;
+    background: linear-gradient(135deg, #18AFAB 0%, #27647F 100%);
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 
+      0 4px 12px rgba(24, 175, 171, 0.3),
+      0 2px 4px rgba(24, 175, 171, 0.2);
+    position: relative;
+    overflow: hidden;
+    letter-spacing: 0.02em;
+  }
+
+  .login-button::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.2) 0%, transparent 100%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  .login-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 
+      0 8px 20px rgba(24, 175, 171, 0.4),
+      0 4px 8px rgba(24, 175, 171, 0.3);
+  }
+
+  .login-button:hover::before {
+    opacity: 1;
+  }
+
+  .login-button:active {
+    transform: translateY(0);
+    box-shadow: 
+      0 2px 8px rgba(24, 175, 171, 0.3),
+      0 1px 2px rgba(24, 175, 171, 0.2);
+  }
+
+  /* Divider */
+  .login-divider {
+    display: flex;
+    align-items: center;
+    margin: 2rem 0;
+    color: #CBD5E1;
+    font-size: 0.8125rem;
+  }
+
+  .login-divider::before,
+  .login-divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(to right, transparent, #E2E8F0, transparent);
+  }
+
+  /* Responsive */
+  @media (max-width: 640px) {
+    .login-card {
+      padding: 2.5rem 2rem;
+      border-radius: 20px;
+    }
+
+    .login-title {
+      font-size: 1.75rem;
+    }
+
+    .login-logo {
+      width: 56px;
+      height: 56px;
+    }
+  }
+
+  /* Accessibility */
+  @media (prefers-reduced-motion: reduce) {
+    .login-container::before,
+    .login-container::after,
+    .login-logo::after {
+      animation: none;
+    }
+
+    .login-card {
+      animation: none;
+    }
   }
 </style>
 {% endblock %}
+{% block content %}
+<div class="login-container">
+  <div class="login-card">
+    <div class="login-header">
+      <div class="login-logo">
+        <i class="fa-solid fa-hammer"></i>
+      </div>
+      <h1 class="login-title">Welcome Back</h1>
+      <p class="login-subtitle">Sign in to access your dashboard</p>
+    </div>
+
+    <form method="post" class="login-form">
+      {% csrf_token %}
+      
+      {% if form.non_field_errors %}
+        <div class="form-non-field-error">
+          {{ form.non_field_errors }}
+        </div>
+      {% endif %}
+
+      <div class="form-group">
+        <label class="form-label" for="id_username">Username</label>
+        {{ form.username|add_class:"form-input" }}
+        {% for err in form.username.errors %}
+          <p class="form-error">{{ err }}</p>
+        {% endfor %}
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="id_password">Password</label>
+        {{ form.password|add_class:"form-input" }}
+        {% for err in form.password.errors %}
+          <p class="form-error">{{ err }}</p>
+        {% endfor %}
+      </div>
+
+      <button class="login-button" type="submit">
+        Sign In
+      </button>
+    </form>
+  </div>
+</div>
+
+<script>
+  // Add classes to form inputs if not already styled
+  document.addEventListener('DOMContentLoaded', function() {
+    const inputs = document.querySelectorAll('.form-input');
+    inputs.forEach(input => {
+      if (!input.classList.contains('form-input')) {
+        input.classList.add('form-input');
+      }
+    });
+  });
+</script>
+{% endblock %}
+

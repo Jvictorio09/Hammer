@@ -233,8 +233,40 @@ class Insight(TimeStamped):
         return self.title
 
     def save(self, *args, **kwargs):
-        if not self.slug:
-            self.slug = slugify(self.title)[:220]
+        # Generate slug from title if empty or invalid (like "-")
+        if not self.slug or self.slug.strip() == "-" or not self.slug.strip():
+            base_slug = slugify(self.title)[:220]
+            if not base_slug:
+                # Fallback if title doesn't generate a valid slug
+                base_slug = "insight"
+            
+            # Ensure slug is unique
+            original_slug = base_slug
+            counter = 1
+            
+            # Check for existing insights with this slug (exclude current instance if updating)
+            if self.pk:
+                existing = Insight.objects.filter(slug=base_slug).exclude(pk=self.pk)
+            else:
+                existing = Insight.objects.filter(slug=base_slug)
+            
+            # If slug exists, append number until unique
+            while existing.exists():
+                counter += 1
+                # Keep total length under 220 chars (account for "-{counter}")
+                max_base_length = 220 - len(str(counter)) - 1
+                base_slug = f"{original_slug[:max_base_length]}-{counter}"
+                if self.pk:
+                    existing = Insight.objects.filter(slug=base_slug).exclude(pk=self.pk)
+                else:
+                    existing = Insight.objects.filter(slug=base_slug)
+                
+                # Safety limit
+                if counter > 10000:
+                    break
+            
+            self.slug = base_slug
+        
         super().save(*args, **kwargs)
 
 

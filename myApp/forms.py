@@ -230,13 +230,18 @@ class InsightForm(forms.ModelForm):
         }
 
     def clean_slug(self):
-        """Auto-generate slug from title if not provided"""
+        """Auto-generate slug from title if not provided or invalid"""
         slug = self.cleaned_data.get("slug", "").strip()
         title = self.cleaned_data.get("title", "").strip()
         
-        # If slug is empty, generate from title
-        if not slug and title:
+        # If slug is empty or invalid (like "-"), generate from title
+        if not slug or slug == "-" or not slug.strip():
+            if not title:
+                raise forms.ValidationError("Title is required to generate a slug.")
             slug = slugify(title)[:220]
+            if not slug:
+                # Fallback if title doesn't generate a valid slug
+                slug = "insight"
         
         # Ensure slug is unique
         if slug:
@@ -250,13 +255,15 @@ class InsightForm(forms.ModelForm):
             
             counter = 2
             while existing.exists():
-                slug = f"{original_slug[:217]}-{counter}"  # Keep under 220 chars
+                # Keep total length under 220 chars (account for "-{counter}")
+                max_base_length = 220 - len(str(counter)) - 1
+                slug = f"{original_slug[:max_base_length]}-{counter}"
                 if self.instance and self.instance.pk:
                     existing = Insight.objects.filter(slug=slug).exclude(pk=self.instance.pk)
                 else:
                     existing = Insight.objects.filter(slug=slug)
                 counter += 1
-                if counter > 1000:  # Safety limit
+                if counter > 10000:  # Safety limit
                     break
         
         if not slug:
