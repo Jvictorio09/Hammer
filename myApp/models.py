@@ -269,6 +269,10 @@ class Insight(TimeStamped):
         
         super().save(*args, **kwargs)
 
+    def get_absolute_url(self):
+        """Return the detail page URL for this insight"""
+        return reverse('insight_detail', kwargs={'slug': self.slug})
+
 
 class ContentVersion(TimeStamped):
     insight = models.ForeignKey(Insight, related_name="versions", on_delete=models.CASCADE)
