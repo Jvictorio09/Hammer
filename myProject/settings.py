@@ -103,17 +103,15 @@ WSGI_APPLICATION = 'myProject.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
-# MIGRATION: Dual-database configuration for SQLite → PostgreSQL migration
-# After migration is complete, remove the 'sqlite' entry and keep only 'default'
+# Database configuration
+# Always use DATABASE_URL if available (PostgreSQL), fallback to SQLite only if not set
 
 import dj_database_url
 
-# Check if DATABASE_URL is set (for PostgreSQL on Railway)
 DATABASE_URL = os.getenv('DATABASE_URL')
 
 if DATABASE_URL:
-    # MIGRATION: Production/PostgreSQL configuration
-    # Parse DATABASE_URL and ensure SSL is required for Railway
+    # Use PostgreSQL from DATABASE_URL (works for both local and production)
     DATABASES = {
         'default': dj_database_url.config(
             default=DATABASE_URL,
@@ -121,14 +119,9 @@ if DATABASE_URL:
             conn_health_checks=True,
             ssl_require=True,
         ),
-        # MIGRATION: Keep SQLite available for data export during migration
-        'sqlite': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': BASE_DIR / 'db.sqlite3',
-        }
     }
 else:
-    # MIGRATION: Development/SQLite configuration (fallback)
+    # Fallback to SQLite only if DATABASE_URL is not set
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',

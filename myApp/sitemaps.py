@@ -79,3 +79,4 @@ sitemaps = {
     'team': TeamMemberSitemap,
     'static': StaticViewSitemap,
 }
+

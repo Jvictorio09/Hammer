@@ -31,11 +31,24 @@ urlpatterns = [
     path("interior/", views.legacy_interior, name="legacy_interior"),
     path("interior", views.legacy_interior, name="legacy_interior"),
 
-    path("interior/residential-fit-out-company-in-dubai/", views.legacy_interior, name="legacy_interior"),
+    # Explicit routes for common ad URLs (must come BEFORE catchall)
+    # These ensure Google Ads validation passes for frequently used URLs
+    path("interior/residential-fit-out-company-in-dubai/", views.legacy_interior, name="legacy_interior_residential_fitout_company"),
+    path("interior/residential-fit-out/", views.legacy_interior, name="legacy_interior_residential_fitout"),
+    
+    # Explicit routes for landscape sub-paths (must come BEFORE catchall)
+    path("landscape/landscaping-company-projects/", views.landscape_projects, name="landscape_projects"),
+    path("landscape/blog/", views.landscape_blog, name="landscape_blog"),
+    path("landscape/landscape-design-development-company/", views.legacy_landscape, name="legacy_landscape"),
+    
+    # Legacy landscape sub-paths - catch-all for /landscape/* paths that don't exist
+    # This handles: /landscape/faqs/, /landscape/about/, etc.
+    # MUST come after explicit routes to avoid conflicts
+    path("landscape/<path:sub_path>/", views.legacy_landscape_catchall, name="legacy_landscape_catchall"),
     
     # Legacy interior sub-paths - catch-all for /interior/* paths that don't exist
     # This handles: /interior/faqs/, /interior/interior-company-about-us/, /interior/ourproject/*, etc.
-    # MUST come after the base /interior/ route to avoid conflicts
+    # MUST come after explicit routes to avoid conflicts
     path("interior/<path:sub_path>/", views.legacy_interior_catchall, name="legacy_interior_catchall"),
     path("facility/", views.legacy_facility, name="legacy_facility"),
     path("facility", views.legacy_facility, name="legacy_facility"),
@@ -45,7 +58,6 @@ urlpatterns = [
 
     path("blogs/", views.legacy_blogs, name="legacy_blogs"),
     path("landscaping/", views.legacy_landscape, name="legacy_landscape"),
-    path("landscape/landscape-design-development-company/", views.legacy_landscape, name="legacy_landscape"),
 
     
     # Legacy redirects moved above to avoid conflicts

@@ -452,6 +452,95 @@ def legacy_landscape(request):
     """Legacy view for /landscape/ - serves landscape-design-build service"""
     return service_detail(request, "landscape-design-build")
 
+def landscape_projects(request):
+    """Serve projects page filtered by landscape service at /landscape/landscaping-company-projects/"""
+    return projects_index(request, service_slug='landscape-design-build')
+
+def landscape_blog(request):
+    """Serve insights/blog list filtered by landscape service at /landscape/blog/"""
+    return insights_list(request, service_slug='landscape-design-build')
+
+def legacy_landscape_catchall(request, sub_path=None):
+    """
+    Handle legacy /landscape/* sub-paths by serving content at the same URL (no redirects).
+    This keeps the URL visible to Google while showing the appropriate content.
+    
+    Handles:
+    - /landscape/faqs/ -> renders landscape service page (has FAQs)
+    - /landscape/about/ -> renders about page
+    - /landscape/blog/ -> renders insights list filtered by landscape (handled by explicit route)
+    - /landscape/landscaping-company-projects/ -> renders projects filtered by landscape (handled by explicit route)
+    - Any other /landscape/* -> renders landscape service page (fallback)
+    """
+    from django.utils.text import slugify
+    
+    # Extract sub_path from request if not provided as argument
+    if sub_path is None:
+        # Get the path from the request
+        path = request.path.strip('/')
+        if path.startswith('landscape/'):
+            sub_path = path.replace('landscape/', '', 1).strip('/')
+        else:
+            sub_path = ''
+    
+    if sub_path:
+        sub_path = sub_path.strip('/').lower()
+    else:
+        sub_path = ''
+    
+    # If empty or just whitespace, serve main landscape page
+    if not sub_path:
+        return service_detail(request, "landscape-design-build")
+    
+    # Handle specific known patterns
+    if sub_path == 'faqs':
+        # FAQs are on the main service page - serve it at this URL
+        return service_detail(request, "landscape-design-build")
+    
+    if 'about' in sub_path:
+        # About page - serve it at this URL
+        return about(request)
+    
+    # Handle project URLs: /landscape/ourproject/slug/
+    if sub_path.startswith('ourproject/'):
+        project_slug = sub_path.replace('ourproject/', '').strip('/')
+        
+        # Try to find matching case study by slug
+        try:
+            case_study = CaseStudy.objects.filter(
+                slug=project_slug
+            ).first()
+            
+            if not case_study:
+                # Try to match by partial slug
+                keywords = [w for w in project_slug.split('-') if len(w) > 3]
+                if keywords:
+                    from django.db.models import Q
+                    query = Q()
+                    for keyword in keywords:
+                        query |= Q(slug__icontains=keyword) | Q(title__icontains=keyword)
+                    
+                    case_studies = CaseStudy.objects.filter(query).filter(
+                        service__slug='landscape-design-build'
+                    )[:5]
+                    
+                    if case_studies.exists():
+                        return case_study_detail(request, case_studies.first().slug)
+            
+            if case_study:
+                return case_study_detail(request, case_study.slug)
+        except Exception:
+            pass
+        
+        # Fallback: serve projects page filtered by landscape
+        try:
+            return projects_index(request, service_slug='landscape-design-build')
+        except:
+            return projects_index(request, service_slug=None)
+    
+    # Default fallback: serve main landscape service page at this URL
+    return service_detail(request, "landscape-design-build")
+
 def legacy_interior(request):
     """Legacy view for /interior/ - serves interior-design-build service"""
     return service_detail(request, "interior-design-build")
@@ -557,15 +646,28 @@ def legacy_blogs(request):
 # -----------------------------
 # Public Insights List
 # -----------------------------
-def insights_list(request):
-    """Public-facing list of all published insights/blog posts"""
+def insights_list(request, service_slug=None):
+    """
+    Public-facing list of all published insights/blog posts.
+    Optional filter by service via service_slug parameter.
+    """
     insights = Insight.objects.filter(
         published=True,
         is_active=True
     ).select_related('service', 'author').order_by('-published_at', '-created_at')
     
+    # Filter by service if provided
+    current_service = None
+    if service_slug:
+        try:
+            current_service = Service.objects.get(slug=service_slug, is_active=True)
+            insights = insights.filter(service=current_service)
+        except Service.DoesNotExist:
+            pass  # If service not found, show all insights
+    
     return render(request, "insights_list.html", {
-        "insights": insights
+        "insights": insights,
+        "current_service": current_service
     })
 
 
