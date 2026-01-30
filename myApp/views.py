@@ -20,7 +20,7 @@ from django.urls import reverse
 from django.utils.html import escape
 from django.views.decorators.http import require_http_methods
 from django.shortcuts import render, get_object_or_404
-from django.db import IntegrityError
+from django.db import IntegrityError, connection
 from django.db.models import Q
 from django.utils import timezone
 from django.db.models import Prefetch
@@ -1575,6 +1575,30 @@ def dashboard_service_delete(request, pk: int):
 
 
 # ---- Insights CRUD ----
+def _fix_model_sequence(model):
+    """Fix PostgreSQL sequence for a model to prevent duplicate key errors"""
+    try:
+        table = model._meta.db_table
+        quoted_table = connection.ops.quote_name(table)
+        pg_table_literal = f'"{table}"'
+        
+        with connection.cursor() as cursor:
+            cursor.execute(
+                """
+                SELECT setval(
+                    pg_get_serial_sequence(%s, 'id'),
+                    COALESCE((SELECT MAX(id) FROM {table}), 1),
+                    true
+                );
+                """.format(table=quoted_table),
+                [pg_table_literal],
+            )
+            return cursor.fetchone()[0] if cursor.rowcount > 0 else None
+    except Exception as e:
+        logging.error(f"Error fixing sequence for {model.__name__}: {e}")
+        return None
+
+
 @blog_author_required
 def dashboard_insights_list(request):
     insights = Insight.objects.select_related("service", "author").order_by("-published_at", "-created_at")
@@ -1599,7 +1623,31 @@ def dashboard_insight_create(request):
             if insight.published and not insight.published_at:
                 insight.published_at = timezone.now()
             
-            insight.save()
+            # Save with automatic sequence fix on IntegrityError
+            try:
+                insight.save()
+            except IntegrityError as e:
+                # Check if it's a primary key constraint violation
+                error_msg = str(e)
+                if 'duplicate key value violates unique constraint' in error_msg and '_pkey' in error_msg:
+                    # Fix the sequence and retry
+                    logging.warning(f"Sequence out of sync for Insight, fixing automatically: {error_msg}")
+                    _fix_model_sequence(Insight)
+                    try:
+                        insight.save()
+                    except IntegrityError as retry_error:
+                        # If it still fails after fixing, show error to user
+                        messages.error(request, f"Failed to create insight. Please contact support. Error: {retry_error}")
+                        logging.error(f"Failed to save insight after sequence fix: {retry_error}")
+                        # Re-render form with error
+                        return render(request, "dashboard/insight_form_new.html", {
+                            "form": form,
+                            "mode": "create",
+                            "insight": None,
+                        })
+                else:
+                    # Different IntegrityError (e.g., unique constraint on slug)
+                    raise
             
             # Create version snapshot
             try:
