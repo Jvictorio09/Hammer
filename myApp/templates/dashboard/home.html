@@ -29,6 +29,14 @@
     <div class="text-lg font-medium mb-1">🛡️ Spam Blocking</div>
     <p class="text-slate-600">Manage blocked emails, IPs, and view form submissions.</p>
   </a>
+  <a href="{% url 'dashboard_jobs_list' %}" class="block rounded-xl border border-slate-100 bg-white p-6 shadow-sm hover:shadow transition">
+    <div class="text-lg font-medium mb-1">💼 Job Postings</div>
+    <p class="text-slate-600">Create and manage job openings and positions.</p>
+  </a>
+  <a href="{% url 'dashboard_applications_list' %}" class="block rounded-xl border border-slate-100 bg-white p-6 shadow-sm hover:shadow transition">
+    <div class="text-lg font-medium mb-1">📋 Applications</div>
+    <p class="text-slate-600">Review and manage job applications from candidates.</p>
+  </a>
   {% endif %}
   <button type="button" id="openGalleryBtn" class="block rounded-xl border border-slate-100 bg-white p-6 shadow-sm hover:shadow transition text-left">
     <div class="text-lg font-medium mb-1">📷 Gallery</div>

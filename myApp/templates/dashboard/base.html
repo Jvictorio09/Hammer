@@ -81,6 +81,18 @@
               <i class="fa-solid fa-chevron-right text-xs opacity-60 group-hover:translate-x-0.5 transition"></i>
             </a>
             {% if request.user.is_superuser or request.user.profile.is_admin %}
+            <a href="{% url 'dashboard_jobs_list' %}"
+               class="group flex items-center justify-between rounded-lg px-3 py-2 border border-transparent hover:border-slate-200 transition {% if 'dashboard_job' in request.resolver_match.url_name or 'dashboard_jobs' in request.resolver_match.url_name %}bg-indigo-50 text-indigo-900 font-semibold{% else %}text-slate-700 hover:bg-slate-50{% endif %}">
+              <span class="flex items-center gap-2"><i class="fa-solid fa-briefcase"></i> Job Postings</span>
+              <i class="fa-solid fa-chevron-right text-xs opacity-60 group-hover:translate-x-0.5 transition"></i>
+            </a>
+            <a href="{% url 'dashboard_applications_list' %}"
+               class="group flex items-center justify-between rounded-lg px-3 py-2 border border-transparent hover:border-slate-200 transition {% if 'dashboard_application' in request.resolver_match.url_name or 'dashboard_applications' in request.resolver_match.url_name %}bg-indigo-50 text-indigo-900 font-semibold{% else %}text-slate-700 hover:bg-slate-50{% endif %}">
+              <span class="flex items-center gap-2"><i class="fa-solid fa-file-lines"></i> Applications</span>
+              <i class="fa-solid fa-chevron-right text-xs opacity-60 group-hover:translate-x-0.5 transition"></i>
+            </a>
+            {% endif %}
+            {% if request.user.is_superuser or request.user.profile.is_admin %}
             <a href="{% url 'dashboard_users_list' %}"
                class="group flex items-center justify-between rounded-lg px-3 py-2 border border-transparent hover:border-slate-200 transition {% if request.resolver_match.url_name == 'dashboard_users_list' %}bg-indigo-50 text-indigo-900 font-semibold{% else %}text-slate-700 hover:bg-slate-50{% endif %}">
               <span class="flex items-center gap-2"><i class="fa-solid fa-users"></i> Users</span>

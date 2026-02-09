@@ -1,0 +1,672 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Career Opportunities | Apply Now{% endblock %}
+
+{% block content %}
+<section class="relative min-h-screen bg-gradient-to-br from-slate-50 via-white to-indigo-50/30 py-16 md:py-24">
+  <!-- Background decoration -->
+  <div class="pointer-events-none absolute inset-0 opacity-[.03] bg-[url('https://www.transparenttextures.com/patterns/white-diamond.png')]"></div>
+  <div class="pointer-events-none absolute inset-0 bg-[radial-gradient(80%_60%_at_50%_50%,rgba(99,102,241,.08),transparent_70%)]"></div>
+  
+  <div class="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+    <!-- Header -->
+    <div class="text-center mb-12">
+      <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-indigo-600 to-purple-600 mb-6 shadow-lg">
+        <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+        </svg>
+      </div>
+      <h1 class="text-4xl md:text-5xl font-extrabold text-gray-900 mb-4">
+        Join Our <span class="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600">Team</span>
+      </h1>
+      <p class="text-xl text-gray-600 max-w-2xl mx-auto">
+        We're always looking for talented individuals to join our growing team. Submit your application below.
+      </p>
+    </div>
+
+    <!-- Form Card -->
+    <div class="bg-white rounded-3xl shadow-2xl border border-gray-100 overflow-hidden">
+      <form method="post" enctype="multipart/form-data" class="p-8 md:p-10 space-y-8" id="jobApplicationForm">
+        {% csrf_token %}
+        
+        {% if messages %}
+          <div class="mb-6">
+            {% for message in messages %}
+              <div class="rounded-xl p-4 {% if message.tags == 'success' %}bg-green-50 border border-green-200 text-green-800{% else %}bg-red-50 border border-red-200 text-red-800{% endif %}">
+                {{ message }}
+              </div>
+            {% endfor %}
+          </div>
+        {% endif %}
+
+        <!-- Personal Information Section -->
+        <div class="space-y-6">
+          <div class="flex items-center gap-3 pb-4 border-b border-gray-200">
+            <div class="flex-shrink-0 w-10 h-10 rounded-lg bg-indigo-100 flex items-center justify-center">
+              <svg class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+              </svg>
+            </div>
+            <h2 class="text-2xl font-bold text-gray-900">Personal Information</h2>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label for="{{ form.full_name.id_for_label }}" class="block text-sm font-semibold text-gray-700 mb-2">
+                {{ form.full_name.label }}
+              </label>
+              {{ form.full_name }}
+              {% if form.full_name.errors %}
+                <p class="mt-1 text-sm text-red-600">{{ form.full_name.errors.0 }}</p>
+              {% endif %}
+            </div>
+
+            <div>
+              <label for="{{ form.email.id_for_label }}" class="block text-sm font-semibold text-gray-700 mb-2">
+                {{ form.email.label }}
+              </label>
+              {{ form.email }}
+              {% if form.email.errors %}
+                <p class="mt-1 text-sm text-red-600">{{ form.email.errors.0 }}</p>
+              {% endif %}
+            </div>
+
+            <div>
+              <label for="{{ form.mobile_number.id_for_label }}" class="block text-sm font-semibold text-gray-700 mb-2">
+                {{ form.mobile_number.label }}
+              </label>
+              {{ form.mobile_number }}
+              {% if form.mobile_number.errors %}
+                <p class="mt-1 text-sm text-red-600">{{ form.mobile_number.errors.0 }}</p>
+              {% endif %}
+            </div>
+
+            <div>
+              <label for="{{ form.current_location.id_for_label }}" class="block text-sm font-semibold text-gray-700 mb-2">
+                {{ form.current_location.label }}
+              </label>
+              {{ form.current_location }}
+              {% if form.current_location.errors %}
+                <p class="mt-1 text-sm text-red-600">{{ form.current_location.errors.0 }}</p>
+              {% endif %}
+            </div>
+
+            <div>
+              <label for="{{ form.nationality.id_for_label }}" class="block text-sm font-semibold text-gray-700 mb-2">
+                {{ form.nationality.label }}
+              </label>
+              {{ form.nationality }}
+              {% if form.nationality.errors %}
+                <p class="mt-1 text-sm text-red-600">{{ form.nationality.errors.0 }}</p>
+              {% endif %}
+            </div>
+
+            <div>
+              <label for="{{ form.visa_status.id_for_label }}" class="block text-sm font-semibold text-gray-700 mb-2">
+                {{ form.visa_status.label }}
+              </label>
+              {{ form.visa_status }}
+              {% if form.visa_status.errors %}
+                <p class="mt-1 text-sm text-red-600">{{ form.visa_status.errors.0 }}</p>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+
+        <!-- Position Details Section -->
+        <div class="space-y-6 pt-8 border-t border-gray-200">
+          <div class="flex items-center gap-3 pb-4">
+            <div class="flex-shrink-0 w-10 h-10 rounded-lg bg-purple-100 flex items-center justify-center">
+              <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+              </svg>
+            </div>
+            <h2 class="text-2xl font-bold text-gray-900">Position Details</h2>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label for="{{ form.position_applied_for.id_for_label }}" class="block text-sm font-semibold text-gray-700 mb-2">
+                {{ form.position_applied_for.label }}
+              </label>
+              {{ form.position_applied_for }}
+              {% if form.position_applied_for.errors %}
+                <p class="mt-1 text-sm text-red-600">{{ form.position_applied_for.errors.0 }}</p>
+              {% endif %}
+            </div>
+
+            <div id="customPositionField" style="display: none;">
+              <label for="{{ form.position_custom.id_for_label }}" class="block text-sm font-semibold text-gray-700 mb-2">
+                {{ form.position_custom.label }}
+              </label>
+              {{ form.position_custom }}
+              {% if form.position_custom.errors %}
+                <p class="mt-1 text-sm text-red-600">{{ form.position_custom.errors.0 }}</p>
+              {% endif %}
+            </div>
+
+            <div>
+              <label for="{{ form.department.id_for_label }}" class="block text-sm font-semibold text-gray-700 mb-2">
+                {{ form.department.label }}
+              </label>
+              {{ form.department }}
+              {% if form.department.errors %}
+                <p class="mt-1 text-sm text-red-600">{{ form.department.errors.0 }}</p>
+              {% endif %}
+              {% if form.department.help_text %}
+                <p class="mt-1 text-xs text-gray-500">{{ form.department.help_text }}</p>
+              {% endif %}
+            </div>
+
+            <div>
+              <label for="{{ form.years_of_experience.id_for_label }}" class="block text-sm font-semibold text-gray-700 mb-2">
+                {{ form.years_of_experience.label }}
+              </label>
+              {{ form.years_of_experience }}
+              {% if form.years_of_experience.errors %}
+                <p class="mt-1 text-sm text-red-600">{{ form.years_of_experience.errors.0 }}</p>
+              {% endif %}
+            </div>
+
+            <div>
+              <label for="{{ form.notice_period.id_for_label }}" class="block text-sm font-semibold text-gray-700 mb-2">
+                {{ form.notice_period.label }}
+              </label>
+              {{ form.notice_period }}
+              {% if form.notice_period.errors %}
+                <p class="mt-1 text-sm text-red-600">{{ form.notice_period.errors.0 }}</p>
+              {% endif %}
+            </div>
+
+            <div>
+              <label for="{{ form.expected_salary_aed.id_for_label }}" class="block text-sm font-semibold text-gray-700 mb-2">
+                {{ form.expected_salary_aed.label }}
+              </label>
+              {{ form.expected_salary_aed }}
+              {% if form.expected_salary_aed.errors %}
+                <p class="mt-1 text-sm text-red-600">{{ form.expected_salary_aed.errors.0 }}</p>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+
+        <!-- Attachments Section -->
+        <div class="space-y-6 pt-8 border-t border-gray-200">
+          <div class="flex items-center gap-3 pb-4">
+            <div class="flex-shrink-0 w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center">
+              <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/>
+              </svg>
+            </div>
+            <h2 class="text-2xl font-bold text-gray-900">Attachments</h2>
+          </div>
+
+          <div class="space-y-6">
+            <!-- CV/Resume Upload -->
+            <div>
+              <label for="{{ form.cv_resume.id_for_label }}" class="block text-sm font-semibold text-gray-700 mb-2">
+                {{ form.cv_resume.label }}
+              </label>
+              <div id="cvUploadArea" class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-xl hover:border-indigo-400 transition">
+                <div class="space-y-1 text-center w-full">
+                  <svg id="cvUploadIcon" class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
+                    <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                  <div id="cvUploadText" class="flex text-sm text-gray-600 justify-center">
+                    <label for="{{ form.cv_resume.id_for_label }}" class="relative cursor-pointer rounded-md font-medium text-indigo-600 hover:text-indigo-500">
+                      <span>Upload a file</span>
+                      {{ form.cv_resume }}
+                    </label>
+                    <p class="pl-1">or drag and drop</p>
+                  </div>
+                  <p class="text-xs text-gray-500">PDF, DOC, DOCX up to 10MB</p>
+                  <div id="cvFileInfo" class="hidden mt-3 p-3 bg-green-50 border border-green-200 rounded-lg">
+                    <div class="flex items-center gap-2">
+                      <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                      </svg>
+                      <span class="text-sm font-medium text-green-800">CV/Resume attached:</span>
+                      <span id="cvFileName" class="text-sm text-green-700"></span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              {% if form.cv_resume.errors %}
+                <p class="mt-1 text-sm text-red-600">{{ form.cv_resume.errors.0 }}</p>
+              {% endif %}
+            </div>
+
+            <!-- Portfolio Link -->
+            <div id="portfolioLinkSection">
+              <label for="{{ form.portfolio_link.id_for_label }}" class="block text-sm font-semibold text-gray-700 mb-2">
+                {{ form.portfolio_link.label }}
+                <span class="text-xs text-gray-500 font-normal">(optional if CV/Resume is provided)</span>
+              </label>
+              {{ form.portfolio_link }}
+              {% if form.portfolio_link.errors %}
+                <p class="mt-1 text-sm text-red-600">{{ form.portfolio_link.errors.0 }}</p>
+              {% endif %}
+            </div>
+
+            <!-- Portfolio File Upload -->
+            <div id="portfolioFileSection">
+              <label for="{{ form.portfolio_file.id_for_label }}" class="block text-sm font-semibold text-gray-700 mb-2">
+                {{ form.portfolio_file.label }}
+                <span class="text-xs text-gray-500 font-normal">(optional if CV/Resume is provided)</span>
+              </label>
+              <div id="portfolioUploadArea" class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-xl hover:border-indigo-400 transition">
+                <div class="space-y-1 text-center w-full">
+                  <svg id="portfolioUploadIcon" class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
+                    <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                  <div id="portfolioUploadText" class="flex text-sm text-gray-600 justify-center">
+                    <label for="{{ form.portfolio_file.id_for_label }}" class="relative cursor-pointer rounded-md font-medium text-indigo-600 hover:text-indigo-500">
+                      <span>Upload a file</span>
+                      {{ form.portfolio_file }}
+                    </label>
+                    <p class="pl-1">or drag and drop</p>
+                  </div>
+                  <p class="text-xs text-gray-500">PDF, DOC, DOCX, ZIP up to 10MB</p>
+                  <div id="portfolioFileInfo" class="hidden mt-3 p-3 bg-green-50 border border-green-200 rounded-lg">
+                    <div class="flex items-center gap-2">
+                      <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                      </svg>
+                      <span class="text-sm font-medium text-green-800">Portfolio attached:</span>
+                      <span id="portfolioFileName" class="text-sm text-green-700"></span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              {% if form.portfolio_file.errors %}
+                <p class="mt-1 text-sm text-red-600">{{ form.portfolio_file.errors.0 }}</p>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+
+        <!-- Short Questions Section -->
+        <div class="space-y-6 pt-8 border-t border-gray-200">
+          <div class="flex items-center gap-3 pb-4">
+            <div class="flex-shrink-0 w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center">
+              <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              </svg>
+            </div>
+            <h2 class="text-2xl font-bold text-gray-900">Short Questions</h2>
+          </div>
+
+          <div class="space-y-6">
+            <div>
+              <label for="{{ form.why_work_with_us.id_for_label }}" class="block text-sm font-semibold text-gray-700 mb-2">
+                {{ form.why_work_with_us.label }}
+              </label>
+              {{ form.why_work_with_us }}
+              {% if form.why_work_with_us.errors %}
+                <p class="mt-1 text-sm text-red-600">{{ form.why_work_with_us.errors.0 }}</p>
+              {% endif %}
+            </div>
+
+            <div>
+              <label for="{{ form.relevant_experience.id_for_label }}" class="block text-sm font-semibold text-gray-700 mb-2">
+                {{ form.relevant_experience.label }}
+              </label>
+              {{ form.relevant_experience }}
+              {% if form.relevant_experience.errors %}
+                <p class="mt-1 text-sm text-red-600">{{ form.relevant_experience.errors.0 }}</p>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+
+        <!-- Consent Section -->
+        <div class="space-y-4 pt-8 border-t border-gray-200">
+          <div class="flex items-start gap-3">
+            {{ form.information_accurate }}
+            <label for="{{ form.information_accurate.id_for_label }}" class="text-sm text-gray-700 cursor-pointer">
+              {{ form.information_accurate.label }}
+            </label>
+          </div>
+          {% if form.information_accurate.errors %}
+            <p class="text-sm text-red-600">{{ form.information_accurate.errors.0 }}</p>
+          {% endif %}
+
+          <div class="flex items-start gap-3">
+            {{ form.data_processing_consent }}
+            <label for="{{ form.data_processing_consent.id_for_label }}" class="text-sm text-gray-700 cursor-pointer">
+              {{ form.data_processing_consent.label }}
+            </label>
+          </div>
+          {% if form.data_processing_consent.errors %}
+            <p class="text-sm text-red-600">{{ form.data_processing_consent.errors.0 }}</p>
+          {% endif %}
+        </div>
+
+        <!-- Submit Button -->
+        <div class="pt-6">
+          <button type="submit" 
+                  class="w-full px-8 py-4 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-semibold text-lg shadow-lg hover:shadow-xl hover:from-indigo-700 hover:to-purple-700 transition-all duration-300 transform hover:scale-[1.02]">
+            Submit Application
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</section>
+
+<style>
+  /* Form styling */
+  #jobApplicationForm input[type="text"],
+  #jobApplicationForm input[type="email"],
+  #jobApplicationForm input[type="tel"],
+  #jobApplicationForm input[type="url"],
+  #jobApplicationForm select,
+  #jobApplicationForm textarea {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 2px solid #e5e7eb;
+    border-radius: 0.75rem;
+    font-size: 0.9375rem;
+    transition: all 0.2s;
+  }
+
+  #jobApplicationForm input:focus,
+  #jobApplicationForm select:focus,
+  #jobApplicationForm textarea:focus {
+    outline: none;
+    border-color: #6366f1;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+  }
+
+  #jobApplicationForm input[type="file"] {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+  }
+
+  #jobApplicationForm input[type="checkbox"] {
+    width: 1.25rem;
+    height: 1.25rem;
+    margin-top: 0.125rem;
+    cursor: pointer;
+  }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const positionSelect = document.getElementById('id_position_applied_for');
+  const departmentSelect = document.getElementById('id_department');
+  const customPositionField = document.getElementById('customPositionField');
+  const customPositionInput = document.getElementById('id_position_custom');
+  
+  // Jobs data mapping job IDs to departments
+  const jobsData = {{ jobs_data_json|safe|default:"{}" }};
+  
+  console.log('Jobs Data:', jobsData);
+  console.log('Position Select:', positionSelect);
+  console.log('Department Select:', departmentSelect);
+
+  if (positionSelect && departmentSelect) {
+    positionSelect.addEventListener('change', function() {
+      const selectedJobId = this.value;
+      console.log('Position changed to:', selectedJobId);
+      
+      // Handle custom position field
+      if (selectedJobId === '' || selectedJobId === null) {
+        if (customPositionField) {
+          customPositionField.style.display = 'block';
+        }
+        if (customPositionInput) {
+          customPositionInput.required = true;
+        }
+        // Clear department when no position is selected
+        departmentSelect.value = '';
+      } else {
+        if (customPositionField) {
+          customPositionField.style.display = 'none';
+        }
+        if (customPositionInput) {
+          customPositionInput.required = false;
+          customPositionInput.value = '';
+        }
+        
+        // Auto-fill department based on selected position
+        if (jobsData[selectedJobId]) {
+          const department = jobsData[selectedJobId];
+          console.log('Setting department to:', department);
+          console.log('Available department options:', Array.from(departmentSelect.options).map(opt => ({value: opt.value, text: opt.text})));
+          
+          // Try to set the value directly first
+          departmentSelect.value = department;
+          
+          // Verify it was set correctly
+          if (departmentSelect.value === department) {
+            console.log('✓ Department set successfully:', departmentSelect.value);
+            departmentSelect.dispatchEvent(new Event('change'));
+          } else {
+            // If direct assignment didn't work, try finding by value or text
+            console.log('Direct assignment failed, trying to find option...');
+            let found = false;
+            
+            // First try exact value match
+            for (let i = 0; i < departmentSelect.options.length; i++) {
+              const option = departmentSelect.options[i];
+              if (option.value === department) {
+                departmentSelect.selectedIndex = i;
+                found = true;
+                console.log('✓ Matched by exact value:', option.value, option.text);
+                break;
+              }
+            }
+            
+            // If still not found, try case-insensitive match
+            if (!found) {
+              for (let i = 0; i < departmentSelect.options.length; i++) {
+                const option = departmentSelect.options[i];
+                if (option.value && option.value.toLowerCase() === department.toLowerCase()) {
+                  departmentSelect.selectedIndex = i;
+                  found = true;
+                  console.log('✓ Matched by case-insensitive value:', option.value, option.text);
+                  break;
+                }
+                if (option.text && option.text.toLowerCase() === department.toLowerCase()) {
+                  departmentSelect.selectedIndex = i;
+                  found = true;
+                  console.log('✓ Matched by text:', option.value, option.text);
+                  break;
+                }
+              }
+            }
+            
+            if (found) {
+              departmentSelect.dispatchEvent(new Event('change'));
+              console.log('Final department value:', departmentSelect.value);
+            } else {
+              console.error('✗ Could not find matching department option for:', department);
+              console.log('Available values:', Array.from(departmentSelect.options).map(opt => opt.value));
+            }
+          }
+        } else {
+          console.log('No department found for job ID:', selectedJobId);
+          console.log('Available job IDs:', Object.keys(jobsData));
+        }
+      }
+    });
+    
+    // Trigger change event on page load if a position is already selected
+    if (positionSelect.value) {
+      positionSelect.dispatchEvent(new Event('change'));
+    }
+  } else {
+    console.error('Position or Department select not found!');
+  }
+
+  // File upload feedback and conditional validation
+  const cvResumeInput = document.getElementById('id_cv_resume');
+  const portfolioFileInput = document.getElementById('id_portfolio_file');
+  const portfolioLinkInput = document.getElementById('id_portfolio_link');
+  const cvFileInfo = document.getElementById('cvFileInfo');
+  const cvFileName = document.getElementById('cvFileName');
+  const cvUploadIcon = document.getElementById('cvUploadIcon');
+  const cvUploadText = document.getElementById('cvUploadText');
+  const cvUploadArea = document.getElementById('cvUploadArea');
+  const portfolioFileInfo = document.getElementById('portfolioFileInfo');
+  const portfolioFileName = document.getElementById('portfolioFileName');
+  const portfolioUploadIcon = document.getElementById('portfolioUploadIcon');
+  const portfolioUploadText = document.getElementById('portfolioUploadText');
+  const portfolioUploadArea = document.getElementById('portfolioUploadArea');
+  const portfolioLinkSection = document.getElementById('portfolioLinkSection');
+  const portfolioFileSection = document.getElementById('portfolioFileSection');
+
+  function updateCVDisplay() {
+    if (cvResumeInput && cvResumeInput.files && cvResumeInput.files.length > 0) {
+      const file = cvResumeInput.files[0];
+      cvFileName.textContent = file.name;
+      cvFileInfo.classList.remove('hidden');
+      if (cvUploadIcon) cvUploadIcon.classList.add('hidden');
+      if (cvUploadText) cvUploadText.classList.add('hidden');
+      if (cvUploadArea) {
+        cvUploadArea.classList.remove('border-gray-300');
+        cvUploadArea.classList.add('border-green-400', 'bg-green-50');
+      }
+      
+      // Make portfolio optional
+      const portfolioLinkLabel = portfolioLinkSection?.querySelector('label');
+      const portfolioFileLabel = portfolioFileSection?.querySelector('label');
+      if (portfolioLinkLabel) {
+        const span = portfolioLinkLabel.querySelector('span');
+        if (span) span.textContent = '(optional - CV/Resume already provided)';
+      }
+      if (portfolioFileLabel) {
+        const span = portfolioFileLabel.querySelector('span');
+        if (span) span.textContent = '(optional - CV/Resume already provided)';
+      }
+    } else {
+      if (cvFileInfo) cvFileInfo.classList.add('hidden');
+      if (cvUploadIcon) cvUploadIcon.classList.remove('hidden');
+      if (cvUploadText) cvUploadText.classList.remove('hidden');
+      if (cvUploadArea) {
+        cvUploadArea.classList.remove('border-green-400', 'bg-green-50');
+        cvUploadArea.classList.add('border-gray-300');
+      }
+      
+      // Reset portfolio labels
+      const portfolioLinkLabel = portfolioLinkSection?.querySelector('label');
+      const portfolioFileLabel = portfolioFileSection?.querySelector('label');
+      if (portfolioLinkLabel) {
+        const span = portfolioLinkLabel.querySelector('span');
+        if (span) span.textContent = '(optional if CV/Resume is provided)';
+      }
+      if (portfolioFileLabel) {
+        const span = portfolioFileLabel.querySelector('span');
+        if (span) span.textContent = '(optional if CV/Resume is provided)';
+      }
+    }
+  }
+
+  function updatePortfolioDisplay() {
+    if (portfolioFileInput && portfolioFileInput.files && portfolioFileInput.files.length > 0) {
+      const file = portfolioFileInput.files[0];
+      portfolioFileName.textContent = file.name;
+      portfolioFileInfo.classList.remove('hidden');
+      if (portfolioUploadIcon) portfolioUploadIcon.classList.add('hidden');
+      if (portfolioUploadText) portfolioUploadText.classList.add('hidden');
+      if (portfolioUploadArea) {
+        portfolioUploadArea.classList.remove('border-gray-300');
+        portfolioUploadArea.classList.add('border-green-400', 'bg-green-50');
+      }
+    } else {
+      if (portfolioFileInfo) portfolioFileInfo.classList.add('hidden');
+      if (portfolioUploadIcon) portfolioUploadIcon.classList.remove('hidden');
+      if (portfolioUploadText) portfolioUploadText.classList.remove('hidden');
+      if (portfolioUploadArea) {
+        portfolioUploadArea.classList.remove('border-green-400', 'bg-green-50');
+        portfolioUploadArea.classList.add('border-gray-300');
+      }
+    }
+  }
+
+  function checkPortfolioLink() {
+    if (portfolioLinkInput && portfolioLinkInput.value.trim()) {
+      // Portfolio link is provided
+      const portfolioLinkLabel = portfolioLinkSection?.querySelector('label');
+      if (portfolioLinkLabel) {
+        const span = portfolioLinkLabel.querySelector('span');
+        if (span) span.textContent = '(provided)';
+      }
+    } else {
+      const portfolioLinkLabel = portfolioLinkSection?.querySelector('label');
+      if (portfolioLinkLabel && (!cvResumeInput || !cvResumeInput.files || cvResumeInput.files.length === 0)) {
+        const span = portfolioLinkLabel.querySelector('span');
+        if (span) span.textContent = '(optional if CV/Resume is provided)';
+      }
+    }
+  }
+
+  // CV/Resume file change handler
+  if (cvResumeInput) {
+    cvResumeInput.addEventListener('change', updateCVDisplay);
+    updateCVDisplay(); // Check on page load
+  }
+
+  // Portfolio file change handler
+  if (portfolioFileInput) {
+    portfolioFileInput.addEventListener('change', updatePortfolioDisplay);
+    updatePortfolioDisplay(); // Check on page load
+  }
+
+  // Portfolio link change handler
+  if (portfolioLinkInput) {
+    portfolioLinkInput.addEventListener('input', checkPortfolioLink);
+    portfolioLinkInput.addEventListener('blur', checkPortfolioLink);
+    checkPortfolioLink(); // Check on page load
+  }
+
+  // Drag and drop for CV
+  if (cvUploadArea) {
+    cvUploadArea.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      cvUploadArea.classList.add('border-indigo-500', 'bg-indigo-50');
+    });
+    cvUploadArea.addEventListener('dragleave', () => {
+      cvUploadArea.classList.remove('border-indigo-500', 'bg-indigo-50');
+    });
+    cvUploadArea.addEventListener('drop', (e) => {
+      e.preventDefault();
+      cvUploadArea.classList.remove('border-indigo-500', 'bg-indigo-50');
+      if (e.dataTransfer.files.length > 0 && cvResumeInput) {
+        cvResumeInput.files = e.dataTransfer.files;
+        cvResumeInput.dispatchEvent(new Event('change'));
+      }
+    });
+  }
+
+  // Drag and drop for Portfolio
+  if (portfolioUploadArea) {
+    portfolioUploadArea.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      portfolioUploadArea.classList.add('border-indigo-500', 'bg-indigo-50');
+    });
+    portfolioUploadArea.addEventListener('dragleave', () => {
+      portfolioUploadArea.classList.remove('border-indigo-500', 'bg-indigo-50');
+    });
+    portfolioUploadArea.addEventListener('drop', (e) => {
+      e.preventDefault();
+      portfolioUploadArea.classList.remove('border-indigo-500', 'bg-indigo-50');
+      if (e.dataTransfer.files.length > 0 && portfolioFileInput) {
+        portfolioFileInput.files = e.dataTransfer.files;
+        portfolioFileInput.dispatchEvent(new Event('change'));
+      }
+    });
+  }
+});
+</script>
+{% endblock %}
+

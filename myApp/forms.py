@@ -1,6 +1,6 @@
 # myApp/forms.py
 from django import forms
-from .models import Service, Insight, ServiceProjectImage, CaseStudy
+from .models import Service, Insight, ServiceProjectImage, CaseStudy, JobPosting, JobApplication
 
 # -----------------------------
 # Existing contact form (unchanged)
@@ -444,3 +444,141 @@ ServiceProcessStepFormSet = inlineformset_factory(
     min_num=0,
     validate_min=False
 )
+
+
+# -----------------------------
+# Job Posting Forms
+# -----------------------------
+class JobPostingForm(forms.ModelForm):
+    """Form for creating/editing job postings"""
+    class Meta:
+        model = JobPosting
+        fields = ['title', 'department', 'description', 'is_active', 'sort_order']
+        widgets = {
+            'title': forms.TextInput(attrs={'placeholder': 'e.g., Senior Landscape Designer'}),
+            'department': forms.Select(attrs={'class': ''}),
+            'description': forms.Textarea(attrs={'rows': 8, 'placeholder': 'Job description, requirements, responsibilities...'}),
+            'sort_order': forms.NumberInput(attrs={'min': 0, 'max': 999}),
+        }
+        labels = {
+            'title': 'Job Title',
+            'department': 'Department',
+            'description': 'Job Description',
+            'is_active': 'Active (position is open)',
+            'sort_order': 'Sort Order',
+        }
+        help_texts = {
+            'sort_order': 'Lower numbers appear first in listings',
+        }
+
+
+# -----------------------------
+# Job Application Forms
+# -----------------------------
+class JobApplicationForm(forms.ModelForm):
+    """Public-facing job application form"""
+    # Override department field to use ChoiceField with proper choices
+    department = forms.ChoiceField(
+        choices=[],
+        required=False,
+        widget=forms.Select(attrs={'class': '', 'id': 'id_department'}),
+        label='Department'
+    )
+    
+    class Meta:
+        model = JobApplication
+        fields = [
+            # Personal Information
+            'full_name', 'email', 'mobile_number', 'current_location', 
+            'nationality', 'visa_status',
+            # Position Details
+            'position_applied_for', 'position_custom', 'department',
+            'years_of_experience', 'notice_period', 'expected_salary_aed',
+            # Attachments
+            'cv_resume', 'portfolio_link', 'portfolio_file',
+            # Short Questions
+            'why_work_with_us', 'relevant_experience',
+            # Consent
+            'information_accurate', 'data_processing_consent',
+        ]
+        widgets = {
+            'full_name': forms.TextInput(attrs={'placeholder': 'Full Name', 'required': True}),
+            'email': forms.EmailInput(attrs={'placeholder': 'email@example.com', 'required': True}),
+            'mobile_number': forms.TextInput(attrs={'placeholder': '+971 XX XXX XXXX', 'required': True}),
+            'current_location': forms.TextInput(attrs={'placeholder': 'e.g., Dubai, UAE', 'required': True}),
+            'nationality': forms.TextInput(attrs={'placeholder': 'e.g., UAE, Indian, etc.'}),
+            'visa_status': forms.Select(attrs={'class': ''}),
+            'position_applied_for': forms.Select(attrs={'class': '', 'id': 'id_position_applied_for'}),
+            'position_custom': forms.TextInput(attrs={'placeholder': 'If position not in list', 'id': 'id_position_custom', 'style': 'display:none;'}),
+            'years_of_experience': forms.TextInput(attrs={'placeholder': 'e.g., 5 years', 'required': True}),
+            'notice_period': forms.TextInput(attrs={'placeholder': 'e.g., 2 weeks, 1 month', 'required': True}),
+            'expected_salary_aed': forms.TextInput(attrs={'placeholder': 'e.g., 10,000 - 15,000 AED'}),
+            'cv_resume': forms.FileInput(attrs={'accept': '.pdf,.doc,.docx', 'required': True}),
+            'portfolio_link': forms.URLInput(attrs={'placeholder': 'https://...'}),
+            'portfolio_file': forms.FileInput(attrs={'accept': '.pdf,.doc,.docx,.zip'}),
+            'why_work_with_us': forms.Textarea(attrs={'rows': 4, 'placeholder': 'Tell us why you want to join our team...'}),
+            'relevant_experience': forms.Textarea(attrs={'rows': 4, 'placeholder': 'Describe your relevant experience or key projects...'}),
+            'information_accurate': forms.CheckboxInput(attrs={'required': True}),
+            'data_processing_consent': forms.CheckboxInput(attrs={'required': True}),
+        }
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Set department choices to match JobPosting
+        from .models import JobPosting
+        self.fields['department'].choices = [
+            ('', 'Select Department'),
+        ] + list(JobPosting.DEPARTMENT_CHOICES)
+    
+    def clean(self):
+        cleaned_data = super().clean()
+        position_applied_for = cleaned_data.get('position_applied_for')
+        position_custom = cleaned_data.get('position_custom')
+        cv_resume = cleaned_data.get('cv_resume')
+        portfolio_link = cleaned_data.get('portfolio_link')
+        portfolio_file = cleaned_data.get('portfolio_file')
+        
+        # Require either position_applied_for or position_custom
+        if not position_applied_for and not position_custom:
+            raise forms.ValidationError("Please select a position or enter a custom position.")
+        
+        # If CV/resume is provided, portfolio becomes optional
+        # If no CV/resume, at least one portfolio option (link or file) should be provided
+        if not cv_resume:
+            if not portfolio_link and not portfolio_file:
+                raise forms.ValidationError("Please upload your CV/Resume, or provide a portfolio link or file.")
+        
+        return cleaned_data
+
+
+class JobApplicationAdminForm(forms.ModelForm):
+    """Admin form for viewing/editing applications in dashboard"""
+    class Meta:
+        model = JobApplication
+        fields = [
+            'full_name', 'email', 'mobile_number', 'current_location',
+            'nationality', 'visa_status', 'position_applied_for', 'position_custom',
+            'department', 'years_of_experience', 'notice_period', 'expected_salary_aed',
+            'cv_resume', 'portfolio_link', 'portfolio_file',
+            'why_work_with_us', 'relevant_experience',
+            'status', 'notes',
+        ]
+        widgets = {
+            'full_name': forms.TextInput(),
+            'email': forms.EmailInput(),
+            'mobile_number': forms.TextInput(),
+            'current_location': forms.TextInput(),
+            'nationality': forms.TextInput(),
+            'visa_status': forms.Select(),
+            'position_applied_for': forms.Select(),
+            'position_custom': forms.TextInput(),
+            'department': forms.Select(),
+            'years_of_experience': forms.TextInput(),
+            'notice_period': forms.TextInput(),
+            'expected_salary_aed': forms.TextInput(),
+            'portfolio_link': forms.URLInput(),
+            'why_work_with_us': forms.Textarea(attrs={'rows': 4}),
+            'relevant_experience': forms.Textarea(attrs={'rows': 4}),
+            'status': forms.Select(),
+            'notes': forms.Textarea(attrs={'rows': 6, 'placeholder': 'Internal notes about this candidate...'}),
+        }

@@ -1,0 +1,264 @@
+{% extends "dashboard/base.html" %}
+{% block page_title %}Application Details{% endblock %}
+
+{% block content %}
+<div class="mb-6 flex items-center justify-between">
+  <div>
+    <div class="text-xs uppercase tracking-widest text-gray-500 mb-1">Recruitment</div>
+    <h1 class="text-2xl font-semibold text-gray-900">Application Details</h1>
+  </div>
+  <a href="{% url 'dashboard_applications_list' %}" 
+     class="inline-flex items-center gap-2 rounded-xl border border-gray-300 px-4 py-2 text-gray-700 hover:bg-gray-50 transition">
+    ← Back to Applications
+  </a>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+  <!-- Main Content -->
+  <div class="lg:col-span-2 space-y-6">
+    <!-- Personal Information -->
+    <div class="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+      <h2 class="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+        <svg class="h-5 w-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+        </svg>
+        Personal Information
+      </h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <div class="text-xs text-gray-500 mb-1">Full Name</div>
+          <div class="text-sm font-medium text-gray-900">{{ application.full_name }}</div>
+        </div>
+        <div>
+          <div class="text-xs text-gray-500 mb-1">Email</div>
+          <div class="text-sm text-gray-900">
+            <a href="mailto:{{ application.email }}" class="text-indigo-600 hover:text-indigo-900">{{ application.email }}</a>
+          </div>
+        </div>
+        <div>
+          <div class="text-xs text-gray-500 mb-1">Mobile Number</div>
+          <div class="text-sm text-gray-900">{{ application.mobile_number }}</div>
+        </div>
+        <div>
+          <div class="text-xs text-gray-500 mb-1">Current Location</div>
+          <div class="text-sm text-gray-900">{{ application.current_location }}</div>
+        </div>
+        {% if application.nationality %}
+        <div>
+          <div class="text-xs text-gray-500 mb-1">Nationality</div>
+          <div class="text-sm text-gray-900">{{ application.nationality }}</div>
+        </div>
+        {% endif %}
+        {% if application.visa_status %}
+        <div>
+          <div class="text-xs text-gray-500 mb-1">Visa Status</div>
+          <div class="text-sm text-gray-900">{{ application.get_visa_status_display }}</div>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Position Details -->
+    <div class="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+      <h2 class="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+        <svg class="h-5 w-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+        </svg>
+        Position Details
+      </h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <div class="text-xs text-gray-500 mb-1">Position Applied For</div>
+          <div class="text-sm font-medium text-gray-900">{{ application.position_display }}</div>
+        </div>
+        {% if application.department %}
+        <div>
+          <div class="text-xs text-gray-500 mb-1">Department</div>
+          <div class="text-sm text-gray-900">
+            <span class="inline-flex items-center rounded-lg bg-indigo-50 text-indigo-700 px-2.5 py-1 text-xs font-medium">
+              {{ application.department }}
+            </span>
+          </div>
+        </div>
+        {% endif %}
+        <div>
+          <div class="text-xs text-gray-500 mb-1">Years of Experience</div>
+          <div class="text-sm text-gray-900">{{ application.years_of_experience }}</div>
+        </div>
+        <div>
+          <div class="text-xs text-gray-500 mb-1">Notice Period</div>
+          <div class="text-sm text-gray-900">{{ application.notice_period }}</div>
+        </div>
+        {% if application.expected_salary_aed %}
+        <div>
+          <div class="text-xs text-gray-500 mb-1">Expected Salary (AED)</div>
+          <div class="text-sm text-gray-900">{{ application.expected_salary_aed }}</div>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Short Questions -->
+    {% if application.why_work_with_us or application.relevant_experience %}
+    <div class="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+      <h2 class="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+        <svg class="h-5 w-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+        Candidate Responses
+      </h2>
+      {% if application.why_work_with_us %}
+      <div class="mb-4">
+        <div class="text-xs text-gray-500 mb-2 font-medium">Why do you want to work with us?</div>
+        <div class="text-sm text-gray-700 bg-gray-50 rounded-lg p-4">{{ application.why_work_with_us|linebreaks }}</div>
+      </div>
+      {% endif %}
+      {% if application.relevant_experience %}
+      <div>
+        <div class="text-xs text-gray-500 mb-2 font-medium">Relevant experience or key project</div>
+        <div class="text-sm text-gray-700 bg-gray-50 rounded-lg p-4">{{ application.relevant_experience|linebreaks }}</div>
+      </div>
+      {% endif %}
+    </div>
+    {% endif %}
+
+    <!-- Attachments -->
+    <div class="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+      <h2 class="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+        <svg class="h-5 w-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/>
+        </svg>
+        Attachments
+      </h2>
+      <div class="space-y-3">
+        {% if application.cv_resume %}
+        <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+          <div class="flex items-center gap-3">
+            <svg class="h-8 w-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+            </svg>
+            <div>
+              <div class="text-sm font-medium text-gray-900">CV / Resume</div>
+              <div class="text-xs text-gray-500">{{ application.cv_resume.name|default:"File uploaded" }}</div>
+            </div>
+          </div>
+          <a href="{{ application.cv_resume.url }}" target="_blank" 
+             class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-indigo-600 text-white text-sm font-medium hover:bg-indigo-700 transition">
+            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+            </svg>
+            Download
+          </a>
+        </div>
+        {% endif %}
+        {% if application.portfolio_link %}
+        <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+          <div class="flex items-center gap-3">
+            <svg class="h-8 w-8 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
+            </svg>
+            <div>
+              <div class="text-sm font-medium text-gray-900">Portfolio Link</div>
+              <div class="text-xs text-gray-500 truncate max-w-md">{{ application.portfolio_link }}</div>
+            </div>
+          </div>
+          <a href="{{ application.portfolio_link }}" target="_blank" 
+             class="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-300 text-gray-700 text-sm font-medium hover:bg-gray-50 transition">
+            Open →
+          </a>
+        </div>
+        {% endif %}
+        {% if application.portfolio_file %}
+        <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+          <div class="flex items-center gap-3">
+            <svg class="h-8 w-8 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+            </svg>
+            <div>
+              <div class="text-sm font-medium text-gray-900">Portfolio File</div>
+              <div class="text-xs text-gray-500">{{ application.portfolio_file.name|default:"File uploaded" }}</div>
+            </div>
+          </div>
+          <a href="{{ application.portfolio_file.url }}" target="_blank" 
+             class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-indigo-600 text-white text-sm font-medium hover:bg-indigo-700 transition">
+            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+            </svg>
+            Download
+          </a>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Sidebar -->
+  <div class="space-y-6">
+    <!-- Status & Actions -->
+    <form method="post" enctype="multipart/form-data" class="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+      {% csrf_token %}
+      <h2 class="text-lg font-semibold text-gray-900 mb-4">Update Status</h2>
+      
+      <div class="space-y-4">
+        <div>
+          <label for="{{ form.status.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+            Application Status
+          </label>
+          {{ form.status }}
+          {% if form.status.errors %}
+            <p class="mt-1 text-sm text-red-600">{{ form.status.errors.0 }}</p>
+          {% endif %}
+        </div>
+
+        <div>
+          <label for="{{ form.notes.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+            Internal Notes
+          </label>
+          {{ form.notes }}
+          {% if form.notes.errors %}
+            <p class="mt-1 text-sm text-red-600">{{ form.notes.errors.0 }}</p>
+          {% endif %}
+        </div>
+
+        <button type="submit" class="w-full px-4 py-2.5 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-medium shadow-lg hover:shadow-xl transition">
+          Save Changes
+        </button>
+      </div>
+    </form>
+
+    <!-- Application Info -->
+    <div class="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+      <h2 class="text-lg font-semibold text-gray-900 mb-4">Application Info</h2>
+      <div class="space-y-3 text-sm">
+        <div>
+          <div class="text-xs text-gray-500 mb-1">Applied On</div>
+          <div class="text-gray-900 font-medium">{{ application.created_at|date:"F d, Y g:i A" }}</div>
+        </div>
+        <div>
+          <div class="text-xs text-gray-500 mb-1">Current Status</div>
+          <div>
+            {% if application.status == 'pending' %}
+              <span class="inline-flex items-center rounded-full bg-yellow-100 px-3 py-1 text-xs font-medium text-yellow-800">Pending</span>
+            {% elif application.status == 'reviewed' %}
+              <span class="inline-flex items-center rounded-full bg-blue-100 px-3 py-1 text-xs font-medium text-blue-800">Under Review</span>
+            {% elif application.status == 'shortlisted' %}
+              <span class="inline-flex items-center rounded-full bg-green-100 px-3 py-1 text-xs font-medium text-green-800">Shortlisted</span>
+            {% elif application.status == 'rejected' %}
+              <span class="inline-flex items-center rounded-full bg-red-100 px-3 py-1 text-xs font-medium text-red-800">Rejected</span>
+            {% elif application.status == 'hired' %}
+              <span class="inline-flex items-center rounded-full bg-purple-100 px-3 py-1 text-xs font-medium text-purple-800">Hired</span>
+            {% endif %}
+          </div>
+        </div>
+        {% if application.notes %}
+        <div>
+          <div class="text-xs text-gray-500 mb-1">Notes</div>
+          <div class="text-gray-700 bg-gray-50 rounded-lg p-3">{{ application.notes|linebreaks }}</div>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+

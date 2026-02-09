@@ -138,4 +138,14 @@ urlpatterns = [
     path("dashboard/spam/emails/", views.dashboard_spam_blocked_emails, name="dashboard_spam_blocked_emails"),
     path("dashboard/spam/ips/", views.dashboard_spam_blocked_ips, name="dashboard_spam_blocked_ips"),
     path("dashboard/spam/submissions/", views.dashboard_spam_submissions, name="dashboard_spam_submissions"),
+    # Job Postings (Dashboard)
+    path("dashboard/jobs/", views.dashboard_jobs_list, name="dashboard_jobs_list"),
+    path("dashboard/jobs/new/", views.dashboard_job_create, name="dashboard_job_create"),
+    path("dashboard/jobs/<int:pk>/edit/", views.dashboard_job_edit, name="dashboard_job_edit"),
+    path("dashboard/jobs/<int:pk>/delete/", views.dashboard_job_delete, name="dashboard_job_delete"),
+    # Job Applications (Dashboard)
+    path("dashboard/applications/", views.dashboard_applications_list, name="dashboard_applications_list"),
+    path("dashboard/applications/<int:pk>/", views.dashboard_application_detail, name="dashboard_application_detail"),
+    # Public Job Application Form
+    path("careers/apply/", views.job_application_form, name="job_application_form"),
 ]

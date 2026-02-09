@@ -720,3 +720,139 @@ class FormSubmission(models.Model):
     
     def __str__(self):
         return f"{self.email} - {self.submitted_at.strftime('%Y-%m-%d %H:%M')}"
+
+
+class JobPosting(TimeStamped):
+    """Job posting/position available"""
+    POSITION_CHOICES = [
+        ('', 'Select Position'),
+        ('Landscape Designer', 'Landscape Designer'),
+        ('Interior Designer', 'Interior Designer'),
+        ('Project Manager', 'Project Manager'),
+        ('Site Engineer', 'Site Engineer'),
+        ('Architect', 'Architect'),
+        ('Sales Executive', 'Sales Executive'),
+        ('Accountant', 'Accountant'),
+        ('Admin Assistant', 'Admin Assistant'),
+        ('Facility Manager', 'Facility Manager'),
+        ('Other', 'Other'),
+    ]
+    
+    DEPARTMENT_CHOICES = [
+        ('Landscape', 'Landscape'),
+        ('Interior & Fit-Out', 'Interior & Fit-Out'),
+        ('FM', 'FM'),
+        ('Admin', 'Admin'),
+        ('Finance', 'Finance'),
+        ('Sales', 'Sales'),
+    ]
+    
+    title = models.CharField(max_length=200, help_text="Job title/position name")
+    department = models.CharField(max_length=50, choices=DEPARTMENT_CHOICES, blank=True)
+    description = models.TextField(blank=True, help_text="Job description and requirements")
+    is_active = models.BooleanField(default=True, db_index=True, help_text="Is this position currently open?")
+    sort_order = models.PositiveIntegerField(default=0, db_index=True)
+    
+    class Meta:
+        ordering = ['sort_order', '-created_at']
+        verbose_name = 'Job Posting'
+        verbose_name_plural = 'Job Postings'
+    
+    def __str__(self):
+        return f"{self.title} ({self.department})" if self.department else self.title
+
+
+class JobApplication(TimeStamped):
+    """Job application submitted by candidates"""
+    VISA_STATUS_CHOICES = [
+        ('', 'Select Visa Status'),
+        ('Visit Visa', 'Visit Visa'),
+        ('Employment Visa', 'Employment Visa'),
+        ('Residence Visa', 'Residence Visa'),
+        ('Student Visa', 'Student Visa'),
+        ('No Visa', 'No Visa'),
+        ('Other', 'Other'),
+    ]
+    
+    # Personal Information
+    full_name = models.CharField(max_length=200)
+    email = models.EmailField(db_index=True)
+    mobile_number = models.CharField(max_length=20)
+    current_location = models.CharField(max_length=200)
+    nationality = models.CharField(max_length=100, blank=True)
+    visa_status = models.CharField(max_length=50, choices=VISA_STATUS_CHOICES, blank=True)
+    
+    # Position Details
+    position_applied_for = models.ForeignKey(
+        JobPosting,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='applications',
+        help_text="Position from dropdown"
+    )
+    position_custom = models.CharField(
+        max_length=200,
+        blank=True,
+        help_text="Custom position if not in dropdown"
+    )
+    department = models.CharField(max_length=50, blank=True)
+    years_of_experience = models.CharField(max_length=50)
+    notice_period = models.CharField(max_length=100)
+    expected_salary_aed = models.CharField(max_length=50, blank=True)
+    
+    # Attachments
+    cv_resume = models.FileField(
+        upload_to='job_applications/cvs/',
+        help_text="Upload CV/Resume (PDF/DOC)"
+    )
+    portfolio_link = models.URLField(blank=True, help_text="Portfolio link or upload")
+    portfolio_file = models.FileField(
+        upload_to='job_applications/portfolios/',
+        blank=True,
+        null=True,
+        help_text="Portfolio file upload (optional)"
+    )
+    
+    # Short Questions
+    why_work_with_us = models.TextField(blank=True, help_text="Why do you want to work with us?")
+    relevant_experience = models.TextField(blank=True, help_text="Relevant experience or key project")
+    
+    # Consent
+    information_accurate = models.BooleanField(default=False, help_text="I confirm the information provided is accurate")
+    data_processing_consent = models.BooleanField(default=False, help_text="I consent to data processing for recruitment purposes")
+    
+    # Status tracking
+    status = models.CharField(
+        max_length=50,
+        choices=[
+            ('pending', 'Pending Review'),
+            ('reviewed', 'Under Review'),
+            ('shortlisted', 'Shortlisted'),
+            ('rejected', 'Rejected'),
+            ('hired', 'Hired'),
+        ],
+        default='pending',
+        db_index=True
+    )
+    notes = models.TextField(blank=True, help_text="Internal notes about the candidate")
+    
+    # IP tracking for spam detection
+    ip_address = models.GenericIPAddressField(null=True, blank=True)
+    
+    class Meta:
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['email', '-created_at']),
+            models.Index(fields=['status', '-created_at']),
+        ]
+        verbose_name = 'Job Application'
+        verbose_name_plural = 'Job Applications'
+    
+    def __str__(self):
+        return f"{self.full_name} - {self.position_applied_for or self.position_custom} ({self.created_at.strftime('%Y-%m-%d')})"
+    
+    @property
+    def position_display(self):
+        """Return the position name (from FK or custom)"""
+        return self.position_applied_for.title if self.position_applied_for else self.position_custom

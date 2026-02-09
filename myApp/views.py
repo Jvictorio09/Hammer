@@ -54,8 +54,10 @@ from .models import (
     InsightAuditLog,
     PageHero,
     PageMetadata,
+    JobPosting,
+    JobApplication,
 )
-from .forms import ServiceForm, InsightForm, ServiceCapabilityFormSet, ServiceEditorialImageFormSet, ServiceProjectImageFormSet, CaseStudyFormSet, ServiceProcessStepFormSet
+from .forms import ServiceForm, InsightForm, ServiceCapabilityFormSet, ServiceEditorialImageFormSet, ServiceProjectImageFormSet, CaseStudyFormSet, ServiceProcessStepFormSet, JobPostingForm, JobApplicationForm, JobApplicationAdminForm
 from .utils.google_drive_utils import upload_from_google_drive_to_cloudinary, extract_file_id_from_url, bulk_upload_from_drive_folder
 from .utils.cloudinary_utils import smart_compress_to_bytes, upload_to_cloudinary, TARGET_BYTES
 from .utils.document_converter import convert_document_to_blocks
@@ -3187,4 +3189,233 @@ def dashboard_spam_submissions(request):
             "blocked_emails": blocked_emails_count,
             "blocked_ips": blocked_ips_count,
         }
+    })
+
+
+# --------------------------------------------------------------------------------------
+# Job Postings Management (Dashboard)
+# --------------------------------------------------------------------------------------
+
+@login_required
+def dashboard_jobs_list(request):
+    """List all job postings"""
+    jobs = JobPosting.objects.all().order_by('sort_order', '-created_at')
+    
+    # Filtering
+    status_filter = request.GET.get('status', 'all')
+    if status_filter == 'active':
+        jobs = jobs.filter(is_active=True)
+    elif status_filter == 'inactive':
+        jobs = jobs.filter(is_active=False)
+    
+    search_query = request.GET.get('search', '').strip()
+    if search_query:
+        jobs = jobs.filter(
+            Q(title__icontains=search_query) |
+            Q(department__icontains=search_query) |
+            Q(description__icontains=search_query)
+        )
+    
+    return render(request, "dashboard/jobs_list.html", {
+        "jobs": jobs,
+        "status_filter": status_filter,
+        "search_query": search_query,
+    })
+
+
+@login_required
+def dashboard_job_create(request):
+    """Create a new job posting"""
+    if request.method == "POST":
+        form = JobPostingForm(request.POST)
+        if form.is_valid():
+            job = form.save()
+            messages.success(request, f"Job posting '{job.title}' has been created.")
+            return redirect("dashboard_jobs_list")
+    else:
+        form = JobPostingForm()
+    
+    return render(request, "dashboard/job_form.html", {
+        "form": form,
+        "mode": "create"
+    })
+
+
+@login_required
+def dashboard_job_edit(request, pk: int):
+    """Edit a job posting"""
+    job = get_object_or_404(JobPosting, pk=pk)
+    
+    if request.method == "POST":
+        form = JobPostingForm(request.POST, instance=job)
+        if form.is_valid():
+            job = form.save()
+            messages.success(request, f"Job posting '{job.title}' has been updated.")
+            return redirect("dashboard_jobs_list")
+    else:
+        form = JobPostingForm(instance=job)
+    
+    return render(request, "dashboard/job_form.html", {
+        "form": form,
+        "mode": "edit",
+        "job": job
+    })
+
+
+@login_required
+@require_POST
+def dashboard_job_delete(request, pk: int):
+    """Delete a job posting"""
+    job = get_object_or_404(JobPosting, pk=pk)
+    title = job.title
+    job.delete()
+    messages.success(request, f"Job posting '{title}' has been deleted.")
+    return redirect("dashboard_jobs_list")
+
+
+# --------------------------------------------------------------------------------------
+# Job Applications Management (Dashboard)
+# --------------------------------------------------------------------------------------
+
+@login_required
+def dashboard_applications_list(request):
+    """List all job applications"""
+    applications = JobApplication.objects.select_related('position_applied_for').all().order_by('-created_at')
+    
+    # Filtering
+    status_filter = request.GET.get('status', 'all')
+    if status_filter != 'all':
+        applications = applications.filter(status=status_filter)
+    
+    position_filter = request.GET.get('position', '')
+    if position_filter:
+        applications = applications.filter(position_applied_for_id=position_filter)
+    
+    search_query = request.GET.get('search', '').strip()
+    if search_query:
+        applications = applications.filter(
+            Q(full_name__icontains=search_query) |
+            Q(email__icontains=search_query) |
+            Q(position_custom__icontains=search_query) |
+            Q(mobile_number__icontains=search_query)
+        )
+    
+    # Get available positions for filter
+    positions = JobPosting.objects.filter(is_active=True).order_by('title')
+    
+    # Stats
+    total_applications = JobApplication.objects.count()
+    pending_count = JobApplication.objects.filter(status='pending').count()
+    shortlisted_count = JobApplication.objects.filter(status='shortlisted').count()
+    
+    return render(request, "dashboard/applications_list.html", {
+        "applications": applications,
+        "status_filter": status_filter,
+        "position_filter": position_filter,
+        "search_query": search_query,
+        "positions": positions,
+        "stats": {
+            "total": total_applications,
+            "pending": pending_count,
+            "shortlisted": shortlisted_count,
+        }
+    })
+
+
+@login_required
+def dashboard_application_detail(request, pk: int):
+    """View details of a job application"""
+    application = get_object_or_404(JobApplication.objects.select_related('position_applied_for'), pk=pk)
+    
+    if request.method == "POST":
+        form = JobApplicationAdminForm(request.POST, request.FILES, instance=application)
+        if form.is_valid():
+            application = form.save()
+            messages.success(request, f"Application for '{application.full_name}' has been updated.")
+            return redirect("dashboard_application_detail", pk=application.pk)
+    else:
+        form = JobApplicationAdminForm(instance=application)
+    
+    return render(request, "dashboard/application_detail.html", {
+        "application": application,
+        "form": form
+    })
+
+
+# --------------------------------------------------------------------------------------
+# Public Job Application Form
+# --------------------------------------------------------------------------------------
+
+def job_application_form(request):
+    """Public-facing job application form"""
+    import json
+    
+    # Get active job postings for dropdown
+    active_jobs = JobPosting.objects.filter(is_active=True).order_by('sort_order', 'title')
+    
+    # Create a dictionary mapping job IDs to departments for JavaScript
+    # Only include jobs that have a department set
+    jobs_data = {}
+    for job in active_jobs:
+        if job.department:  # Only include if department is not empty
+            jobs_data[str(job.id)] = job.department
+    jobs_data_json = json.dumps(jobs_data)
+    
+    # Debug: Print jobs data to verify
+    import logging
+    logger = logging.getLogger(__name__)
+    logger.debug(f"Jobs data for auto-fill: {jobs_data}")
+    
+    if request.method == "POST":
+        form = JobApplicationForm(request.POST, request.FILES)
+        # Update the queryset for position_applied_for field
+        form.fields['position_applied_for'].queryset = active_jobs
+        
+        # Get IP address for spam detection
+        x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+        if x_forwarded_for:
+            ip_address = x_forwarded_for.split(',')[0]
+        else:
+            ip_address = request.META.get('REMOTE_ADDR')
+        
+        if form.is_valid():
+            # Check for spam (basic rate limiting)
+            from .models import BlockedEmail, BlockedIP
+            
+            email = form.cleaned_data['email'].lower()
+            
+            # Check if email is blocked
+            if BlockedEmail.objects.filter(email=email, is_active=True).exists():
+                messages.error(request, "Your submission could not be processed.")
+                return render(request, "job_application_form.html", {
+                    "form": form,
+                    "active_jobs": active_jobs,
+                    "jobs_data_json": jobs_data_json
+                })
+            
+            # Check if IP is blocked
+            if ip_address and BlockedIP.objects.filter(ip_address=ip_address, is_active=True).exists():
+                messages.error(request, "Your submission could not be processed.")
+                return render(request, "job_application_form.html", {
+                    "form": form,
+                    "active_jobs": active_jobs,
+                    "jobs_data_json": jobs_data_json
+                })
+            
+            # Create application
+            application = form.save(commit=False)
+            application.ip_address = ip_address
+            application.save()
+            
+            messages.success(request, "Thank you! Your application has been submitted successfully. We will review it and get back to you soon.")
+            return redirect("job_application_form")
+    else:
+        form = JobApplicationForm()
+        # Update the queryset for position_applied_for field
+        form.fields['position_applied_for'].queryset = active_jobs
+    
+    return render(request, "job_application_form.html", {
+        "form": form,
+        "active_jobs": active_jobs,
+        "jobs_data_json": jobs_data_json
     })
