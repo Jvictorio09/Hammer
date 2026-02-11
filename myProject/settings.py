@@ -7,8 +7,23 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Load environment variables from .env file
 # Try both the project root and parent directory
-load_dotenv(BASE_DIR / '.env')
-load_dotenv(BASE_DIR.parent / '.env')  # Also check parent directory
+env_path1 = BASE_DIR / '.env'
+env_path2 = BASE_DIR.parent / '.env'
+
+# Debug: Show where we're looking for .env file
+print(f"🔍 Looking for .env file at: {env_path1}")
+print(f"🔍 Also checking: {env_path2}")
+
+loaded1 = load_dotenv(env_path1)
+loaded2 = load_dotenv(env_path2)  # Also check parent directory
+
+if loaded1:
+    print(f"✅ Loaded .env from: {env_path1}")
+elif loaded2:
+    print(f"✅ Loaded .env from: {env_path2}")
+else:
+    print(f"⚠️  WARNING: .env file not found at {env_path1} or {env_path2}")
+    print(f"   Please create .env file with DATABASE_URL in: {env_path1}")
 
 
 # Quick-start development settings - unsuitable for production
@@ -105,27 +120,47 @@ WSGI_APPLICATION = 'myProject.wsgi.application'
 
 # Database configuration
 # Always use DATABASE_URL if available (PostgreSQL), fallback to SQLite only if not set
-
+# DATABASE_URL is loaded directly from .env file using dotenv (already loaded at top of file)
 import dj_database_url
+import os
 
-DATABASE_URL = os.getenv('DATABASE_URL')
+# Load DATABASE_URL directly from .env file
+DATABASE_URL = os.getenv("DATABASE_URL")
+
+# Debug: Show if DATABASE_URL is loaded (mask password for security)
+if DATABASE_URL:
+    # Mask the password in the URL for logging
+    try:
+        masked_url = DATABASE_URL.split('@')[0].split(':')[0] + ':***@' + '@'.join(DATABASE_URL.split('@')[1:]) if '@' in DATABASE_URL else DATABASE_URL
+        print(f"✅ DATABASE_URL loaded from .env: {masked_url}")
+    except:
+        print(f"✅ DATABASE_URL loaded from .env")
+else:
+    print("⚠️  WARNING: DATABASE_URL not found in .env file, using SQLite fallback")
 
 if DATABASE_URL:
-    # Use PostgreSQL from DATABASE_URL (works for both local and production)
+    # Parse DATABASE_URL and configure for Railway PostgreSQL with SSL
+    # Railway requires SSL connections - configure explicitly
+    db_config = dj_database_url.parse(
+        DATABASE_URL,
+        conn_max_age=0,  # Disable connection pooling for migrations
+    )
+    
+    # Ensure SSL is required for Railway database
+    if 'OPTIONS' not in db_config:
+        db_config['OPTIONS'] = {}
+    
+    # Set SSL mode - Railway databases require SSL
+    db_config['OPTIONS']['sslmode'] = 'require'
+    
     DATABASES = {
-        'default': dj_database_url.config(
-            default=DATABASE_URL,
-            conn_max_age=600,
-            conn_health_checks=True,
-            ssl_require=True,
-        ),
+        "default": db_config
     }
 else:
-    # Fallback to SQLite only if DATABASE_URL is not set
     DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': BASE_DIR / 'db.sqlite3',
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": BASE_DIR / "db.sqlite3",
         }
     }
 
