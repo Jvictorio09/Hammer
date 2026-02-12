@@ -114,55 +114,36 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'myProject.wsgi.application'
 
-
-# Database
-# https://docs.djangoproject.com/en/5.1/ref/settings/#databases
-
-# Database configuration
-# Always use DATABASE_URL if available (PostgreSQL), fallback to SQLite only if not set
-# DATABASE_URL is loaded directly from .env file using dotenv (already loaded at top of file)
 import dj_database_url
-import os
 
-# Load DATABASE_URL directly from .env file
-DATABASE_URL = os.getenv("DATABASE_URL")
+DATABASE_URL = os.environ.get('DATABASE_URL')
 
-# Debug: Show if DATABASE_URL is loaded (mask password for security)
-if DATABASE_URL:
-    # Mask the password in the URL for logging
-    try:
-        masked_url = DATABASE_URL.split('@')[0].split(':')[0] + ':***@' + '@'.join(DATABASE_URL.split('@')[1:]) if '@' in DATABASE_URL else DATABASE_URL
-        print(f"✅ DATABASE_URL loaded from .env: {masked_url}")
-    except:
-        print(f"✅ DATABASE_URL loaded from .env")
-else:
-    print("⚠️  WARNING: DATABASE_URL not found in .env file, using SQLite fallback")
-
-if DATABASE_URL:
-    # Parse DATABASE_URL and configure for Railway PostgreSQL with SSL
-    # Railway requires SSL connections - configure explicitly
-    db_config = dj_database_url.parse(
-        DATABASE_URL,
-        conn_max_age=0,  # Disable connection pooling for migrations
+if not DATABASE_URL:
+    raise ValueError(
+        "DATABASE_URL environment variable is required. "
+        "Please set it in your .env file or environment variables."
     )
-    
-    # Ensure SSL is required for Railway database
-    if 'OPTIONS' not in db_config:
-        db_config['OPTIONS'] = {}
-    
-    # Set SSL mode - Railway databases require SSL
-    db_config['OPTIONS']['sslmode'] = 'require'
-    
-    DATABASES = {
-        "default": db_config
-    }
-else:
-    DATABASES = {
-        "default": {
-            "ENGINE": "django.db.backends.sqlite3",
-            "NAME": BASE_DIR / "db.sqlite3",
-        }
-    }
+
+# Always use PostgreSQL from DATABASE_URL
+DATABASES = {
+    'default': dj_database_url.config(
+        default=DATABASE_URL,
+        conn_max_age=600,
+        conn_health_checks=True,
+    )
+}
+
+# Log database configuration
+db_config = DATABASES['default']
+print("=" * 60)
+print("DATABASE CONFIGURATION:")
+print(f"  Engine: {db_config.get('ENGINE', 'Unknown')}")
+print(f"  Name: {db_config.get('NAME', 'Unknown')}")
+print(f"  Host: {db_config.get('HOST', 'Unknown')}")
+print(f"  Port: {db_config.get('PORT', 'Unknown')}")
+print(f"  User: {db_config.get('USER', 'Unknown')}")
+print("=" * 60)
+
 
 
 # Password validation
