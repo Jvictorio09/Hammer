@@ -10,20 +10,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 env_path1 = BASE_DIR / '.env'
 env_path2 = BASE_DIR.parent / '.env'
 
-# Debug: Show where we're looking for .env file
-print(f"🔍 Looking for .env file at: {env_path1}")
-print(f"🔍 Also checking: {env_path2}")
-
-loaded1 = load_dotenv(env_path1)
-loaded2 = load_dotenv(env_path2)  # Also check parent directory
-
-if loaded1:
-    print(f"✅ Loaded .env from: {env_path1}")
-elif loaded2:
-    print(f"✅ Loaded .env from: {env_path2}")
-else:
-    print(f"⚠️  WARNING: .env file not found at {env_path1} or {env_path2}")
-    print(f"   Please create .env file with DATABASE_URL in: {env_path1}")
+# Load .env file (silently - only show errors if DATABASE_URL is missing)
+load_dotenv(env_path1)
+load_dotenv(env_path2)  # Also check parent directory
 
 
 # Quick-start development settings - unsuitable for production
@@ -125,24 +114,23 @@ if not DATABASE_URL:
     )
 
 # Always use PostgreSQL from DATABASE_URL
+# Railway databases REQUIRE SSL - configure it explicitly
+db_config = dj_database_url.parse(DATABASE_URL, conn_max_age=0)
+
+# Ensure SSL is required for Railway database and add connection settings
+if 'OPTIONS' not in db_config:
+    db_config['OPTIONS'] = {}
+db_config['OPTIONS']['sslmode'] = 'require'
+db_config['OPTIONS']['connect_timeout'] = 10
+
+# Add connection retry settings
+db_config['CONN_MAX_AGE'] = 0  # Disable persistent connections for migrations
+
 DATABASES = {
-    'default': dj_database_url.config(
-        default=DATABASE_URL,
-        conn_max_age=600,
-        conn_health_checks=True,
-    )
+    'default': db_config
 }
 
-# Log database configuration
-db_config = DATABASES['default']
-print("=" * 60)
-print("DATABASE CONFIGURATION:")
-print(f"  Engine: {db_config.get('ENGINE', 'Unknown')}")
-print(f"  Name: {db_config.get('NAME', 'Unknown')}")
-print(f"  Host: {db_config.get('HOST', 'Unknown')}")
-print(f"  Port: {db_config.get('PORT', 'Unknown')}")
-print(f"  User: {db_config.get('USER', 'Unknown')}")
-print("=" * 60)
+# Database configuration is ready
 
 
 
