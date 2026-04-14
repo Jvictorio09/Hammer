@@ -522,7 +522,12 @@
   (function(){
     const src = document.getElementById('cs-desc-raw');
     if (!src) return;
-    const raw = String(src.textContent || '').replace(/\r\n/g, '\n').trim();
+    const decodeEntities = (value) => {
+      const textarea = document.createElement('textarea');
+      textarea.innerHTML = value;
+      return textarea.value;
+    };
+    const raw = decodeEntities(String(src.textContent || '')).replace(/\r\n/g, '\n').trim();
 
     const H = {
       CHALLENGES: /\b(THE\s+CHALLENGE|CHALLENGES)\s*:?\s*/i,
